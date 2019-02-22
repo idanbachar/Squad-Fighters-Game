@@ -14,6 +14,16 @@ namespace Battle_Royale_Project
     {
         GunAmmo,
         RocketAmmo,
-        Food
+        Banana,
+        Orange,
+        Pear,
+        Helmet_Level_1,
+        Helmet_Level_2,
+        Helmet_Rare,
+        Helmet_Legendery,
+        Shield_Level_1,
+        Shield_Level_2,
+        Shield_Rare,
+        Shield_Legendery
     }
 }

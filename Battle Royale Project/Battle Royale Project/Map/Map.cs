@@ -43,6 +43,61 @@ namespace Battle_Royale_Project
                     item.LoadContent(content);
                     Items.Add(item);
                     break;
+                case ItemType.Banana:
+                    item = new Food(GeneratePosition(), itemToAdd);
+                    item.LoadContent(content);
+                    Items.Add(item);
+                    break;
+                case ItemType.Orange:
+                    item = new Food(GeneratePosition(), itemToAdd);
+                    item.LoadContent(content);
+                    Items.Add(item);
+                    break;
+                case ItemType.Pear:
+                    item = new Food(GeneratePosition(), itemToAdd);
+                    item.LoadContent(content);
+                    Items.Add(item);
+                    break;
+                case ItemType.Shield_Level_1:
+                    item = new Shield(GeneratePosition(), itemToAdd);
+                    item.LoadContent(content);
+                    Items.Add(item);
+                    break;
+                case ItemType.Shield_Level_2:
+                    item = new Shield(GeneratePosition(), itemToAdd);
+                    item.LoadContent(content);
+                    Items.Add(item);
+                    break;
+                case ItemType.Shield_Rare:
+                    item = new Shield(GeneratePosition(), itemToAdd);
+                    item.LoadContent(content);
+                    Items.Add(item);
+                    break;
+                case ItemType.Shield_Legendery:
+                    item = new Shield(GeneratePosition(), itemToAdd);
+                    item.LoadContent(content);
+                    Items.Add(item);
+                    break;
+                case ItemType.Helmet_Level_1:
+                    item = new Helmet(GeneratePosition(), itemToAdd);
+                    item.LoadContent(content);
+                    Items.Add(item);
+                    break;
+                case ItemType.Helmet_Level_2:
+                    item = new Helmet(GeneratePosition(), itemToAdd);
+                    item.LoadContent(content);
+                    Items.Add(item);
+                    break;
+                case ItemType.Helmet_Rare:
+                    item = new Helmet(GeneratePosition(), itemToAdd);
+                    item.LoadContent(content);
+                    Items.Add(item);
+                    break;
+                case ItemType.Helmet_Legendery:
+                    item = new Helmet(GeneratePosition(), itemToAdd);
+                    item.LoadContent(content);
+                    Items.Add(item);
+                    break;
             }
         }
 

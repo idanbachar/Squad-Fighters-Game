@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
+using System;
 
 namespace Battle_Royale_Project
 {
@@ -12,12 +13,13 @@ namespace Battle_Royale_Project
         Player player;
         Camera camera;
         Map map;
+        HUD HUD;
 
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferWidth = 1920;
-            graphics.PreferredBackBufferHeight = 1080;
+            graphics.PreferredBackBufferWidth = 500;
+            graphics.PreferredBackBufferHeight = 700;
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
         }
@@ -38,8 +40,12 @@ namespace Battle_Royale_Project
             camera = new Camera(GraphicsDevice.Viewport);
             map = new Map(new Rectangle(0, 0, 3000, 3000), Content);
 
+            HUD = new HUD();
+            HUD.LoadContent(Content);
+
+            Random rndItem = new Random();
             for (int i = 0; i < 100; i++)
-                map.AddItem(ItemType.GunAmmo);
+                map.AddItem((ItemType)rndItem.Next(2, 13));
         }
 
         protected override void UnloadContent()
@@ -55,21 +61,30 @@ namespace Battle_Royale_Project
 
             camera.Focus(player.Position, 3000, 3000);
 
-            player.CheckMovement();
+            player.Update();
+            HUD.Update(player);
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(255, 220, 180));
+            GraphicsDevice.Clear(Color.LightGreen);
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.Transform);
 
-            player.Draw(spriteBatch);
+            
 
             foreach (Item item in map.Items)
                 item.Draw(spriteBatch);
+
+            player.Draw(spriteBatch);
+
+            spriteBatch.End();
+
+            spriteBatch.Begin();
+
+            HUD.Draw(spriteBatch);
 
             spriteBatch.End();
 
