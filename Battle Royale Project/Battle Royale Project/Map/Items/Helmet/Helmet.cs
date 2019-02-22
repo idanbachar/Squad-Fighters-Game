@@ -10,41 +10,41 @@ using Microsoft.Xna.Framework.Content;
 
 namespace Battle_Royale_Project
 {
-    public class Shield : Item
+    public class Helmet : Item
     {
         public int Heal;
-        public ItemType ItemType;
+        public HelmetType ItemType;
 
-        public Shield(Vector2 itemPosition, ItemType itemType) : base(itemPosition)
+        public Helmet(Vector2 itemPosition, HelmetType itemType) : base(itemPosition)
         {
             ItemType = itemType;
         }
 
         public override void LoadContent(ContentManager content)
         {
-            Texture = content.Load<Texture2D>("images/items/shields/" + GetShieldName());
+            Texture = content.Load<Texture2D>("images/items/helmets/" + GetHelmetName());
         }
 
-        private string GetShieldName()
+        private string GetHelmetName()
         {
             switch (ItemType)
             {
-                case ItemType.Shield_Level_1:
-                    return "shield_lv1";
-                case ItemType.Shield_Level_2:
-                    return "shield_lv2";
-                case ItemType.Shield_Rare:
-                    return "shield_rare";
-                case ItemType.Shield_Legendery:
-                    return "shield_legendery";
+                case HelmetType.Helmet_Level_1:
+                    return "helmet_lv1";
+                case HelmetType.Helmet_Level_2:
+                    return "helmet_lv2";
+                case HelmetType.Helmet_Rare:
+                    return "helmet_rare";
+                case HelmetType.Helmet_Legendery:
+                    return "helmet_legendery";
                 default:
-                    return "shield_lv1";
+                    return "helmet_lv1";
             }
         }
 
         public override void Update()
         {
-
+            Rectangle = new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height);
         }
 
         public int GetArmor()

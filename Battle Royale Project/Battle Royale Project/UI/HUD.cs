@@ -29,14 +29,14 @@ namespace Battle_Royale_Project
 
         public void Update(Player player)
         {
-            PlayerName = player.Name;
-            PlayerBullets = player.bullets.ToString();
+            PlayerName = player.Name + " (" + player.Health + ")";
+            PlayerBullets = player.bulletsAmount.ToString();
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.DrawString(PlayerNameFont, PlayerName, new Vector2(0, 0), Color.White);
-            spriteBatch.DrawString(PlayerBulletsFont, PlayerBullets, new Vector2(0, 150), Color.White);
+            spriteBatch.DrawString(PlayerBulletsFont, PlayerBullets + "/" + "10", new Vector2(0, 150), Color.White);
         }
     }
 }

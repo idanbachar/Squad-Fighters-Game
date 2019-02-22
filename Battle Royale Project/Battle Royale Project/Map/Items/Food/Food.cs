@@ -10,23 +10,29 @@ using Microsoft.Xna.Framework.Content;
 
 namespace Battle_Royale_Project
 {
-    public class GunAmmo : Item
+    public class Food : Item
     {
-        public int Capacity;
+        public int Heal;
+        public FoodType ItemType;
 
-        public GunAmmo(Vector2 itemPosition, int ammoCapacity): base(itemPosition)
+        public Food(Vector2 itemPosition, FoodType itemType) : base(itemPosition)
         {
-            Capacity = ammoCapacity;
+            ItemType = itemType;
         }
 
         public override void LoadContent(ContentManager content)
         {
-            Texture = content.Load<Texture2D>("images/items/gunAmmo");
+            Texture = content.Load<Texture2D>("images/items/food/" + ItemType);
         }
 
         public override void Update()
         {
-            
+            Rectangle = new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height);
+        }
+
+        public int GetHealth()
+        {
+            return new Random().Next(15, 43);
         }
 
         public override void Draw(SpriteBatch spriteBatch)

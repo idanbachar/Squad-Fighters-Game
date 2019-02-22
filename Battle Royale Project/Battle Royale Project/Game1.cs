@@ -45,7 +45,7 @@ namespace Battle_Royale_Project
 
             Random rndItem = new Random();
             for (int i = 0; i < 100; i++)
-                map.AddItem((ItemType)rndItem.Next(2, 13));
+                map.AddItem((ItemCategory)rndItem.Next(4));
         }
 
         protected override void UnloadContent()
@@ -61,7 +61,16 @@ namespace Battle_Royale_Project
 
             camera.Focus(player.Position, 3000, 3000);
 
-            player.Update();
+            player.Update(map);
+
+            for(int i = 0; i < player.Bullets.Count; i++)
+            {
+                player.Bullets[i].Update();
+            }
+
+            foreach (Item item in map.Items)
+                item.Update();
+
             HUD.Update(player);
 
             base.Update(gameTime);
@@ -77,6 +86,9 @@ namespace Battle_Royale_Project
 
             foreach (Item item in map.Items)
                 item.Draw(spriteBatch);
+
+            foreach (Bullet bullet in player.Bullets)
+                bullet.Draw(spriteBatch);
 
             player.Draw(spriteBatch);
 

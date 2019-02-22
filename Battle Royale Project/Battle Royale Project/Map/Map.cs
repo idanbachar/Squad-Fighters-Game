@@ -12,10 +12,10 @@ namespace Battle_Royale_Project
 {
     public class Map
     {
-        public Random random;
         public Rectangle Rectangle;
         public List<Item> Items;
         private ContentManager content;
+        private Random Random;
 
         public Map(Rectangle mapRectangle, ContentManager contentManager)
         {
@@ -27,83 +27,47 @@ namespace Battle_Royale_Project
                                       mapRectangle.Height);
 
 
-            random = new Random();
+            Random = new Random();
             Items = new List<Item>();
 
         }
 
-        public void AddItem(ItemType itemToAdd)
+        public void AddItem(ItemCategory itemToAdd)
         {
             Item item;
 
             switch (itemToAdd)
             {
-                case ItemType.GunAmmo:
+                case ItemCategory.Ammo:
                     item = new GunAmmo(GeneratePosition(), 20);
                     item.LoadContent(content);
                     Items.Add(item);
                     break;
-                case ItemType.Banana:
-                    item = new Food(GeneratePosition(), itemToAdd);
+                case ItemCategory.Food:
+                    item = new Food(GeneratePosition(), GenerateFood());
                     item.LoadContent(content);
                     Items.Add(item);
                     break;
-                case ItemType.Orange:
-                    item = new Food(GeneratePosition(), itemToAdd);
+                case ItemCategory.Shield:
+                    item = new Shield(GeneratePosition(), GenerateShield());
                     item.LoadContent(content);
                     Items.Add(item);
                     break;
-                case ItemType.Pear:
-                    item = new Food(GeneratePosition(), itemToAdd);
-                    item.LoadContent(content);
-                    Items.Add(item);
-                    break;
-                case ItemType.Shield_Level_1:
-                    item = new Shield(GeneratePosition(), itemToAdd);
-                    item.LoadContent(content);
-                    Items.Add(item);
-                    break;
-                case ItemType.Shield_Level_2:
-                    item = new Shield(GeneratePosition(), itemToAdd);
-                    item.LoadContent(content);
-                    Items.Add(item);
-                    break;
-                case ItemType.Shield_Rare:
-                    item = new Shield(GeneratePosition(), itemToAdd);
-                    item.LoadContent(content);
-                    Items.Add(item);
-                    break;
-                case ItemType.Shield_Legendery:
-                    item = new Shield(GeneratePosition(), itemToAdd);
-                    item.LoadContent(content);
-                    Items.Add(item);
-                    break;
-                case ItemType.Helmet_Level_1:
-                    item = new Helmet(GeneratePosition(), itemToAdd);
-                    item.LoadContent(content);
-                    Items.Add(item);
-                    break;
-                case ItemType.Helmet_Level_2:
-                    item = new Helmet(GeneratePosition(), itemToAdd);
-                    item.LoadContent(content);
-                    Items.Add(item);
-                    break;
-                case ItemType.Helmet_Rare:
-                    item = new Helmet(GeneratePosition(), itemToAdd);
-                    item.LoadContent(content);
-                    Items.Add(item);
-                    break;
-                case ItemType.Helmet_Legendery:
-                    item = new Helmet(GeneratePosition(), itemToAdd);
+                case ItemCategory.Helmet:
+                    item = new Helmet(GeneratePosition(), GenerateHelmet());
                     item.LoadContent(content);
                     Items.Add(item);
                     break;
             }
         }
 
+        public FoodType GenerateFood() { return (FoodType)(Random.Next(3)); }
+        public ShieldType GenerateShield() { return (ShieldType)(Random.Next(4)); }
+        public HelmetType GenerateHelmet() { return (HelmetType)(Random.Next(4)); }
+
         public Vector2 GeneratePosition()
         {
-            return new Vector2(random.Next(0, 3000), random.Next(0, 3000));
+            return new Vector2(Random.Next(0, 3000), Random.Next(0, 3000));
         }
     }
 }
