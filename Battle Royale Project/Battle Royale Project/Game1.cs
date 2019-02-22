@@ -82,10 +82,11 @@ namespace Battle_Royale_Project
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.Transform);
 
-            
-
             foreach (Item item in map.Items)
+            {
                 item.Draw(spriteBatch);
+                spriteBatch.DrawString(HUD.ItemsCapacityFont, item.ToString(), new Vector2(item.Position.X + 15, item.Position.Y - 30) ,Color.Black);
+            }
 
             foreach (Bullet bullet in player.Bullets)
                 bullet.Draw(spriteBatch);

@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Camera\Camera.cs" />
     <Compile Include="Game1.cs" />
+    <Compile Include="Map\Items\Ammo\AmmoType.cs" />
     <Compile Include="Map\Items\Food\Food.cs" />
     <Compile Include="Map\Items\Ammo\GunAmmo.cs" />
     <Compile Include="Map\Items\Helmet\Helmet.cs" />

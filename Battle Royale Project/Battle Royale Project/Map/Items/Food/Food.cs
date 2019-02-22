@@ -12,12 +12,15 @@ namespace Battle_Royale_Project
 {
     public class Food : Item
     {
-        public int Heal;
+        private Random Random;
         public FoodType ItemType;
+        public int Heal;
 
         public Food(Vector2 itemPosition, FoodType itemType) : base(itemPosition)
         {
             ItemType = itemType;
+            Random = new Random();
+            Heal = GetHealth();
         }
 
         public override void LoadContent(ContentManager content)
@@ -32,12 +35,17 @@ namespace Battle_Royale_Project
 
         public int GetHealth()
         {
-            return new Random().Next(15, 43);
+            return Random.Next(15, 43);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Texture, Position, Color.White);
+        }
+
+        public override string ToString()
+        {
+            return Heal.ToString();
         }
     }
 }

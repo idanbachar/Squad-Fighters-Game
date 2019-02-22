@@ -11,11 +11,13 @@ namespace Battle_Royale_Project
 {
     public class HUD
     {
-        private SpriteFont PlayerNameFont;
-        private SpriteFont PlayerBulletsFont;
+        public SpriteFont PlayerNameFont;
+        public SpriteFont PlayerBulletsFont;
+        public SpriteFont ItemsCapacityFont;
 
         private string PlayerName;
         private string PlayerBullets;
+        private string PlayerMaxBullets;
 
         public HUD()
         {
@@ -25,18 +27,20 @@ namespace Battle_Royale_Project
         {
             PlayerNameFont = content.Load<SpriteFont>("fonts/player_name_font");
             PlayerBulletsFont = content.Load<SpriteFont>("fonts/bullets_count_font");
+            ItemsCapacityFont = content.Load<SpriteFont>("fonts/items_capacity_font");
         }
 
         public void Update(Player player)
         {
             PlayerName = player.Name + " (" + player.Health + ")";
-            PlayerBullets = player.bulletsAmount.ToString();
+            PlayerBullets = player.BulletsCapacity.ToString();
+            PlayerMaxBullets = player.MaxBulletsCapacity.ToString();
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.DrawString(PlayerNameFont, PlayerName, new Vector2(0, 0), Color.White);
-            spriteBatch.DrawString(PlayerBulletsFont, PlayerBullets + "/" + "10", new Vector2(0, 150), Color.White);
+            spriteBatch.DrawString(PlayerBulletsFont, PlayerBullets + "/" + PlayerMaxBullets, new Vector2(0, 150), Color.White);
         }
     }
 }

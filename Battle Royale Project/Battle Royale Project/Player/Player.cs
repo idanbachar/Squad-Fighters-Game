@@ -16,7 +16,8 @@ namespace Battle_Royale_Project
 
         public string Name;
         public int Health;
-        public int bulletsAmount;
+        public int MaxBulletsCapacity;
+        public int BulletsCapacity;
         public float Rotation;
         public bool IsShoot;
         public Texture2D Texture;
@@ -32,7 +33,8 @@ namespace Battle_Royale_Project
             SetDefaultHealth();
             SetDefaultPosition();
             Rotation = 0;
-            bulletsAmount = 10;
+            MaxBulletsCapacity = 10;
+            BulletsCapacity = 5;
             Bullets = new List<Bullet>();
             IsShoot = false;
         }
@@ -57,7 +59,40 @@ namespace Battle_Royale_Project
             {
                 if(Rectangle.Intersects(items[i].Rectangle))
                 {
-                    items.RemoveAt(i);
+                    if (items[i] is Food)
+                    {
+                        if (Health < 100)
+                        {
+                            Health += ((Food)(items[i])).GetHealth();
+                            items.RemoveAt(i);
+                        }
+                    }
+                    else if (items[i] is GunAmmo)
+                    {
+                        int capacity = ((GunAmmo)(items[i])).Capacity;
+
+                        if (BulletsCapacity + capacity <= MaxBulletsCapacity)
+                        {
+                            BulletsCapacity += ((GunAmmo)(items[i])).Capacity;
+                            items.RemoveAt(i);
+                        }
+                        else
+                        {
+                            if (BulletsCapacity + capacity > MaxBulletsCapacity)
+                            {
+                                ((GunAmmo)(items[i])).Capacity -= MaxBulletsCapacity - BulletsCapacity;
+                                BulletsCapacity = MaxBulletsCapacity;
+                            }
+                        }
+                    }
+                    else if (items[i] is Shield)
+                    {
+                        items.RemoveAt(i);
+                    }
+                    else if (items[i] is Helmet)
+                    {
+                        items.RemoveAt(i);
+                    }
                 }
             }
         }
@@ -84,7 +119,7 @@ namespace Battle_Royale_Project
 
             if (Keyboard.GetState().IsKeyDown(Keys.Space) && !IsShoot)
             {
-                if (bulletsAmount > 0)
+                if (BulletsCapacity > 0)
                     Shoot();
             }
             if (Keyboard.GetState().IsKeyUp(Keys.Space))
@@ -101,7 +136,7 @@ namespace Battle_Royale_Project
             bullet.LoadContent(Content);
             Bullets.Add(bullet);
 
-            bulletsAmount--;
+            BulletsCapacity--;
         }
 
         private void SetDefaultPosition()

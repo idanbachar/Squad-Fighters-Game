@@ -39,7 +39,7 @@ namespace Battle_Royale_Project
             switch (itemToAdd)
             {
                 case ItemCategory.Ammo:
-                    item = new GunAmmo(GeneratePosition(), 20);
+                    item = new GunAmmo(GeneratePosition(), GenerateAmmo());
                     item.LoadContent(content);
                     Items.Add(item);
                     break;
@@ -64,6 +64,7 @@ namespace Battle_Royale_Project
         public FoodType GenerateFood() { return (FoodType)(Random.Next(3)); }
         public ShieldType GenerateShield() { return (ShieldType)(Random.Next(4)); }
         public HelmetType GenerateHelmet() { return (HelmetType)(Random.Next(4)); }
+        public AmmoType GenerateAmmo() { return (AmmoType)(Random.Next(1,2)); }
 
         public Vector2 GeneratePosition()
         {

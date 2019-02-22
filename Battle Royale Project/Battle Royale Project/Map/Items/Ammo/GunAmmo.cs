@@ -13,15 +13,17 @@ namespace Battle_Royale_Project
     public class GunAmmo : Item
     {
         public int Capacity;
+        public AmmoType ItemType;
 
-        public GunAmmo(Vector2 itemPosition, int ammoCapacity): base(itemPosition)
+        public GunAmmo(Vector2 itemPosition, AmmoType ammoType): base(itemPosition)
         {
-            Capacity = ammoCapacity;
+            Capacity = 20;
+            ItemType = ammoType;
         }
 
         public override void LoadContent(ContentManager content)
         {
-            Texture = content.Load<Texture2D>("images/items/gunAmmo");
+            Texture = content.Load<Texture2D>("images/items/ammunition/bullet");
         }
 
         public override void Update()
@@ -32,6 +34,11 @@ namespace Battle_Royale_Project
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Texture, Position, Color.White);
+        }
+
+        public override string ToString()
+        {
+            return Capacity.ToString();
         }
     }
 }

@@ -12,12 +12,13 @@ namespace Battle_Royale_Project
 {
     public class Shield : Item
     {
-        public int Heal;
+        public int Armor;
         public ShieldType ItemType;
 
         public Shield(Vector2 itemPosition, ShieldType itemType) : base(itemPosition)
         {
             ItemType = itemType;
+            Armor = 50;
         }
 
         public override void LoadContent(ContentManager content)
@@ -55,6 +56,11 @@ namespace Battle_Royale_Project
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Texture, Position, Color.White);
+        }
+
+        public override string ToString()
+        {
+            return Armor.ToString();
         }
     }
 }
