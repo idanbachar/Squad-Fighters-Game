@@ -12,7 +12,7 @@ namespace Battle_Royale_Project
 {
     public class Map
     {
-        public Rectangle Rectangle;
+        public static Rectangle Rectangle;
         public List<Item> Items;
         private ContentManager content;
         private Random Random;
@@ -68,7 +68,7 @@ namespace Battle_Royale_Project
 
         public Vector2 GeneratePosition()
         {
-            return new Vector2(Random.Next(0, 3000), Random.Next(0, 3000));
+            return new Vector2(Random.Next(200, Rectangle.Width - 200), Random.Next(200, Rectangle.Height - 200));
         }
     }
 }

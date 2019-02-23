@@ -8,25 +8,25 @@ namespace Battle_Royale_Project
 {
     public class Game1 : Game
     {
-        GraphicsDeviceManager graphics;
+        public static GraphicsDeviceManager Graphics;
         SpriteBatch spriteBatch;
-        Player player;
-        Camera camera;
-        Map map;
-        HUD HUD;
+
+        private Player Player;
+        private Camera Camera;
+        private Map Map;
+        private HUD HUD;
 
         public Game1()
         {
-            graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferWidth = 500;
-            graphics.PreferredBackBufferHeight = 700;
+            Graphics = new GraphicsDeviceManager(this);
+            Graphics.PreferredBackBufferWidth = 500;
+            Graphics.PreferredBackBufferHeight = 700;
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
         }
 
         protected override void Initialize()
         {
-
             base.Initialize();
         }
 
@@ -34,18 +34,19 @@ namespace Battle_Royale_Project
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            player = new Player("idan");
-            player.LoadContent(Content);
+            Camera = new Camera(GraphicsDevice.Viewport);
 
-            camera = new Camera(GraphicsDevice.Viewport);
-            map = new Map(new Rectangle(0, 0, 3000, 3000), Content);
+            Map = new Map(new Rectangle(0, 0, 10000, 10000), Content);
+
+            Player = new Player("idan");
+            Player.LoadContent(Content);
 
             HUD = new HUD();
             HUD.LoadContent(Content);
 
             Random rndItem = new Random();
-            for (int i = 0; i < 100; i++)
-                map.AddItem((ItemCategory)rndItem.Next(4));
+            for (int i = 0; i < Map.Rectangle.Width / 20; i++)
+                Map.AddItem((ItemCategory)rndItem.Next(4));
         }
 
         protected override void UnloadContent()
@@ -59,19 +60,22 @@ namespace Battle_Royale_Project
                 Exit();
 
 
-            camera.Focus(player.Position, 3000, 3000);
+            Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
 
-            player.Update(map);
+            Player.Update(Map);
 
-            for(int i = 0; i < player.Bullets.Count; i++)
+            for (int i = 0; i < Player.Bullets.Count; i++)
             {
-                player.Bullets[i].Update();
+                if (!Player.Bullets[i].IsFinished)
+                    Player.Bullets[i].Update();
+                else
+                    Player.Bullets.RemoveAt(i);
             }
 
-            foreach (Item item in map.Items)
+            foreach (Item item in Map.Items)
                 item.Update();
 
-            HUD.Update(player);
+            HUD.Update(Player);
 
             base.Update(gameTime);
         }
@@ -80,18 +84,18 @@ namespace Battle_Royale_Project
         {
             GraphicsDevice.Clear(Color.LightGreen);
 
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.Transform);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, Camera.Transform);
 
-            foreach (Item item in map.Items)
+            foreach (Item item in Map.Items)
             {
                 item.Draw(spriteBatch);
                 spriteBatch.DrawString(HUD.ItemsCapacityFont, item.ToString(), new Vector2(item.Position.X + 15, item.Position.Y - 30) ,Color.Black);
             }
 
-            foreach (Bullet bullet in player.Bullets)
+            foreach (Bullet bullet in Player.Bullets)
                 bullet.Draw(spriteBatch);
 
-            player.Draw(spriteBatch);
+            Player.Draw(spriteBatch);
 
             spriteBatch.End();
 

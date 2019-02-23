@@ -32,7 +32,7 @@ namespace Battle_Royale_Project
 
         public void Update(Player player)
         {
-            PlayerName = player.Name + " (" + player.Health + ")";
+            PlayerName = player.Name + " (" + player.Health + "hp)";
             PlayerBullets = player.BulletsCapacity.ToString();
             PlayerMaxBullets = player.MaxBulletsCapacity.ToString();
         }
@@ -40,7 +40,7 @@ namespace Battle_Royale_Project
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.DrawString(PlayerNameFont, PlayerName, new Vector2(0, 0), Color.White);
-            spriteBatch.DrawString(PlayerBulletsFont, PlayerBullets + "/" + PlayerMaxBullets, new Vector2(0, 150), Color.White);
+            spriteBatch.DrawString(PlayerBulletsFont, PlayerBullets + "/" + PlayerMaxBullets, new Vector2(0, Game1.Graphics.PreferredBackBufferHeight - 50), Color.Black);
         }
     }
 }

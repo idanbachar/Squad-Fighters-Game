@@ -33,8 +33,8 @@ namespace Battle_Royale_Project
             SetDefaultHealth();
             SetDefaultPosition();
             Rotation = 0;
-            MaxBulletsCapacity = 10;
-            BulletsCapacity = 5;
+            MaxBulletsCapacity = 500;
+            BulletsCapacity = 500;
             Bullets = new List<Bullet>();
             IsShoot = false;
         }
@@ -132,7 +132,7 @@ namespace Battle_Royale_Project
         {
             IsShoot = true;
 
-            Bullet bullet = new Bullet(Position, Direction *= 2f);
+            Bullet bullet = new Bullet(Position, Direction);
             bullet.LoadContent(Content);
             Bullets.Add(bullet);
 
@@ -141,7 +141,7 @@ namespace Battle_Royale_Project
 
         private void SetDefaultPosition()
         {
-            Position = new Vector2(100, 100);
+            Position = new Vector2(new Random().Next(0, Map.Rectangle.Width - 100), new Random().Next(0, Map.Rectangle.Height - 100));
             Rectangle = new Rectangle((int)Position.X, (int)Position.Y, 0, 0);
         }
 

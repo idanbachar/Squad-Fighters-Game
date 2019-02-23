@@ -14,11 +14,21 @@ namespace Battle_Royale_Project
         public Texture2D Texture;
         public Vector2 Position;
         public Vector2 Direction;
+        public float Speed;
+        public bool IsFinished;
+        private int Timer;
+        private int MaxTimer;
+        public int Damage;
 
         public Bullet(Vector2 position, Vector2 direction)
         {
             Position = new Vector2(position.X, position.Y);
             Direction = new Vector2(direction.X, direction.Y);
+            Speed = 2.3f;
+            IsFinished = false;
+            Timer = 0;
+            MaxTimer = 40;
+            Damage = 5;
         }
 
         public void LoadContent(ContentManager content)
@@ -33,7 +43,12 @@ namespace Battle_Royale_Project
 
         public void Move()
         {
-            Position += Direction;
+            Position += Direction * Speed;
+
+            if (Timer <= MaxTimer)
+                Timer++;
+            else
+                IsFinished = true;
         }
 
         public void Draw(SpriteBatch spriteBatch)
