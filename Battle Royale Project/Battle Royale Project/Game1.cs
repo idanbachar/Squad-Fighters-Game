@@ -103,6 +103,12 @@ namespace Battle_Royale_Project
 
             HUD.Draw(spriteBatch);
 
+            if (Player.IsShield)
+            {
+                foreach (ShieldBar shieldbar in Player.Shield.ShieldBars)
+                    shieldbar.Draw(spriteBatch);
+            }
+
             spriteBatch.End();
 
 

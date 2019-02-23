@@ -14,16 +14,23 @@ namespace Battle_Royale_Project
     {
         public int Armor;
         public ShieldType ItemType;
+        public ShieldBar[] ShieldBars;
 
         public Shield(Vector2 itemPosition, ShieldType itemType) : base(itemPosition)
         {
             ItemType = itemType;
-            Armor = 50;
+            ShieldBars = new ShieldBar[3];
         }
 
         public override void LoadContent(ContentManager content)
         {
             Texture = content.Load<Texture2D>("images/items/shields/" + GetShieldName());
+
+            for(int i = 0; i < ShieldBars.Length; i++)
+            {
+                ShieldBars[i] = new ShieldBar(ItemType, new Vector2(i * 75, 50));
+                ShieldBars[i].LoadContent(content);
+            }
         }
 
         private string GetShieldName()

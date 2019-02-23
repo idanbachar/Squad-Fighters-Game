@@ -26,6 +26,8 @@ namespace Battle_Royale_Project
         public Vector2 Speed;
         public Rectangle Rectangle;
         public List<Bullet> Bullets;
+        public Shield Shield;
+        public bool IsShield;
 
         public Player(string playerName)
         {
@@ -33,10 +35,11 @@ namespace Battle_Royale_Project
             SetDefaultHealth();
             SetDefaultPosition();
             Rotation = 0;
-            MaxBulletsCapacity = 500;
-            BulletsCapacity = 500;
+            MaxBulletsCapacity = 20;
+            BulletsCapacity = 0;
             Bullets = new List<Bullet>();
             IsShoot = false;
+            IsShield = false;
         }
 
         public void LoadContent(ContentManager content)
@@ -87,7 +90,13 @@ namespace Battle_Royale_Project
                     }
                     else if (items[i] is Shield)
                     {
-                        items.RemoveAt(i);
+                        if (Shield == null || Shield.ItemType < ((Shield)items[i]).ItemType)
+                        {
+                            Shield = items[i] as Shield;
+                            IsShield = true;
+                            items.RemoveAt(i);
+                        }
+
                     }
                     else if (items[i] is Helmet)
                     {

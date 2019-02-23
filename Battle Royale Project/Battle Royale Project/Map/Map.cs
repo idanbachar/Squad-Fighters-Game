@@ -62,7 +62,20 @@ namespace Battle_Royale_Project
         }
 
         public FoodType GenerateFood() { return (FoodType)(Random.Next(3)); }
-        public ShieldType GenerateShield() { return (ShieldType)(Random.Next(4)); }
+
+        public ShieldType GenerateShield() {
+ 
+            int Number = Random.Next(71);
+
+            if (Number >= 0 && Number <= 10)
+                return ShieldType.Shield_Level_1;
+            else if (Number >= 11 && Number <= 20)
+                return ShieldType.Shield_Level_2;
+            else if (Number >= 21 && Number <= 30)
+                return ShieldType.Shield_Rare;
+            else
+                return ShieldType.Shield_Legendery;
+        }
         public HelmetType GenerateHelmet() { return (HelmetType)(Random.Next(4)); }
         public AmmoType GenerateAmmo() { return (AmmoType)(Random.Next(1,2)); }
 

@@ -52,6 +52,7 @@
     <Compile Include="Map\Items\ItemCategory.cs" />
     <Compile Include="Map\Items\Food\FoodType.cs" />
     <Compile Include="Map\Items\Shield\Shield.cs" />
+    <Compile Include="Map\Items\Shield\ShieldBar.cs" />
     <Compile Include="Map\Items\Shield\ShieldType.cs" />
     <Compile Include="Map\Map.cs" />
     <Compile Include="Player\Bullet.cs" />
