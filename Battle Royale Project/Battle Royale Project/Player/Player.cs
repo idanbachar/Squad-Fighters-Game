@@ -150,7 +150,7 @@ namespace Battle_Royale_Project
 
         private void SetDefaultPosition()
         {
-            Position = new Vector2(new Random().Next(0, Map.Rectangle.Width - 100), new Random().Next(0, Map.Rectangle.Height - 100));
+            Position = new Vector2(100,100);
             Rectangle = new Rectangle((int)Position.X, (int)Position.Y, 0, 0);
         }
 
@@ -161,8 +161,7 @@ namespace Battle_Royale_Project
 
         public override string ToString()
         {
-            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + "," +
-                "PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot;
+            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",";
         }
     }
 }

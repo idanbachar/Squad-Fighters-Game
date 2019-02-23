@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.Xna.Framework.Content;
 
 namespace Battle_Royale_Project
 {
@@ -15,10 +16,12 @@ namespace Battle_Royale_Project
 
         public TcpClient client;
         public Thread ReceiveThread;
+        public Thread SendThread;
 
         private string[] ReceivedDataArray;
+        private ContentManager Content;
 
-        public Client(string serverIp, int serverPort)
+        public Client(string serverIp, int serverPort, string playerName)
         {
             ServerIp = serverIp;
             ServerPort = serverPort;
@@ -27,7 +30,7 @@ namespace Battle_Royale_Project
                 client = new TcpClient(ServerIp, ServerPort);
 
                 /*    Connection Succesfull     */
-                SendData("idan" + new Random().Next(1000) + ",Connected.");
+                SendMessage(playerName + ",Connected.");
             }
             catch (Exception e)
             {
@@ -35,7 +38,19 @@ namespace Battle_Royale_Project
             }
         }
 
-        public void SendData(string data)
+        public void SendData()
+        {
+            while (true)
+            {
+                string data = Game1.Player.ToString();
+                SendMessage(data);
+
+                Thread.Sleep(50);
+            }
+        }
+   
+
+        public void SendMessage(string data)
         {
             try{
                 NetworkStream stream = client.GetStream();
@@ -46,6 +61,13 @@ namespace Battle_Royale_Project
             {
 
             }
+        }
+
+        public void AddPlayer(string CurrentConnectedPlayerName)
+        {
+            Player player = new Player(CurrentConnectedPlayerName);
+            player.LoadContent(Game1.ContentManager);
+            Game1.Players.Add(CurrentConnectedPlayerName, player);
         }
 
         public void ReceiveData()
@@ -61,7 +83,45 @@ namespace Battle_Royale_Project
                     string ReceivedDataString = data.Substring(0, data.IndexOf("\0"));
                     ReceivedDataArray = ReceivedDataString.Split(',');
 
+                    if (ReceivedDataString.Contains("Connected"))
+                    {
+                        string CurrentConnectedPlayerName = ReceivedDataString.Split(',')[0];
+
+                        if (CurrentConnectedPlayerName != Game1.Player.Name)
+                        {
+                            AddPlayer(CurrentConnectedPlayerName);
+                        }
+                    }
+                    else
+                    {
+                        //new Random().Next(0, Map.Rectangle.Width - 100), new Random().Next(0, Map.Rectangle.Height - 100)
+
+                        string playerName = ReceivedDataArray[0].Split('=')[1];
+                        float playerX = float.Parse(ReceivedDataArray[1].Split('=')[1]);
+                        float playerY = float.Parse(ReceivedDataArray[2].Split('=')[1]);
+                        float playerRotation = float.Parse(ReceivedDataArray[3].Split('=')[1]);
+                        int playerHealth = int.Parse(ReceivedDataArray[4].Split('=')[1]);
+                        bool playerIsShoot = bool.Parse(ReceivedDataArray[5].Split('=')[1]);
+
+                        if (Game1.Players.ContainsKey(playerName))
+                        {
+                            Game1.Players[playerName].Name = playerName;
+                            Game1.Players[playerName].Position.X = playerX;
+                            Game1.Players[playerName].Position.Y = playerY;
+                            Game1.Players[playerName].Rotation = playerRotation;
+                            Game1.Players[playerName].Health = playerHealth;
+                            Game1.Players[playerName].IsShoot = playerIsShoot;
+                        }
+                        else
+                        {
+                            AddPlayer(playerName);
+                        }
+
+                    }
+
                     Console.WriteLine(ReceivedDataString);
+
+                    Thread.Sleep(50);
                 }
                 catch (Exception e)
                 {
@@ -74,6 +134,7 @@ namespace Battle_Royale_Project
         {
             try{
                 ReceiveThread.Abort();
+                SendThread.Abort();
                 client.Close();
             }
             catch (Exception e)

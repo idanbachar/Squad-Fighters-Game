@@ -14,12 +14,13 @@ namespace Battle_Royale_Project
         public static GraphicsDeviceManager Graphics;
         SpriteBatch spriteBatch;
 
-        private Player Player;
+        public static Player Player;
         private Camera Camera;
         private Map Map;
         private HUD HUD;
         private Client PlayerClient;
-        private Dictionary<string, TcpClient> PlayersClients;
+        public static Dictionary<string, Player> Players;
+        public static ContentManager ContentManager;
 
         public Game1()
         {
@@ -28,15 +29,24 @@ namespace Battle_Royale_Project
             Graphics.PreferredBackBufferHeight = 700;
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            Players = new Dictionary<string, Player>();
         }
 
         protected override void Initialize()
         {
             base.Initialize();
-            PlayerClient = new Client("192.168.1.17", 7895);
+            ContentManager = Content;
 
+            Player = new Player("idan" + new Random().Next(1000));
+            Player.LoadContent(Content);
+
+            PlayerClient = new Client("192.168.1.17", 7895, Player.Name);
             PlayerClient.ReceiveThread = new Thread(PlayerClient.ReceiveData);
             PlayerClient.ReceiveThread.Start();
+
+            Thread.Sleep(100);
+            PlayerClient.SendThread = new Thread(() => PlayerClient.SendData());
+            PlayerClient.SendThread.Start();
         }
 
         protected override void LoadContent()
@@ -47,8 +57,6 @@ namespace Battle_Royale_Project
 
             Map = new Map(new Rectangle(0, 0, 10000, 10000), Content);
 
-            Player = new Player("idan");
-            Player.LoadContent(Content);
 
             HUD = new HUD();
             HUD.LoadContent(Content);
@@ -75,7 +83,7 @@ namespace Battle_Royale_Project
 
             Player.Update(Map);
 
-            PlayerClient.SendData(Player.ToString());
+            
 
             for (int i = 0; i < Player.Bullets.Count; i++)
             {
@@ -107,6 +115,9 @@ namespace Battle_Royale_Project
 
             foreach (Bullet bullet in Player.Bullets)
                 bullet.Draw(spriteBatch);
+
+            foreach (KeyValuePair<string, Player> player in Players)
+                player.Value.Draw(spriteBatch);
 
             Player.Draw(spriteBatch);
 
