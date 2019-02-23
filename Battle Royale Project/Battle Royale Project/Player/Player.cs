@@ -113,7 +113,7 @@ namespace Battle_Royale_Project
 
         public void CheckKeyboardMovement()
         {
-            Direction = new Vector2((float)Math.Cos(Rotation) * 5f, (float)Math.Sin(Rotation) * 5f);
+            Direction = new Vector2((float)Math.Cos(Rotation) * 3f, (float)Math.Sin(Rotation) * 3f);
 
             if (Keyboard.GetState().IsKeyDown(Keys.W))
             {

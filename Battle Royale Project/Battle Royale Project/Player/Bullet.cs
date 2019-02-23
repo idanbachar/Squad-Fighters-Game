@@ -24,7 +24,7 @@ namespace Battle_Royale_Project
         {
             Position = new Vector2(position.X, position.Y);
             Direction = new Vector2(direction.X, direction.Y);
-            Speed = 2.3f;
+            Speed = 3.3f;
             IsFinished = false;
             Timer = 0;
             MaxTimer = 40;
