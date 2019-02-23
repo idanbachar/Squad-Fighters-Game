@@ -102,6 +102,8 @@ namespace Battle_Royale_Project
                         float playerRotation = float.Parse(ReceivedDataArray[3].Split('=')[1]);
                         int playerHealth = int.Parse(ReceivedDataArray[4].Split('=')[1]);
                         bool playerIsShoot = bool.Parse(ReceivedDataArray[5].Split('=')[1]);
+                        float playerDirectionX = float.Parse(ReceivedDataArray[6].Split('=')[1]);
+                        float playerDirectionY = float.Parse(ReceivedDataArray[7].Split('=')[1]);
 
                         if (Game1.Players.ContainsKey(playerName))
                         {
@@ -111,6 +113,13 @@ namespace Battle_Royale_Project
                             Game1.Players[playerName].Rotation = playerRotation;
                             Game1.Players[playerName].Health = playerHealth;
                             Game1.Players[playerName].IsShoot = playerIsShoot;
+                            Game1.Players[playerName].Direction.X = playerDirectionX;
+                            Game1.Players[playerName].Direction.Y = playerDirectionY;
+
+                            if (playerIsShoot)
+                            {
+                                Game1.Players[playerName].Shoot();
+                            }
                         }
                         else
                         {

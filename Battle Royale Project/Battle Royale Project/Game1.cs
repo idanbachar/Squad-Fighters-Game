@@ -57,7 +57,6 @@ namespace Battle_Royale_Project
 
             Map = new Map(new Rectangle(0, 0, 10000, 10000), Content);
 
-
             HUD = new HUD();
             HUD.LoadContent(Content);
 
@@ -83,7 +82,17 @@ namespace Battle_Royale_Project
 
             Player.Update(Map);
 
-            
+
+            foreach(KeyValuePair<string, Player> otherPlayer in Players)
+            {
+                for(int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
+                {
+                    if (!otherPlayer.Value.Bullets[i].IsFinished)
+                        otherPlayer.Value.Bullets[i].Update();
+                    else
+                        otherPlayer.Value.Bullets.RemoveAt(i);
+                }
+            }            
 
             for (int i = 0; i < Player.Bullets.Count; i++)
             {
@@ -116,8 +125,16 @@ namespace Battle_Royale_Project
             foreach (Bullet bullet in Player.Bullets)
                 bullet.Draw(spriteBatch);
 
-            foreach (KeyValuePair<string, Player> player in Players)
-                player.Value.Draw(spriteBatch);
+ 
+            foreach (KeyValuePair<string, Player> otherPlayer in Players)
+            {
+                otherPlayer.Value.Draw(spriteBatch);
+
+                for (int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
+                {
+                    otherPlayer.Value.Bullets[i].Draw(spriteBatch);
+                }
+            }
 
             Player.Draw(spriteBatch);
 

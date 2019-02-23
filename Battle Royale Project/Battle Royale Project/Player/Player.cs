@@ -22,7 +22,7 @@ namespace Battle_Royale_Project
         public bool IsShoot;
         public Texture2D Texture;
         public Vector2 Position;
-        private Vector2 Direction;
+        public Vector2 Direction;
         public Vector2 Speed;
         public Rectangle Rectangle;
         public List<Bullet> Bullets;
@@ -161,7 +161,7 @@ namespace Battle_Royale_Project
 
         public override string ToString()
         {
-            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",";
+            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",";
         }
     }
 }
