@@ -3,6 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 using System;
+using System.Collections.Generic;
+using System.Net.Sockets;
+using System.Threading;
 
 namespace Battle_Royale_Project
 {
@@ -15,6 +18,8 @@ namespace Battle_Royale_Project
         private Camera Camera;
         private Map Map;
         private HUD HUD;
+        private Client PlayerClient;
+        private Dictionary<string, TcpClient> PlayersClients;
 
         public Game1()
         {
@@ -28,6 +33,10 @@ namespace Battle_Royale_Project
         protected override void Initialize()
         {
             base.Initialize();
+            PlayerClient = new Client("192.168.1.17", 7895);
+
+            PlayerClient.ReceiveThread = new Thread(PlayerClient.ReceiveData);
+            PlayerClient.ReceiveThread.Start();
         }
 
         protected override void LoadContent()
@@ -57,12 +66,16 @@ namespace Battle_Royale_Project
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
+                PlayerClient.CloseConnection();
                 Exit();
-
-
+            }
+            
             Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
 
             Player.Update(Map);
+
+            PlayerClient.SendData(Player.ToString());
 
             for (int i = 0; i < Player.Bullets.Count; i++)
             {
