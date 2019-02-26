@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
+using System.Text;
 
 namespace SquadFighters
 {
@@ -40,13 +41,100 @@ namespace SquadFighters
             Player = new Player("idan" + new Random().Next(1000));
             Player.LoadContent(Content);
 
+            Map = new Map(new Rectangle(0, 0, 10000, 10000), Content);
+
             PlayerClient = new Client("192.168.1.17", 7895, Player.Name);
-            PlayerClient.ReceiveThread = new Thread(PlayerClient.ReceiveData);
+            PlayerClient.ReceiveThread = new Thread(ReceiveData);
             PlayerClient.ReceiveThread.Start();
 
             Thread.Sleep(100);
             PlayerClient.SendThread = new Thread(() => PlayerClient.SendData());
             PlayerClient.SendThread.Start();
+        }
+
+        public void AddPlayer(string CurrentConnectedPlayerName)
+        {
+            Player player = new Player(CurrentConnectedPlayerName);
+            player.LoadContent(SquadFighters.ContentManager);
+            SquadFighters.Players.Add(CurrentConnectedPlayerName, player);
+        }
+
+        public void ReceiveData()
+        {
+            while (true)
+            {
+                try
+                {
+                    NetworkStream netStream = PlayerClient.client.GetStream();
+                    byte[] bytes = new byte[10024];
+                    netStream.Read(bytes, 0, bytes.Length);
+                    string data = Encoding.ASCII.GetString(bytes);
+                    string ReceivedDataString = data.Substring(0, data.IndexOf("\0"));
+                    PlayerClient.ReceivedDataArray = ReceivedDataString.Split(',');
+
+                    if (ReceivedDataString.Contains("Connected"))
+                    {
+                        string CurrentConnectedPlayerName = ReceivedDataString.Split(',')[0];
+
+                        if (CurrentConnectedPlayerName != SquadFighters.Player.Name)
+                        {
+                            AddPlayer(CurrentConnectedPlayerName);
+                        }
+                    }
+                    else if (ReceivedDataString.Contains("PlayerName"))
+                    {
+                        //new Random().Next(0, Map.Rectangle.Width - 100), new Random().Next(0, Map.Rectangle.Height - 100)
+
+                        string playerName = PlayerClient.ReceivedDataArray[0].Split('=')[1];
+                        float playerX = float.Parse(PlayerClient.ReceivedDataArray[1].Split('=')[1]);
+                        float playerY = float.Parse(PlayerClient.ReceivedDataArray[2].Split('=')[1]);
+                        float playerRotation = float.Parse(PlayerClient.ReceivedDataArray[3].Split('=')[1]);
+                        int playerHealth = int.Parse(PlayerClient.ReceivedDataArray[4].Split('=')[1]);
+                        bool playerIsShoot = bool.Parse(PlayerClient.ReceivedDataArray[5].Split('=')[1]);
+                        float playerDirectionX = float.Parse(PlayerClient.ReceivedDataArray[6].Split('=')[1]);
+                        float playerDirectionY = float.Parse(PlayerClient.ReceivedDataArray[7].Split('=')[1]);
+
+                        if (Players.ContainsKey(playerName))
+                        {
+                            Players[playerName].Name = playerName;
+                            Players[playerName].Position.X = playerX;
+                            Players[playerName].Position.Y = playerY;
+                            Players[playerName].Rotation = playerRotation;
+                            Players[playerName].Health = playerHealth;
+                            Players[playerName].IsShoot = playerIsShoot;
+                            Players[playerName].Direction.X = playerDirectionX;
+                            Players[playerName].Direction.Y = playerDirectionY;
+
+                            if (playerIsShoot)
+                            {
+                                Players[playerName].Shoot();
+                            }
+                        }
+                        else
+                        {
+                            AddPlayer(playerName);
+                        }
+
+                    }
+                    else if (ReceivedDataString.Contains("AddItem=true"))
+                    {
+                        ItemCategory ItemCategory = (ItemCategory)int.Parse(PlayerClient.ReceivedDataArray[1].Split('=')[1]);
+                        int type = int.Parse(PlayerClient.ReceivedDataArray[2].Split('=')[1].ToString());
+                        float itemX = float.Parse(PlayerClient.ReceivedDataArray[3].Split('=')[1].ToString());
+                        float itemY = float.Parse(PlayerClient.ReceivedDataArray[4].Split('=')[1].ToString());
+                        Map.GenerateItem(ItemCategory, type, itemX, itemY);
+
+                    }
+
+                    Console.WriteLine(ReceivedDataString);
+
+                    Thread.Sleep(50);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
         }
 
         protected override void LoadContent()
@@ -55,14 +143,10 @@ namespace SquadFighters
 
             Camera = new Camera(GraphicsDevice.Viewport);
 
-            Map = new Map(new Rectangle(0, 0, 10000, 10000), Content);
-
             HUD = new HUD();
             HUD.LoadContent(Content);
 
             Random rndItem = new Random();
-            for (int i = 0; i < Map.Rectangle.Width / 20; i++)
-                Map.AddItem((ItemCategory)rndItem.Next(4));
         }
 
         protected override void UnloadContent()
@@ -116,10 +200,21 @@ namespace SquadFighters
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, Camera.Transform);
 
-            foreach (Item item in Map.Items)
+            //foreach (Item item in Map.Items)
+            //{
+
+            //    item.Draw(spriteBatch);
+            //    spriteBatch.DrawString(HUD.ItemsCapacityFont, item.ToString(), new Vector2(item.Position.X + 15, item.Position.Y - 30), Color.Black);
+
+            //}
+
+
+            for(int i = 0; i < Map.Items.Count; i++)
             {
-                item.Draw(spriteBatch);
-                spriteBatch.DrawString(HUD.ItemsCapacityFont, item.ToString(), new Vector2(item.Position.X + 15, item.Position.Y - 30) ,Color.Black);
+
+                Map.Items[i].Draw(spriteBatch);
+                spriteBatch.DrawString(HUD.ItemsCapacityFont, Map.Items[i].ToString(), new Vector2(Map.Items[i].Position.X + 15, Map.Items[i].Position.Y - 30), Color.Black);
+
             }
 
             foreach (Bullet bullet in Player.Bullets)

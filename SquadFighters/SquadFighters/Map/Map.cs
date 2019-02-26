@@ -32,52 +32,32 @@ namespace SquadFighters
 
         }
 
-        public void AddItem(ItemCategory itemToAdd)
+        public void GenerateItem(ItemCategory itemCategory, int type, float itemX, float itemY)
         {
-            Item item;
+            Item item = new GunAmmo(new Vector2(0,0), AmmoType.Bullet);
 
-            switch (itemToAdd)
+            switch (itemCategory)
             {
                 case ItemCategory.Ammo:
-                    item = new GunAmmo(GeneratePosition(), GenerateAmmo());
-                    item.LoadContent(content);
-                    Items.Add(item);
+                    item = new GunAmmo(new Vector2(itemX, itemY), (AmmoType)type);
+                    item.LoadContent(SquadFighters.ContentManager);
                     break;
                 case ItemCategory.Food:
-                    item = new Food(GeneratePosition(), GenerateFood());
-                    item.LoadContent(content);
-                    Items.Add(item);
+                    item = new Food(new Vector2(itemX, itemY), (FoodType) type);
+                    item.LoadContent(SquadFighters.ContentManager);
                     break;
                 case ItemCategory.Shield:
-                    item = new Shield(GeneratePosition(), GenerateShield());
-                    item.LoadContent(content);
-                    Items.Add(item);
+                    item = new Shield(new Vector2(itemX, itemY), (ShieldType) type);
+                    item.LoadContent(SquadFighters.ContentManager);
                     break;
                 case ItemCategory.Helmet:
-                    item = new Helmet(GeneratePosition(), GenerateHelmet());
-                    item.LoadContent(content);
-                    Items.Add(item);
+                    item = new Helmet(new Vector2(itemX, itemY), (HelmetType) type);
+                    item.LoadContent(SquadFighters.ContentManager);
                     break;
             }
+
+            Items.Add(item);
         }
-
-        public FoodType GenerateFood() { return (FoodType)(Random.Next(3)); }
-
-        public ShieldType GenerateShield() {
- 
-            int Number = Random.Next(71);
-
-            if (Number >= 0 && Number <= 10)
-                return ShieldType.Shield_Level_1;
-            else if (Number >= 11 && Number <= 20)
-                return ShieldType.Shield_Level_2;
-            else if (Number >= 21 && Number <= 30)
-                return ShieldType.Shield_Rare;
-            else
-                return ShieldType.Shield_Legendery;
-        }
-        public HelmetType GenerateHelmet() { return (HelmetType)(Random.Next(4)); }
-        public AmmoType GenerateAmmo() { return (AmmoType)(Random.Next(1,2)); }
 
         public Vector2 GeneratePosition()
         {

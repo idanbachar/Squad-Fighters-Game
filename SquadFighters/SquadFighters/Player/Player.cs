@@ -67,7 +67,7 @@ namespace SquadFighters
                         if (Health < 100)
                         {
                             Health += ((Food)(items[i])).GetHealth();
-                            items.RemoveAt(i);
+                            //items.RemoveAt(i);
                         }
                     }
                     else if (items[i] is GunAmmo)
@@ -77,7 +77,7 @@ namespace SquadFighters
                         if (BulletsCapacity + capacity <= MaxBulletsCapacity)
                         {
                             BulletsCapacity += ((GunAmmo)(items[i])).Capacity;
-                            items.RemoveAt(i);
+                            //items.RemoveAt(i);
                         }
                         else
                         {
@@ -94,13 +94,13 @@ namespace SquadFighters
                         {
                             Shield = items[i] as Shield;
                             IsShield = true;
-                            items.RemoveAt(i);
+                            //items.RemoveAt(i);
                         }
 
                     }
                     else if (items[i] is Helmet)
                     {
-                        items.RemoveAt(i);
+                        //items.RemoveAt(i);
                     }
                 }
             }

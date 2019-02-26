@@ -18,8 +18,7 @@ namespace SquadFighters
         public Thread ReceiveThread;
         public Thread SendThread;
 
-        private string[] ReceivedDataArray;
-        private ContentManager Content;
+        public string[] ReceivedDataArray;
 
         public Client(string serverIp, int serverPort, string playerName)
         {
@@ -49,7 +48,6 @@ namespace SquadFighters
             }
         }
    
-
         public void SendMessage(string data)
         {
             try{
@@ -60,82 +58,6 @@ namespace SquadFighters
             catch (Exception)
             {
 
-            }
-        }
-
-        public void AddPlayer(string CurrentConnectedPlayerName)
-        {
-            Player player = new Player(CurrentConnectedPlayerName);
-            player.LoadContent(SquadFighters.ContentManager);
-            SquadFighters.Players.Add(CurrentConnectedPlayerName, player);
-        }
-
-        public void ReceiveData()
-        {
-            while (true)
-            {
-                try
-                {
-                    NetworkStream netStream = client.GetStream();
-                    byte[] bytes = new byte[1024];
-                    netStream.Read(bytes, 0, bytes.Length);
-                    string data = Encoding.ASCII.GetString(bytes);
-                    string ReceivedDataString = data.Substring(0, data.IndexOf("\0"));
-                    ReceivedDataArray = ReceivedDataString.Split(',');
-
-                    if (ReceivedDataString.Contains("Connected"))
-                    {
-                        string CurrentConnectedPlayerName = ReceivedDataString.Split(',')[0];
-
-                        if (CurrentConnectedPlayerName != SquadFighters.Player.Name)
-                        {
-                            AddPlayer(CurrentConnectedPlayerName);
-                        }
-                    }
-                    else
-                    {
-                        //new Random().Next(0, Map.Rectangle.Width - 100), new Random().Next(0, Map.Rectangle.Height - 100)
-
-                        string playerName = ReceivedDataArray[0].Split('=')[1];
-                        float playerX = float.Parse(ReceivedDataArray[1].Split('=')[1]);
-                        float playerY = float.Parse(ReceivedDataArray[2].Split('=')[1]);
-                        float playerRotation = float.Parse(ReceivedDataArray[3].Split('=')[1]);
-                        int playerHealth = int.Parse(ReceivedDataArray[4].Split('=')[1]);
-                        bool playerIsShoot = bool.Parse(ReceivedDataArray[5].Split('=')[1]);
-                        float playerDirectionX = float.Parse(ReceivedDataArray[6].Split('=')[1]);
-                        float playerDirectionY = float.Parse(ReceivedDataArray[7].Split('=')[1]);
-
-                        if (SquadFighters.Players.ContainsKey(playerName))
-                        {
-                            SquadFighters.Players[playerName].Name = playerName;
-                            SquadFighters.Players[playerName].Position.X = playerX;
-                            SquadFighters.Players[playerName].Position.Y = playerY;
-                            SquadFighters.Players[playerName].Rotation = playerRotation;
-                            SquadFighters.Players[playerName].Health = playerHealth;
-                            SquadFighters.Players[playerName].IsShoot = playerIsShoot;
-                            SquadFighters.Players[playerName].Direction.X = playerDirectionX;
-                            SquadFighters.Players[playerName].Direction.Y = playerDirectionY;
-
-                            if (playerIsShoot)
-                            {
-                                SquadFighters.Players[playerName].Shoot();
-                            }
-                        }
-                        else
-                        {
-                            AddPlayer(playerName);
-                        }
-
-                    }
-
-                    Console.WriteLine(ReceivedDataString);
-
-                    Thread.Sleep(50);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
             }
         }
 
