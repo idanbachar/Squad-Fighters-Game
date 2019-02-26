@@ -200,18 +200,8 @@ namespace SquadFighters
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, Camera.Transform);
 
-            //foreach (Item item in Map.Items)
-            //{
-
-            //    item.Draw(spriteBatch);
-            //    spriteBatch.DrawString(HUD.ItemsCapacityFont, item.ToString(), new Vector2(item.Position.X + 15, item.Position.Y - 30), Color.Black);
-
-            //}
-
-
             for(int i = 0; i < Map.Items.Count; i++)
             {
-
                 Map.Items[i].Draw(spriteBatch);
                 spriteBatch.DrawString(HUD.ItemsCapacityFont, Map.Items[i].ToString(), new Vector2(Map.Items[i].Position.X + 15, Map.Items[i].Position.Y - 30), Color.Black);
 
