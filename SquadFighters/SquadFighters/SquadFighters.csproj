@@ -42,7 +42,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Camera\Camera.cs" />
-    <Compile Include="Client\Client.cs" />
     <Compile Include="SquadFighters.cs" />
     <Compile Include="Map\Items\Ammo\AmmoType.cs" />
     <Compile Include="Map\Items\Food\Food.cs" />

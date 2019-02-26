@@ -19,9 +19,16 @@ namespace SquadFighters
         private Camera Camera;
         private Map Map;
         private HUD HUD;
-        private Client PlayerClient;
-        public static Dictionary<string, Player> Players;
+        private TcpClient Client;
+        private Dictionary<string, Player> Players;
         public static ContentManager ContentManager;
+
+        //Online
+        private Thread ReceiveThread;
+        private Thread SendThread;
+        private string ServerIp;
+        private int ServerPort;
+        public string[] ReceivedDataArray;
 
         public SquadFighters()
         {
@@ -31,6 +38,8 @@ namespace SquadFighters
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             Players = new Dictionary<string, Player>();
+            ServerIp = "192.168.1.17";
+            ServerPort = 7895;
         }
 
         protected override void Initialize()
@@ -43,56 +52,116 @@ namespace SquadFighters
 
             Map = new Map(new Rectangle(0, 0, 10000, 10000), Content);
 
-            PlayerClient = new Client("192.168.1.17", 7895, Player.Name);
-            PlayerClient.ReceiveThread = new Thread(ReceiveData);
-            PlayerClient.ReceiveThread.Start();
+            ConnectToServer(ServerIp, ServerPort);
+            ReceiveThread = new Thread(ReceiveDataFromServer);
+            ReceiveThread.Start();
 
             Thread.Sleep(100);
-            PlayerClient.SendThread = new Thread(() => PlayerClient.SendData());
-            PlayerClient.SendThread.Start();
+            SendThread = new Thread(() => SendDataToServer());
+            SendThread.Start();
+        }
+
+        public void ConnectToServer(string serverIp, int serverPort)
+        {
+            try
+            {
+                Client = new TcpClient(ServerIp, ServerPort);
+                SendOneDataToServer(Player.Name + ",Connected.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         public void AddPlayer(string CurrentConnectedPlayerName)
         {
             Player player = new Player(CurrentConnectedPlayerName);
-            player.LoadContent(SquadFighters.ContentManager);
-            SquadFighters.Players.Add(CurrentConnectedPlayerName, player);
+            player.LoadContent(Content);
+            Players.Add(CurrentConnectedPlayerName, player);
         }
 
-        public void ReceiveData()
+        public void SendOneDataToServer(string data)
+        {
+            try
+            {
+                NetworkStream stream = Client.GetStream();
+                byte[] bytes = Encoding.ASCII.GetBytes(data);
+                stream.Write(bytes, 0, bytes.Length);
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+        public void SendDataToServer()
+        {
+            while (true)
+            {
+                string data = Player.ToString();
+                try
+                {
+                    NetworkStream stream = Client.GetStream();
+                    byte[] bytes = Encoding.ASCII.GetBytes(data);
+                    stream.Write(bytes, 0, bytes.Length);
+                }
+                catch (Exception)
+                {
+
+                }
+
+                Thread.Sleep(50);
+            }
+        }
+        
+        public void DisconnectFromServer()
+        {
+            try
+            {
+                ReceiveThread.Abort();
+                SendThread.Abort();
+                Client.Close();
+            }
+            catch (Exception)
+            {
+
+            }
+
+        }
+
+        public void ReceiveDataFromServer()
         {
             while (true)
             {
                 try
                 {
-                    NetworkStream netStream = PlayerClient.client.GetStream();
+                    NetworkStream netStream = Client.GetStream();
                     byte[] bytes = new byte[10024];
                     netStream.Read(bytes, 0, bytes.Length);
                     string data = Encoding.ASCII.GetString(bytes);
                     string ReceivedDataString = data.Substring(0, data.IndexOf("\0"));
-                    PlayerClient.ReceivedDataArray = ReceivedDataString.Split(',');
+                    ReceivedDataArray = ReceivedDataString.Split(',');
 
                     if (ReceivedDataString.Contains("Connected"))
                     {
                         string CurrentConnectedPlayerName = ReceivedDataString.Split(',')[0];
 
-                        if (CurrentConnectedPlayerName != SquadFighters.Player.Name)
+                        if (CurrentConnectedPlayerName != Player.Name)
                         {
                             AddPlayer(CurrentConnectedPlayerName);
                         }
                     }
                     else if (ReceivedDataString.Contains("PlayerName"))
                     {
-                        //new Random().Next(0, Map.Rectangle.Width - 100), new Random().Next(0, Map.Rectangle.Height - 100)
-
-                        string playerName = PlayerClient.ReceivedDataArray[0].Split('=')[1];
-                        float playerX = float.Parse(PlayerClient.ReceivedDataArray[1].Split('=')[1]);
-                        float playerY = float.Parse(PlayerClient.ReceivedDataArray[2].Split('=')[1]);
-                        float playerRotation = float.Parse(PlayerClient.ReceivedDataArray[3].Split('=')[1]);
-                        int playerHealth = int.Parse(PlayerClient.ReceivedDataArray[4].Split('=')[1]);
-                        bool playerIsShoot = bool.Parse(PlayerClient.ReceivedDataArray[5].Split('=')[1]);
-                        float playerDirectionX = float.Parse(PlayerClient.ReceivedDataArray[6].Split('=')[1]);
-                        float playerDirectionY = float.Parse(PlayerClient.ReceivedDataArray[7].Split('=')[1]);
+                        string playerName = ReceivedDataArray[0].Split('=')[1];
+                        float playerX = float.Parse(ReceivedDataArray[1].Split('=')[1]);
+                        float playerY = float.Parse(ReceivedDataArray[2].Split('=')[1]);
+                        float playerRotation = float.Parse(ReceivedDataArray[3].Split('=')[1]);
+                        int playerHealth = int.Parse(ReceivedDataArray[4].Split('=')[1]);
+                        bool playerIsShoot = bool.Parse(ReceivedDataArray[5].Split('=')[1]);
+                        float playerDirectionX = float.Parse(ReceivedDataArray[6].Split('=')[1]);
+                        float playerDirectionY = float.Parse(ReceivedDataArray[7].Split('=')[1]);
 
                         if (Players.ContainsKey(playerName))
                         {
@@ -118,10 +187,10 @@ namespace SquadFighters
                     }
                     else if (ReceivedDataString.Contains("AddItem=true"))
                     {
-                        ItemCategory ItemCategory = (ItemCategory)int.Parse(PlayerClient.ReceivedDataArray[1].Split('=')[1]);
-                        int type = int.Parse(PlayerClient.ReceivedDataArray[2].Split('=')[1].ToString());
-                        float itemX = float.Parse(PlayerClient.ReceivedDataArray[3].Split('=')[1].ToString());
-                        float itemY = float.Parse(PlayerClient.ReceivedDataArray[4].Split('=')[1].ToString());
+                        ItemCategory ItemCategory = (ItemCategory)int.Parse(ReceivedDataArray[1].Split('=')[1]);
+                        int type = int.Parse(ReceivedDataArray[2].Split('=')[1].ToString());
+                        float itemX = float.Parse(ReceivedDataArray[3].Split('=')[1].ToString());
+                        float itemY = float.Parse(ReceivedDataArray[4].Split('=')[1].ToString());
                         Map.GenerateItem(ItemCategory, type, itemX, itemY);
 
                     }
@@ -158,7 +227,7 @@ namespace SquadFighters
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
-                PlayerClient.CloseConnection();
+                DisconnectFromServer();
                 Exit();
             }
             
