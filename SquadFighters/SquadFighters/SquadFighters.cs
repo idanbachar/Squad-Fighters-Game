@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using System.Text;
+using System.Linq;
 
 namespace SquadFighters
 {
@@ -17,6 +18,8 @@ namespace SquadFighters
 
         public static Player Player;
         private Camera Camera;
+        private MainMenu MainMenu;
+        private GameState GameState;
         private Map Map;
         private HUD HUD;
         private TcpClient Client;
@@ -41,6 +44,7 @@ namespace SquadFighters
             ServerIp = "192.168.1.17";
             ServerPort = 7895;
             Window.Title = "SquadFighters: Battle Royale";
+            GameState = GameState.MainMenu;
         }
 
         protected override void Initialize()
@@ -48,18 +52,10 @@ namespace SquadFighters
             base.Initialize();
             ContentManager = Content;
 
-            Player = new Player("idan" + new Random().Next(1000));
-            Player.LoadContent(Content);
+            MainMenu = new MainMenu(2);
+            MainMenu.LoadContent(Content);
 
             Map = new Map(new Rectangle(0, 0, 10000, 10000), Content);
-
-            ConnectToServer(ServerIp, ServerPort);
-            ReceiveThread = new Thread(ReceiveDataFromServer);
-            ReceiveThread.Start();
-
-            Thread.Sleep(100);
-            SendThread = new Thread(() => SendDataToServer());
-            SendThread.Start();
         }
 
         public void ConnectToServer(string serverIp, int serverPort)
@@ -80,6 +76,20 @@ namespace SquadFighters
             Player player = new Player(CurrentConnectedPlayerName);
             player.LoadContent(Content);
             Players.Add(CurrentConnectedPlayerName, player);
+        }
+
+        public void JoinGame()
+        {
+            Player = new Player("idan" + new Random().Next(1000));
+            Player.LoadContent(Content);
+
+            ConnectToServer(ServerIp, ServerPort);
+            ReceiveThread = new Thread(ReceiveDataFromServer);
+            ReceiveThread.Start();
+
+            Thread.Sleep(100);
+            SendThread = new Thread(() => SendDataToServer());
+            SendThread.Start();
         }
 
         public void SendOneDataToServer(string data)
@@ -231,34 +241,73 @@ namespace SquadFighters
                 DisconnectFromServer();
                 Exit();
             }
-            
-            Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
 
-            Player.Update(Map);
-
-
-            foreach(KeyValuePair<string, Player> otherPlayer in Players)
+            if (GameState == GameState.Game)
             {
-                for(int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
+                Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
+                Player.Update(Map);
+
+
+                foreach (KeyValuePair<string, Player> otherPlayer in Players)
                 {
-                    if (!otherPlayer.Value.Bullets[i].IsFinished)
-                        otherPlayer.Value.Bullets[i].Update();
-                    else
-                        otherPlayer.Value.Bullets.RemoveAt(i);
+                    otherPlayer.Value.UpdateRectangle();
+
+                    for (int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
+                    {
+                        if (otherPlayer.Value.Bullets[i].Rectangle.Intersects(Player.Rectangle))
+                        {
+                            otherPlayer.Value.Bullets[i].IsFinished = true;
+                            Player.Hit(otherPlayer.Value.Bullets[i].Damage);
+                        }
+
+                        if (!otherPlayer.Value.Bullets[i].IsFinished)
+                            otherPlayer.Value.Bullets[i].Update();
+                        else
+                            otherPlayer.Value.Bullets.RemoveAt(i);
+                    }
                 }
-            }            
 
-            for (int i = 0; i < Player.Bullets.Count; i++)
-            {
-                if (!Player.Bullets[i].IsFinished)
-                    Player.Bullets[i].Update();
-                else
-                    Player.Bullets.RemoveAt(i);
+                for (int i = 0; i < Players.Count; i++)
+                {
+                    for (int j = 0; j < Player.Bullets.Count; j++)
+                    {
+                        if (Player.Bullets[j].Rectangle.Intersects(Players.ElementAt(i).Value.Rectangle))
+                            Player.Bullets[j].IsFinished = true;
+
+                        if (!Player.Bullets[j].IsFinished)
+                            Player.Bullets[j].Update();
+                        else
+                            Player.Bullets.RemoveAt(j);
+                    }
+                }
+
+                for (int i = 0; i < Map.Items.Count; i++)
+                {
+                    Map.Items[i].Update();
+                }
             }
-
-            for (int i = 0; i < Map.Items.Count; i++)
+            else if(GameState == GameState.MainMenu)
             {
-                Map.Items[i].Update();
+
+                foreach (Button button in MainMenu.Buttons)
+                {
+                    if (button.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
+                    {
+                        if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+                        {
+                            switch (button.ButtonType)
+                            {
+                                case ButtonType.JoinGame:
+                                    GameState = GameState.Loading;
+                                    break;
+                                case ButtonType.Exit:
+                                    Exit();
+                                    break;
+                            }
+                        }
+                            
+                    }
+                }
             }
 
             base.Update(gameTime);
@@ -268,46 +317,69 @@ namespace SquadFighters
         {
             GraphicsDevice.Clear(Color.LightGreen);
 
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, Camera.Transform);
-
-            for(int i = 0; i < Map.Items.Count; i++)
+            if (GameState == GameState.Game)
             {
-                Map.Items[i].Draw(spriteBatch);
-                spriteBatch.DrawString(HUD.ItemsCapacityFont, Map.Items[i].ToString(), new Vector2(Map.Items[i].Position.X + 15, Map.Items[i].Position.Y - 30), Color.Black);
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, Camera.Transform);
 
-            }
-
-            foreach (Bullet bullet in Player.Bullets)
-                bullet.Draw(spriteBatch);
-
- 
-            foreach (KeyValuePair<string, Player> otherPlayer in Players)
-            {
-                otherPlayer.Value.Draw(spriteBatch);
-
-                for (int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
+                for (int i = 0; i < Map.Items.Count; i++)
                 {
-                    otherPlayer.Value.Bullets[i].Draw(spriteBatch);
+                    Map.Items[i].Draw(spriteBatch);
+                    spriteBatch.DrawString(HUD.ItemsCapacityFont, Map.Items[i].ToString(), new Vector2(Map.Items[i].Position.X + 15, Map.Items[i].Position.Y - 30), Color.Black);
+
                 }
-                HUD.DrawPlayersInfo(spriteBatch, otherPlayer.Value);
+
+                foreach (Bullet bullet in Player.Bullets)
+                    bullet.Draw(spriteBatch);
+
+
+                foreach (KeyValuePair<string, Player> otherPlayer in Players)
+                {
+                    otherPlayer.Value.Draw(spriteBatch);
+
+                    for (int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
+                        otherPlayer.Value.Bullets[i].Draw(spriteBatch);
+
+                    HUD.DrawPlayersInfo(spriteBatch, otherPlayer.Value);
+                }
+
+                Player.Draw(spriteBatch);
+
+                spriteBatch.End();
+
+                spriteBatch.Begin();
+
+                HUD.Draw(spriteBatch, Player, Players);
+
+                if (Player.IsShield)
+                {
+                    foreach (ShieldBar shieldbar in Player.Shield.ShieldBars)
+                        shieldbar.Draw(spriteBatch);
+                }
+
+                spriteBatch.End();
             }
-
-            Player.Draw(spriteBatch);
-
-            spriteBatch.End();
-
-            spriteBatch.Begin();
-
-            HUD.Draw(spriteBatch, Player, Players);
-
-            if (Player.IsShield)
+            else if(GameState == GameState.MainMenu)
             {
-                foreach (ShieldBar shieldbar in Player.Shield.ShieldBars)
-                    shieldbar.Draw(spriteBatch);
+                spriteBatch.Begin();
+
+                foreach (Button button in MainMenu.Buttons)
+                {
+                    if (button.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
+                        button.Draw(spriteBatch, true);
+                    else
+                        button.Draw(spriteBatch, false);
+                }
+
+                spriteBatch.End();
             }
+            else if(GameState == GameState.Loading)
+            {
+                spriteBatch.Begin();
 
-            spriteBatch.End();
+                HUD.DrawLoading(spriteBatch);
 
+                spriteBatch.End();
+            }
 
             base.Draw(gameTime);
         }

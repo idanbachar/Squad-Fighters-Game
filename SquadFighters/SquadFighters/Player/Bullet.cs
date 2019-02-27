@@ -13,6 +13,7 @@ namespace SquadFighters
     {
         public Texture2D Texture;
         public Vector2 Position;
+        public Rectangle Rectangle;
         public Vector2 Direction;
         public float Speed;
         public bool IsFinished;
@@ -24,6 +25,7 @@ namespace SquadFighters
         {
             Position = new Vector2(position.X, position.Y);
             Direction = new Vector2(direction.X, direction.Y);
+            Rectangle = new Rectangle((int)position.X,(int)position.Y, 0, 0);
             Speed = 3.3f;
             IsFinished = false;
             Timer = 0;
@@ -34,10 +36,14 @@ namespace SquadFighters
         public void LoadContent(ContentManager content)
         {
             Texture = content.Load<Texture2D>("images/player/bullets/bullet");
+            Rectangle.Width = Texture.Width;
+            Rectangle.Height = Texture.Height;
         }
 
         public void Update()
         {
+            Rectangle = new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height);
+
             Move();
         }
 

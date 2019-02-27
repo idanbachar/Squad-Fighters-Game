@@ -28,12 +28,12 @@ namespace SquadFighters
 
         public void DrawPlayerName(SpriteBatch spriteBatch, Player player)
         {
-            spriteBatch.DrawString(PlayerNameFont, player.Name + "(x=" + (int)player.Position.X + ",y=" + (int)player.Position.Y + ")", new Vector2(0, 0), Color.White);
+            spriteBatch.DrawString(PlayerNameFont, player.Name + "(x=" + (int)player.Position.X + ",y=" + (int)player.Position.Y + ")", new Vector2(0, 0), Color.Black);
         }
 
         public void DrawPlayerHealth(SpriteBatch spriteBatch, Player player)
         {
-            spriteBatch.DrawString(PlayerNameFont, "HP: " + player.Health, new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth - 100, 0), Color.White);
+            spriteBatch.DrawString(PlayerNameFont, "HP: " + player.Health, new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth - 100, 0), Color.Red);
         }
 
         public void DrawPlayerBullets(SpriteBatch spriteBatch, Player player)
@@ -43,7 +43,12 @@ namespace SquadFighters
 
         public void DrawPlayersInfo(SpriteBatch spriteBatch, Player player)
         {
-            spriteBatch.DrawString(PlayerNameFont, player.Name, new Vector2(player.Position.X - 30, player.Position.Y - 50), Color.White); ;
+            spriteBatch.DrawString(PlayerNameFont, player.Name, new Vector2(player.Position.X - 30, player.Position.Y - 50), Color.Black); ;
+        }
+
+        public void DrawLoading(SpriteBatch spriteBatch)
+        {
+            spriteBatch.DrawString(PlayerBulletsFont, "Loading..\nPlease wait.", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 75, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 25), Color.White);
         }
 
         public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)

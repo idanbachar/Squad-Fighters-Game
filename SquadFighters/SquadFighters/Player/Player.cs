@@ -35,8 +35,8 @@ namespace SquadFighters
             SetDefaultHealth();
             SetDefaultPosition();
             Rotation = 0;
-            MaxBulletsCapacity = 20;
-            BulletsCapacity = 0;
+            MaxBulletsCapacity = 500;
+            BulletsCapacity = 500;
             Bullets = new List<Bullet>();
             IsShoot = false;
             IsShield = false;
@@ -50,10 +50,14 @@ namespace SquadFighters
 
         public void Update(Map map)
         {
-            Rectangle = new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height);
-
+            UpdateRectangle();
             CheckKeyboardMovement();
             CheckItemsIntersects(map.Items);
+        }
+
+        public void UpdateRectangle()
+        {
+            Rectangle = new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height);
         }
 
         public void CheckItemsIntersects(List<Item> items)
@@ -104,6 +108,11 @@ namespace SquadFighters
                     }
                 }
             }
+        }
+
+        public void Hit(int damage)
+        {
+            Health = (Health - damage) < 0 ? 0 : Health -= damage;
         }
 
         private void SetDefaultHealth()

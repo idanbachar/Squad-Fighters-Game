@@ -190,6 +190,30 @@
 /processorParam:TextureFormat=Color
 /build:images/items/shields/shield_rare.png
 
+#begin images/main menu/buttons/exit.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/main menu/buttons/exit.png
+
+#begin images/main menu/buttons/join game.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/main menu/buttons/join game.png;images/main menu/buttons/joingame.png
+
 #begin images/player/armor_bars/armor_legendery.png
 /importer:TextureImporter
 /processor:TextureProcessor
