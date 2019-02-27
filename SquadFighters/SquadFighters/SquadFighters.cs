@@ -40,6 +40,7 @@ namespace SquadFighters
             Players = new Dictionary<string, Player>();
             ServerIp = "192.168.1.17";
             ServerPort = 7895;
+            Window.Title = "SquadFighters: Battle Royale";
         }
 
         protected override void Initialize()
@@ -255,10 +256,10 @@ namespace SquadFighters
                     Player.Bullets.RemoveAt(i);
             }
 
-            foreach (Item item in Map.Items)
-                item.Update();
-
-            HUD.Update(Player);
+            for (int i = 0; i < Map.Items.Count; i++)
+            {
+                Map.Items[i].Update();
+            }
 
             base.Update(gameTime);
         }
@@ -288,6 +289,7 @@ namespace SquadFighters
                 {
                     otherPlayer.Value.Bullets[i].Draw(spriteBatch);
                 }
+                HUD.DrawPlayersInfo(spriteBatch, otherPlayer.Value);
             }
 
             Player.Draw(spriteBatch);
@@ -296,7 +298,7 @@ namespace SquadFighters
 
             spriteBatch.Begin();
 
-            HUD.Draw(spriteBatch);
+            HUD.Draw(spriteBatch, Player, Players);
 
             if (Player.IsShield)
             {

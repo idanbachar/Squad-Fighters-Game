@@ -15,10 +15,6 @@ namespace SquadFighters
         public SpriteFont PlayerBulletsFont;
         public SpriteFont ItemsCapacityFont;
 
-        private string PlayerName;
-        private string PlayerBullets;
-        private string PlayerMaxBullets;
-
         public HUD()
         {
         }
@@ -30,17 +26,31 @@ namespace SquadFighters
             ItemsCapacityFont = content.Load<SpriteFont>("fonts/items_capacity_font");
         }
 
-        public void Update(Player player)
+        public void DrawPlayerName(SpriteBatch spriteBatch, Player player)
         {
-            PlayerName = player.Name + " (" + player.Health + "hp)";
-            PlayerBullets = player.BulletsCapacity.ToString();
-            PlayerMaxBullets = player.MaxBulletsCapacity.ToString();
+            spriteBatch.DrawString(PlayerNameFont, player.Name + "(x=" + (int)player.Position.X + ",y=" + (int)player.Position.Y + ")", new Vector2(0, 0), Color.White);
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public void DrawPlayerHealth(SpriteBatch spriteBatch, Player player)
         {
-            spriteBatch.DrawString(PlayerNameFont, PlayerName, new Vector2(0, 0), Color.White);
-            spriteBatch.DrawString(PlayerBulletsFont, PlayerBullets + "/" + PlayerMaxBullets, new Vector2(0, SquadFighters.Graphics.PreferredBackBufferHeight - 50), Color.Black);
+            spriteBatch.DrawString(PlayerNameFont, "HP: " + player.Health, new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth - 100, 0), Color.White);
+        }
+
+        public void DrawPlayerBullets(SpriteBatch spriteBatch, Player player)
+        {
+            spriteBatch.DrawString(PlayerBulletsFont, "Ammo: " + player.BulletsCapacity.ToString() + "/" + player.MaxBulletsCapacity.ToString(), new Vector2(0, SquadFighters.Graphics.PreferredBackBufferHeight - 50), Color.White);
+        }
+
+        public void DrawPlayersInfo(SpriteBatch spriteBatch, Player player)
+        {
+            spriteBatch.DrawString(PlayerNameFont, player.Name, new Vector2(player.Position.X - 30, player.Position.Y - 50), Color.White); ;
+        }
+
+        public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)
+        {
+            DrawPlayerName(spriteBatch, player);
+            DrawPlayerHealth(spriteBatch, player);
+            DrawPlayerBullets(spriteBatch, player);
         }
     }
 }
