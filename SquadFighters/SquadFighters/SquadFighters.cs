@@ -25,6 +25,7 @@ namespace SquadFighters
         private TcpClient Client;
         private Dictionary<string, Player> Players;
         public static ContentManager ContentManager;
+        private bool isPressed;
 
         //Online
         private Thread ReceiveThread;
@@ -63,7 +64,8 @@ namespace SquadFighters
             try
             {
                 Client = new TcpClient(ServerIp, ServerPort);
-                SendOneDataToServer(Player.Name + ",Connected.");
+                SendOneDataToServer("Load Map");
+                //SendOneDataToServer(Player.Name + ",Connected.");
             }
             catch (Exception e)
             {
@@ -84,12 +86,9 @@ namespace SquadFighters
             Player.LoadContent(Content);
 
             ConnectToServer(ServerIp, ServerPort);
+
             ReceiveThread = new Thread(ReceiveDataFromServer);
             ReceiveThread.Start();
-
-            Thread.Sleep(100);
-            SendThread = new Thread(() => SendDataToServer());
-            SendThread.Start();
         }
 
         public void SendOneDataToServer(string data)
@@ -99,6 +98,7 @@ namespace SquadFighters
                 NetworkStream stream = Client.GetStream();
                 byte[] bytes = Encoding.ASCII.GetBytes(data);
                 stream.Write(bytes, 0, bytes.Length);
+
             }
             catch (Exception)
             {
@@ -203,7 +203,17 @@ namespace SquadFighters
                         float itemX = float.Parse(ReceivedDataArray[3].Split('=')[1].ToString());
                         float itemY = float.Parse(ReceivedDataArray[4].Split('=')[1].ToString());
                         Map.GenerateItem(ItemCategory, type, itemX, itemY);
+                    }
+                    else if (ReceivedDataString.Contains("Load Items Completed"))
+                    {
+                        GameState = GameState.Game;
 
+                        SendOneDataToServer(Player.Name + ",Connected");
+
+                        Thread.Sleep(500);
+
+                        SendThread = new Thread(() => SendDataToServer());
+                        SendThread.Start();
                     }
 
                     Console.WriteLine(ReceivedDataString);
@@ -288,25 +298,20 @@ namespace SquadFighters
             }
             else if(GameState == GameState.MainMenu)
             {
-
-                foreach (Button button in MainMenu.Buttons)
+                if (Mouse.GetState().LeftButton == ButtonState.Pressed && !isPressed)
                 {
-                    if (button.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
+                    isPressed = true;
+
+                    if (MainMenu.Buttons[0].Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
                     {
-                        if (Mouse.GetState().LeftButton == ButtonState.Pressed)
-                        {
-                            switch (button.ButtonType)
-                            {
-                                case ButtonType.JoinGame:
-                                    GameState = GameState.Loading;
-                                    break;
-                                case ButtonType.Exit:
-                                    Exit();
-                                    break;
-                            }
-                        }
-                            
-                    }
+                        GameState = GameState.Loading;
+                        JoinGame();
+                    } 
+                }
+
+                if(Mouse.GetState().LeftButton == ButtonState.Released)
+                {
+                    isPressed = false;
                 }
             }
 
