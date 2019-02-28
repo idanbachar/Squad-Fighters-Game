@@ -33,6 +33,8 @@ namespace SquadFighters
         private string ServerIp;
         private int ServerPort;
         public string[] ReceivedDataArray;
+        private int MaxItems;
+        private int CurrentItemsLoaded;
 
         public SquadFighters()
         {
@@ -209,6 +211,7 @@ namespace SquadFighters
                         float itemY = float.Parse(ReceivedDataArray[4].Split('=')[1].ToString());
                         int itemCapacity = int.Parse(ReceivedDataArray[5].Split('=')[1].ToString());
                         string itemKey = ReceivedDataArray[6].Split('=')[1].ToString();
+                        MaxItems = int.Parse(ReceivedDataArray[7].Split('=')[1].ToString());
                         Map.AddItem(ItemCategory, type, itemX, itemY, itemCapacity, itemKey);
 
                         Console.WriteLine(ReceivedDataString);
@@ -405,10 +408,17 @@ namespace SquadFighters
             {
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, Camera.Transform);
 
-                for (int i = 0; i < Map.Items.Count; i++)
+                try
                 {
-                    Map.Items.ElementAt(i).Value.Draw(spriteBatch);
-                    spriteBatch.DrawString(HUD.ItemsCapacityFont, Map.Items.ElementAt(i).Value.ToString(), new Vector2(Map.Items.ElementAt(i).Value.Position.X + 15, Map.Items.ElementAt(i).Value.Position.Y - 30), Color.Black);
+                    for (int i = 0; i < Map.Items.Count; i++)
+                    {
+                        Map.Items.ElementAt(i).Value.Draw(spriteBatch);
+                        spriteBatch.DrawString(HUD.ItemsCapacityFont, Map.Items.ElementAt(i).Value.ToString(), new Vector2(Map.Items.ElementAt(i).Value.Position.X + 15, Map.Items.ElementAt(i).Value.Position.Y - 30), Color.Black);
+
+                    }
+                }
+                catch (Exception)
+                {
 
                 }
 
@@ -427,6 +437,7 @@ namespace SquadFighters
                 }
 
                 Player.Draw(spriteBatch);
+                HUD.DrawPlayerInfo(spriteBatch, Player);
 
                 spriteBatch.End();
 
@@ -460,7 +471,7 @@ namespace SquadFighters
             {
                 spriteBatch.Begin();
 
-                HUD.DrawLoading(spriteBatch);
+                HUD.DrawLoading(spriteBatch, MaxItems, Map.Items.Count);
 
                 spriteBatch.End();
             }

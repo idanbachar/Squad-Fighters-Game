@@ -43,12 +43,24 @@ namespace SquadFighters
 
         public void DrawPlayersInfo(SpriteBatch spriteBatch, Player player)
         {
-            spriteBatch.DrawString(PlayerNameFont, player.Name, new Vector2(player.Position.X - 30, player.Position.Y - 50), Color.Black); ;
+            spriteBatch.DrawString(PlayerNameFont, player.Name, new Vector2(player.Position.X - 30, player.Position.Y - 50), Color.Black);
         }
 
-        public void DrawLoading(SpriteBatch spriteBatch)
+        public void DrawPlayerInfo(SpriteBatch spriteBatch, Player player)
         {
-            spriteBatch.DrawString(PlayerBulletsFont, "Loading..\nPlease wait.", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 75, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 25), Color.White);
+            spriteBatch.DrawString(PlayerNameFont, "You", new Vector2(player.Position.X - 30, player.Position.Y - 50), Color.Blue);
+        }
+
+        public void DrawLoading(SpriteBatch spriteBatch, double MaxItems, double CurrentItemsLoaded)
+        {
+            double percent = 0;
+
+            if (MaxItems > 0 && CurrentItemsLoaded > 0)
+            {
+                percent = (double)((CurrentItemsLoaded / MaxItems) * 100);
+            }
+
+            spriteBatch.DrawString(PlayerBulletsFont, "Loading..(" + (int)percent + "%)", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 75), Color.Black);
         }
 
         public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)
