@@ -16,11 +16,11 @@ namespace SquadFighters
         public FoodType ItemType;
         public int Heal;
 
-        public Food(Vector2 itemPosition, FoodType itemType) : base(itemPosition)
+        public Food(Vector2 itemPosition, FoodType itemType, int capacity) : base(itemPosition)
         {
             ItemType = itemType;
             Random = new Random();
-            Heal = GetHealth();
+            Heal = capacity;
         }
 
         public override void LoadContent(ContentManager content)
@@ -35,7 +35,7 @@ namespace SquadFighters
 
         public int GetHealth()
         {
-            return Random.Next(15, 43);
+            return Heal;
         }
 
         public override void Draw(SpriteBatch spriteBatch)

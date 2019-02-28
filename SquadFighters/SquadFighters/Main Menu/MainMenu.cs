@@ -27,15 +27,5 @@ namespace SquadFighters
                 Buttons[i].LoadContent(content);
             }
         }
-
-        public void Update()
-        {
-
-        }
-
-        public void Draw(SpriteBatch spriteBatch)
-        {
-
-        }
     }
 }

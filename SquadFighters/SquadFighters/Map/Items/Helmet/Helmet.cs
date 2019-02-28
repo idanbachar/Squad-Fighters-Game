@@ -15,10 +15,10 @@ namespace SquadFighters
         public int Armor;
         public HelmetType ItemType;
 
-        public Helmet(Vector2 itemPosition, HelmetType itemType) : base(itemPosition)
+        public Helmet(Vector2 itemPosition, HelmetType itemType, int capacity) : base(itemPosition)
         {
             ItemType = itemType;
-            Armor = 50;
+            Armor = capacity;
         }
 
         public override void LoadContent(ContentManager content)
@@ -50,7 +50,7 @@ namespace SquadFighters
 
         public int GetArmor()
         {
-            return new Random().Next(15, 43);
+            return Armor;
         }
 
         public override void Draw(SpriteBatch spriteBatch)

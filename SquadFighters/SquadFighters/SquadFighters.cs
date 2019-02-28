@@ -29,7 +29,7 @@ namespace SquadFighters
 
         //Online
         private Thread ReceiveThread;
-        private Thread SendThread;
+        private Thread SendPlayerDataThread;
         private string ServerIp;
         private int ServerPort;
         public string[] ReceivedDataArray;
@@ -56,7 +56,7 @@ namespace SquadFighters
             MainMenu = new MainMenu(2);
             MainMenu.LoadContent(Content);
 
-            Map = new Map(new Rectangle(0, 0, 10000, 10000), Content);
+            Map = new Map(new Rectangle(0, 0, 1000, 1000), Content);
         }
 
         public void ConnectToServer(string serverIp, int serverPort)
@@ -98,7 +98,9 @@ namespace SquadFighters
                 NetworkStream stream = Client.GetStream();
                 byte[] bytes = Encoding.ASCII.GetBytes(data);
                 stream.Write(bytes, 0, bytes.Length);
+                stream.Flush();
 
+                Thread.Sleep(30);
             }
             catch (Exception)
             {
@@ -106,7 +108,7 @@ namespace SquadFighters
             }
         }
 
-        public void SendDataToServer()
+        public void SendPlayerDataToServer()
         {
             while (true)
             {
@@ -116,13 +118,15 @@ namespace SquadFighters
                     NetworkStream stream = Client.GetStream();
                     byte[] bytes = Encoding.ASCII.GetBytes(data);
                     stream.Write(bytes, 0, bytes.Length);
+                    stream.Flush();
+
+
+                    Thread.Sleep(200);
                 }
                 catch (Exception)
                 {
 
                 }
-
-                Thread.Sleep(50);
             }
         }
         
@@ -131,7 +135,7 @@ namespace SquadFighters
             try
             {
                 ReceiveThread.Abort();
-                SendThread.Abort();
+                SendPlayerDataThread.Abort();
                 Client.Close();
             }
             catch (Exception)
@@ -161,6 +165,7 @@ namespace SquadFighters
                         if (CurrentConnectedPlayerName != Player.Name)
                         {
                             AddPlayer(CurrentConnectedPlayerName);
+                            Console.WriteLine(ReceivedDataString);
                         }
                     }
                     else if (ReceivedDataString.Contains("PlayerName"))
@@ -202,7 +207,17 @@ namespace SquadFighters
                         int type = int.Parse(ReceivedDataArray[2].Split('=')[1].ToString());
                         float itemX = float.Parse(ReceivedDataArray[3].Split('=')[1].ToString());
                         float itemY = float.Parse(ReceivedDataArray[4].Split('=')[1].ToString());
-                        Map.GenerateItem(ItemCategory, type, itemX, itemY);
+                        int itemCapacity = int.Parse(ReceivedDataArray[5].Split('=')[1].ToString());
+                        string itemKey = ReceivedDataArray[6].Split('=')[1].ToString();
+                        Map.AddItem(ItemCategory, type, itemX, itemY, itemCapacity, itemKey);
+
+                        Console.WriteLine(ReceivedDataString);
+                    }
+                    else if (ReceivedDataString.Contains("Remove Item"))
+                    {
+                        string itemKey = ReceivedDataArray[1];
+                        Map.Items.Remove(itemKey);
+                        Console.WriteLine(ReceivedDataString);
                     }
                     else if (ReceivedDataString.Contains("Load Items Completed"))
                     {
@@ -212,17 +227,79 @@ namespace SquadFighters
 
                         Thread.Sleep(500);
 
-                        SendThread = new Thread(() => SendDataToServer());
-                        SendThread.Start();
+                        SendPlayerDataThread = new Thread(() => SendPlayerDataToServer());
+                        SendPlayerDataThread.Start();
+
+                        Console.WriteLine(ReceivedDataString);
                     }
-
-                    Console.WriteLine(ReceivedDataString);
-
+ 
                     Thread.Sleep(50);
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
+                }
+            }
+        }
+
+        public void CheckItemsIntersects(Dictionary<string, Item> items)
+        {
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (Player.Rectangle.Intersects(items.ElementAt(i).Value.Rectangle))
+                {
+                    if (items.ElementAt(i).Value is Food)
+                    {
+                        if (Player.Health < 100)
+                        {
+                            int heal = ((Food)(items.ElementAt(i).Value)).GetHealth();
+                            Player.Heal(heal);
+                            string key = items.ElementAt(i).Key;
+
+                            items.Remove(key);
+                            SendOneDataToServer("Remove Item," + key);
+                        }
+                    }
+                    else if (items.ElementAt(i).Value is GunAmmo)
+                    {
+                        int capacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity;
+
+                        if (Player.BulletsCapacity + capacity <= Player.MaxBulletsCapacity)
+                        {
+                            Player.BulletsCapacity += capacity;
+                            string key = items.ElementAt(i).Key;
+
+                            items.Remove(key);
+                            SendOneDataToServer("Remove Item," + key);
+                        }
+                        else
+                        {
+                            if (Player.BulletsCapacity + capacity > Player.MaxBulletsCapacity)
+                            {
+                                ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= Player.MaxBulletsCapacity - Player.BulletsCapacity;
+                                Player.BulletsCapacity = Player.MaxBulletsCapacity;
+                            }
+                        }
+                    }
+                    else if (items.ElementAt(i).Value is Shield)
+                    {
+                        if (Player.Shield == null || Player.Shield.ItemType < ((Shield)items.ElementAt(i).Value).ItemType)
+                        {
+                            Player.Shield = items.ElementAt(i).Value as Shield;
+                            Player.IsShield = true;
+
+                            string key = items.ElementAt(i).Key;
+                            items.Remove(key);
+                            SendOneDataToServer("Remove Item," + key);
+                        }
+
+                    }
+                    else if (items.ElementAt(i).Value is Helmet)
+                    {
+                        string key = items.ElementAt(i).Key;
+                        items.Remove(key);
+                        SendOneDataToServer("Remove Item," + key);
+                    }
                 }
             }
         }
@@ -255,7 +332,9 @@ namespace SquadFighters
             if (GameState == GameState.Game)
             {
                 Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
-                Player.Update(Map);
+                Player.Update();
+
+                CheckItemsIntersects(Map.Items);
 
 
                 foreach (KeyValuePair<string, Player> otherPlayer in Players)
@@ -293,7 +372,7 @@ namespace SquadFighters
 
                 for (int i = 0; i < Map.Items.Count; i++)
                 {
-                    Map.Items[i].Update();
+                    Map.Items.ElementAt(i).Value.Update();
                 }
             }
             else if(GameState == GameState.MainMenu)
@@ -328,8 +407,8 @@ namespace SquadFighters
 
                 for (int i = 0; i < Map.Items.Count; i++)
                 {
-                    Map.Items[i].Draw(spriteBatch);
-                    spriteBatch.DrawString(HUD.ItemsCapacityFont, Map.Items[i].ToString(), new Vector2(Map.Items[i].Position.X + 15, Map.Items[i].Position.Y - 30), Color.Black);
+                    Map.Items.ElementAt(i).Value.Draw(spriteBatch);
+                    spriteBatch.DrawString(HUD.ItemsCapacityFont, Map.Items.ElementAt(i).Value.ToString(), new Vector2(Map.Items.ElementAt(i).Value.Position.X + 15, Map.Items.ElementAt(i).Value.Position.Y - 30), Color.Black);
 
                 }
 

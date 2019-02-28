@@ -13,7 +13,7 @@ namespace SquadFighters
     public class Map
     {
         public static Rectangle Rectangle;
-        public List<Item> Items;
+        public Dictionary<string, Item> Items;
         private ContentManager content;
         private Random Random;
 
@@ -26,37 +26,36 @@ namespace SquadFighters
                                       mapRectangle.Width,
                                       mapRectangle.Height);
 
-
             Random = new Random();
-            Items = new List<Item>();
+            Items = new Dictionary<string, Item>();
 
         }
 
-        public void GenerateItem(ItemCategory itemCategory, int type, float itemX, float itemY)
+        public void AddItem(ItemCategory itemCategory, int itemType, float itemX, float itemY, int itemCapacity, string itemKey)
         {
-            Item item = new GunAmmo(new Vector2(0,0), AmmoType.Bullet);
+            Item item = new GunAmmo(new Vector2(0,0), AmmoType.Bullet, 20);
 
             switch (itemCategory)
             {
                 case ItemCategory.Ammo:
-                    item = new GunAmmo(new Vector2(itemX, itemY), (AmmoType)type);
+                    item = new GunAmmo(new Vector2(itemX, itemY), (AmmoType)itemType, itemCapacity);
                     item.LoadContent(SquadFighters.ContentManager);
                     break;
                 case ItemCategory.Food:
-                    item = new Food(new Vector2(itemX, itemY), (FoodType) type);
+                    item = new Food(new Vector2(itemX, itemY), (FoodType) itemType, itemCapacity);
                     item.LoadContent(SquadFighters.ContentManager);
                     break;
                 case ItemCategory.Shield:
-                    item = new Shield(new Vector2(itemX, itemY), (ShieldType) type);
+                    item = new Shield(new Vector2(itemX, itemY), (ShieldType) itemType, itemCapacity);
                     item.LoadContent(SquadFighters.ContentManager);
                     break;
                 case ItemCategory.Helmet:
-                    item = new Helmet(new Vector2(itemX, itemY), (HelmetType) type);
+                    item = new Helmet(new Vector2(itemX, itemY), (HelmetType) itemType, itemCapacity);
                     item.LoadContent(SquadFighters.ContentManager);
                     break;
             }
 
-            Items.Add(item);
+            Items.Add(itemKey,item);
         }
 
         public Vector2 GeneratePosition()

@@ -15,9 +15,9 @@ namespace SquadFighters
         public int Capacity;
         public AmmoType ItemType;
 
-        public GunAmmo(Vector2 itemPosition, AmmoType ammoType): base(itemPosition)
+        public GunAmmo(Vector2 itemPosition, AmmoType ammoType, int capacity): base(itemPosition)
         {
-            Capacity = 20;
+            Capacity = capacity;
             ItemType = ammoType;
         }
 

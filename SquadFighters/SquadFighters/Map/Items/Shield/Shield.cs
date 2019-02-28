@@ -16,10 +16,11 @@ namespace SquadFighters
         public ShieldType ItemType;
         public ShieldBar[] ShieldBars;
 
-        public Shield(Vector2 itemPosition, ShieldType itemType) : base(itemPosition)
+        public Shield(Vector2 itemPosition, ShieldType itemType, int capacity) : base(itemPosition)
         {
             ItemType = itemType;
             ShieldBars = new ShieldBar[3];
+            Armor = capacity;
         }
 
         public override void LoadContent(ContentManager content)
@@ -57,7 +58,7 @@ namespace SquadFighters
 
         public int GetArmor()
         {
-            return new Random().Next(15, 43);
+            return Armor;
         }
 
         public override void Draw(SpriteBatch spriteBatch)

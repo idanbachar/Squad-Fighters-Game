@@ -35,8 +35,8 @@ namespace SquadFighters
             SetDefaultHealth();
             SetDefaultPosition();
             Rotation = 0;
-            MaxBulletsCapacity = 500;
-            BulletsCapacity = 500;
+            MaxBulletsCapacity = 300;
+            BulletsCapacity = 5;
             Bullets = new List<Bullet>();
             IsShoot = false;
             IsShield = false;
@@ -48,11 +48,10 @@ namespace SquadFighters
             Texture = content.Load<Texture2D>("images/player/player");
         }
 
-        public void Update(Map map)
+        public void Update()
         {
             UpdateRectangle();
             CheckKeyboardMovement();
-            CheckItemsIntersects(map.Items);
         }
 
         public void UpdateRectangle()
@@ -60,54 +59,9 @@ namespace SquadFighters
             Rectangle = new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height);
         }
 
-        public void CheckItemsIntersects(List<Item> items)
+        public void Heal(int heal)
         {
-            for (int i = 0; i < items.Count; i++)
-            {
-                if(Rectangle.Intersects(items[i].Rectangle))
-                {
-                    if (items[i] is Food)
-                    {
-                        if (Health < 100)
-                        {
-                            Health += ((Food)(items[i])).GetHealth();
-                            //items.RemoveAt(i);
-                        }
-                    }
-                    else if (items[i] is GunAmmo)
-                    {
-                        int capacity = ((GunAmmo)(items[i])).Capacity;
-
-                        if (BulletsCapacity + capacity <= MaxBulletsCapacity)
-                        {
-                            BulletsCapacity += ((GunAmmo)(items[i])).Capacity;
-                            //items.RemoveAt(i);
-                        }
-                        else
-                        {
-                            if (BulletsCapacity + capacity > MaxBulletsCapacity)
-                            {
-                                ((GunAmmo)(items[i])).Capacity -= MaxBulletsCapacity - BulletsCapacity;
-                                BulletsCapacity = MaxBulletsCapacity;
-                            }
-                        }
-                    }
-                    else if (items[i] is Shield)
-                    {
-                        if (Shield == null || Shield.ItemType < ((Shield)items[i]).ItemType)
-                        {
-                            Shield = items[i] as Shield;
-                            IsShield = true;
-                            //items.RemoveAt(i);
-                        }
-
-                    }
-                    else if (items[i] is Helmet)
-                    {
-                        //items.RemoveAt(i);
-                    }
-                }
-            }
+            Health = (Health + heal) > 100 ? 100 : Health += heal;
         }
 
         public void Hit(int damage)
