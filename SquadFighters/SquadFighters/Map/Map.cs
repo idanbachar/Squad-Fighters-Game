@@ -13,13 +13,14 @@ namespace SquadFighters
     public class Map
     {
         public static Rectangle Rectangle;
+        public Background Background;
         public Dictionary<string, Item> Items;
-        private ContentManager content;
+        public List<Water> WaterObjects;
         private Random Random;
-
-        public Map(Rectangle mapRectangle, ContentManager contentManager)
+        
+        public Map(Rectangle mapRectangle)
         {
-            content = contentManager;
+            Background = new Background(new Vector2(0, 0));
 
             Rectangle = new Rectangle(mapRectangle.X,
                                       mapRectangle.Y,
@@ -27,8 +28,16 @@ namespace SquadFighters
                                       mapRectangle.Height);
 
             Random = new Random();
-            Items = new Dictionary<string, Item>();
 
+            Items = new Dictionary<string, Item>();
+            WaterObjects = new List<Water>();
+
+        }
+
+        public void LoadContent(ContentManager content)
+        {
+            Background.LoadContent(content);
+            GenerateWaterObjects(content);
         }
 
         public void AddItem(ItemCategory itemCategory, int itemType, float itemX, float itemY, int itemCapacity, string itemKey)
@@ -56,6 +65,39 @@ namespace SquadFighters
             }
 
             Items.Add(itemKey,item);
+        }
+
+        public void GenerateWaterObjects(ContentManager content)
+        {
+            Water water1 = new Water(new Vector2(500, 600), WaterShape.Medium);
+            water1.LoadContent(content);
+
+            Water water2 = new Water(new Vector2(1200, 1200), WaterShape.Rectangle);
+            water2.LoadContent(content);
+
+            Water water3 = new Water(new Vector2(1000, 3000), WaterShape.Tall);
+            water3.LoadContent(content);
+
+            Water water4 = new Water(new Vector2(3500, 900), WaterShape.Tall);
+            water4.LoadContent(content);
+
+            Water water5 = new Water(new Vector2(2200, 4200), WaterShape.Rectangle);
+            water5.LoadContent(content);
+
+
+            WaterObjects.Add(water1);
+            WaterObjects.Add(water2);
+            WaterObjects.Add(water3);
+            WaterObjects.Add(water4);
+            WaterObjects.Add(water5);
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            Background.Draw(spriteBatch);
+
+            foreach (Water water in WaterObjects)
+                water.Draw(spriteBatch);
         }
 
         public Vector2 GeneratePosition()

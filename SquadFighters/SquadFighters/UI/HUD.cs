@@ -16,9 +16,11 @@ namespace SquadFighters
         public SpriteFont ItemsCapacityFont;
         public SpriteFont LoadingFont;
         public SpriteFont GameTitleFont;
+        public List<PlayerCard> PlayersCards;
 
         public HUD()
         {
+            PlayersCards = new List<PlayerCard>();
         }
 
         public void LoadContent(ContentManager content)
@@ -29,16 +31,7 @@ namespace SquadFighters
             LoadingFont = content.Load<SpriteFont>("fonts/loading");
             GameTitleFont = content.Load<SpriteFont>("fonts/gameTitle");
         }
-
-        public void DrawPlayerName(SpriteBatch spriteBatch, Player player)
-        {
-            spriteBatch.DrawString(PlayerNameFont, player.Name + "(x=" + (int)player.Position.X + ",y=" + (int)player.Position.Y + ")", new Vector2(0, 0), Color.Black);
-        }
-
-        public void DrawPlayerHealth(SpriteBatch spriteBatch, Player player)
-        {
-            spriteBatch.DrawString(PlayerNameFont, "HP: " + player.Health, new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth - 100, 0), Color.Red);
-        }
+ 
 
         public void DrawPlayerBullets(SpriteBatch spriteBatch, Player player)
         {
@@ -73,8 +66,11 @@ namespace SquadFighters
 
         public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)
         {
-            DrawPlayerName(spriteBatch, player);
-            DrawPlayerHealth(spriteBatch, player);
+            foreach(PlayerCard playerCard in PlayersCards)
+            {
+                playerCard.Draw(spriteBatch);
+            }
+
             DrawPlayerBullets(spriteBatch, player);
         }
     }

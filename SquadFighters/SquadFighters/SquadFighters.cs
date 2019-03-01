@@ -14,9 +14,9 @@ namespace SquadFighters
     public class SquadFighters : Game
     {
         public static GraphicsDeviceManager Graphics;
-        SpriteBatch spriteBatch;
+        private SpriteBatch spriteBatch;
 
-        public static Player Player;
+        public Player Player;
         private Camera Camera;
         private MainMenu MainMenu;
         private GameState GameState;
@@ -34,7 +34,6 @@ namespace SquadFighters
         private int ServerPort;
         public string[] ReceivedDataArray;
         private int MaxItems;
-        private int CurrentItemsLoaded;
 
         public SquadFighters()
         {
@@ -54,11 +53,6 @@ namespace SquadFighters
         {
             base.Initialize();
             ContentManager = Content;
-
-            MainMenu = new MainMenu(2);
-            MainMenu.LoadContent(Content);
-
-            Map = new Map(new Rectangle(0, 0, 5000, 5000), Content);
         }
 
         public void ConnectToServer(string serverIp, int serverPort)
@@ -80,12 +74,22 @@ namespace SquadFighters
             Player player = new Player(CurrentConnectedPlayerName);
             player.LoadContent(Content);
             Players.Add(CurrentConnectedPlayerName, player);
+
+            PlayerCard playerCard = new PlayerCard(player.Name, player.Health);
+            playerCard.LoadContent(Content);
+
+            HUD.PlayersCards.Add(playerCard);
         }
 
         public void JoinGame()
         {
             Player = new Player("idan" + new Random().Next(1000));
             Player.LoadContent(Content);
+
+            PlayerCard playerCard = new PlayerCard(Player.Name, Player.Health);
+            playerCard.LoadContent(Content);
+
+            HUD.PlayersCards.Add(playerCard);
 
             ConnectToServer(ServerIp, ServerPort);
 
@@ -180,6 +184,9 @@ namespace SquadFighters
                         bool playerIsShoot = bool.Parse(ReceivedDataArray[5].Split('=')[1]);
                         float playerDirectionX = float.Parse(ReceivedDataArray[6].Split('=')[1]);
                         float playerDirectionY = float.Parse(ReceivedDataArray[7].Split('=')[1]);
+                        bool playerIsSwimming = bool.Parse(ReceivedDataArray[8].Split('=')[1]);
+                        bool playerIsShield = bool.Parse(ReceivedDataArray[9].Split('=')[1]);
+                        ShieldType playerShieldType = (ShieldType)int.Parse(ReceivedDataArray[10].Split('=')[1]);
 
                         if (Players.ContainsKey(playerName))
                         {
@@ -191,6 +198,11 @@ namespace SquadFighters
                             Players[playerName].IsShoot = playerIsShoot;
                             Players[playerName].Direction.X = playerDirectionX;
                             Players[playerName].Direction.Y = playerDirectionY;
+                            Players[playerName].IsSwimming = playerIsSwimming;
+                            Players[playerName].IsShield = playerIsShield;
+
+                            Players[playerName].Shield = new Shield(new Vector2(0, 0), playerShieldType, 100);
+                            Players[playerName].Shield.LoadContent(Content);
 
                             if (playerIsShoot)
                             {
@@ -258,67 +270,74 @@ namespace SquadFighters
 
         public void CheckItemsIntersects(Dictionary<string, Item> items)
         {
-            for (int i = 0; i < items.Count; i++)
+            try
             {
-                if (Player.Rectangle.Intersects(items.ElementAt(i).Value.Rectangle))
+                for (int i = 0; i < items.Count; i++)
                 {
-                    if (items.ElementAt(i).Value is Food)
+                    if (Player.Rectangle.Intersects(items.ElementAt(i).Value.Rectangle))
                     {
-                        if (Player.Health < 100)
+                        if (items.ElementAt(i).Value is Food)
                         {
-                            int heal = ((Food)(items.ElementAt(i).Value)).GetHealth();
-                            Player.Heal(heal);
-                            string key = items.ElementAt(i).Key;
-
-                            items.Remove(key);
-                            SendOneDataToServer("Remove Item," + key);
-                        }
-                    }
-                    else if (items.ElementAt(i).Value is GunAmmo)
-                    {
-                        int capacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity;
-
-                        if (Player.BulletsCapacity + capacity <= Player.MaxBulletsCapacity)
-                        {
-                            Player.BulletsCapacity += capacity;
-                            string key = items.ElementAt(i).Key;
-
-                            items.Remove(key);
-                            SendOneDataToServer("Remove Item," + key);
-                        }
-                        else
-                        {
-                            if (Player.BulletsCapacity + capacity > Player.MaxBulletsCapacity && Player.BulletsCapacity != Player.MaxBulletsCapacity)
+                            if (Player.Health < 100)
                             {
-                                ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= Player.MaxBulletsCapacity - Player.BulletsCapacity;
-                                Player.BulletsCapacity = Player.MaxBulletsCapacity;
-
-                                int itemCapacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity;
+                                int heal = ((Food)(items.ElementAt(i).Value)).GetHealth();
+                                Player.Heal(heal);
                                 string key = items.ElementAt(i).Key;
-                                SendOneDataToServer("Update Item Capacity," + itemCapacity + "," + key);
+
+                                items.Remove(key);
+                                SendOneDataToServer("Remove Item," + key);
                             }
                         }
-                    }
-                    else if (items.ElementAt(i).Value is Shield)
-                    {
-                        if (Player.Shield == null || Player.Shield.ItemType < ((Shield)items.ElementAt(i).Value).ItemType)
+                        else if (items.ElementAt(i).Value is GunAmmo)
                         {
-                            Player.Shield = items.ElementAt(i).Value as Shield;
-                            Player.IsShield = true;
+                            int capacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity;
 
+                            if (Player.BulletsCapacity + capacity <= Player.MaxBulletsCapacity)
+                            {
+                                Player.BulletsCapacity += capacity;
+                                string key = items.ElementAt(i).Key;
+
+                                items.Remove(key);
+                                SendOneDataToServer("Remove Item," + key);
+                            }
+                            else
+                            {
+                                if (Player.BulletsCapacity + capacity > Player.MaxBulletsCapacity && Player.BulletsCapacity != Player.MaxBulletsCapacity)
+                                {
+                                    ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= Player.MaxBulletsCapacity - Player.BulletsCapacity;
+                                    Player.BulletsCapacity = Player.MaxBulletsCapacity;
+
+                                    int itemCapacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity;
+                                    string key = items.ElementAt(i).Key;
+                                    SendOneDataToServer("Update Item Capacity," + itemCapacity + "," + key);
+                                }
+                            }
+                        }
+                        else if (items.ElementAt(i).Value is Shield)
+                        {
+                            if (Player.Shield == null || Player.Shield.ItemType < ((Shield)items.ElementAt(i).Value).ItemType)
+                            {
+                                Player.Shield = items.ElementAt(i).Value as Shield;
+                                Player.IsShield = true;
+
+                                string key = items.ElementAt(i).Key;
+                                items.Remove(key);
+                                SendOneDataToServer("Remove Item," + key);
+                            }
+
+                        }
+                        else if (items.ElementAt(i).Value is Helmet)
+                        {
                             string key = items.ElementAt(i).Key;
                             items.Remove(key);
                             SendOneDataToServer("Remove Item," + key);
                         }
-
-                    }
-                    else if (items.ElementAt(i).Value is Helmet)
-                    {
-                        string key = items.ElementAt(i).Key;
-                        items.Remove(key);
-                        SendOneDataToServer("Remove Item," + key);
                     }
                 }
+            }
+            catch (Exception)
+            {
+
             }
         }
 
@@ -332,11 +351,28 @@ namespace SquadFighters
             HUD.LoadContent(Content);
 
             Random rndItem = new Random();
+
+            MainMenu = new MainMenu(2);
+            MainMenu.LoadContent(Content);
+
+            Map = new Map(new Rectangle(0, 0, 5000, 5000));
+            Map.LoadContent(Content);
         }
 
         protected override void UnloadContent()
         {
 
+        }
+
+        public int GetHealthByPlayerName(string name)
+        {
+            foreach (KeyValuePair<string, Player> otherPlayer in Players)
+                if (name == otherPlayer.Key) return otherPlayer.Value.Health;
+
+            if (name == Player.Name)
+                return Player.Health;
+
+            return 0;
         }
 
         protected override void Update(GameTime gameTime)
@@ -350,10 +386,31 @@ namespace SquadFighters
             if (GameState == GameState.Game)
             {
                 Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
-                Player.Update();
+                Player.Update(Map);
 
                 CheckItemsIntersects(Map.Items);
 
+                for(int i = 0; i < HUD.PlayersCards.Count; i++)
+                {
+                    string playerName = HUD.PlayersCards[i].PlayerName;
+
+                    try
+                    {
+                        //if (Players.Count > 0)
+                        //    if (Players[playerName] != null && Players[playerName].IsShield)
+                        //    {
+                        //        HUD.PlayersCards[i].Shield = Players[playerName].Shield;
+                        //    }
+
+                        HUD.PlayersCards[i].SetPosition(new Vector2(HUD.PlayersCards[i].CardPosition.X, HUD.PlayersCards[i].CardRectangle.Height * i));
+                        HUD.PlayersCards[i].HealthBar.SetHealth(GetHealthByPlayerName(playerName));
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+                  
+                }
 
                 foreach (KeyValuePair<string, Player> otherPlayer in Players)
                 {
@@ -432,6 +489,8 @@ namespace SquadFighters
             {
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, Camera.Transform);
 
+                Map.Draw(spriteBatch);
+
                 try
                 {
                     for (int i = 0; i < Map.Items.Count; i++)
@@ -452,13 +511,15 @@ namespace SquadFighters
 
                 foreach (KeyValuePair<string, Player> otherPlayer in Players)
                 {
-                    otherPlayer.Value.Draw(spriteBatch);
+                    if(!otherPlayer.Value.IsSwimming)
+                        otherPlayer.Value.Draw(spriteBatch);
 
                     for (int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
                         otherPlayer.Value.Bullets[i].Draw(spriteBatch);
 
                     HUD.DrawPlayersInfo(spriteBatch, otherPlayer.Value);
                 }
+
 
                 Player.Draw(spriteBatch);
                 HUD.DrawPlayerInfo(spriteBatch, Player);
