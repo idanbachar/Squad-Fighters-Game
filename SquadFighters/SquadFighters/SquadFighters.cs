@@ -222,6 +222,17 @@ namespace SquadFighters
                         Map.Items.Remove(itemKey);
                         Console.WriteLine(ReceivedDataString);
                     }
+                    else if (ReceivedDataString.Contains("Update Item Capacity"))
+                    {
+                        string itemKey = ReceivedDataArray[2];
+                        int receivedCapacity = int.Parse(ReceivedDataArray[1]);
+                        if (Map.Items[itemKey] is GunAmmo)
+                        {
+                            ((GunAmmo)(Map.Items[itemKey])).Capacity = receivedCapacity;
+                        }
+
+                        Console.WriteLine(ReceivedDataString);
+                    }
                     else if (ReceivedDataString.Contains("Load Items Completed"))
                     {
                         GameState = GameState.Game;
@@ -277,10 +288,14 @@ namespace SquadFighters
                         }
                         else
                         {
-                            if (Player.BulletsCapacity + capacity > Player.MaxBulletsCapacity)
+                            if (Player.BulletsCapacity + capacity > Player.MaxBulletsCapacity && Player.BulletsCapacity != Player.MaxBulletsCapacity)
                             {
                                 ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= Player.MaxBulletsCapacity - Player.BulletsCapacity;
                                 Player.BulletsCapacity = Player.MaxBulletsCapacity;
+
+                                int itemCapacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity;
+                                string key = items.ElementAt(i).Key;
+                                SendOneDataToServer("Update Item Capacity," + itemCapacity + "," + key);
                             }
                         }
                     }
@@ -373,9 +388,16 @@ namespace SquadFighters
                     }
                 }
 
-                for (int i = 0; i < Map.Items.Count; i++)
+                try
                 {
-                    Map.Items.ElementAt(i).Value.Update();
+                    for (int i = 0; i < Map.Items.Count; i++)
+                    {
+                        Map.Items.ElementAt(i).Value.Update();
+                    }
+                }
+                catch (Exception)
+                {
+
                 }
             }
             else if(GameState == GameState.MainMenu)
