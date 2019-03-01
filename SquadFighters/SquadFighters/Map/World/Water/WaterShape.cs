@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace SquadFighters
 {
-    public enum ShieldType
+    public enum WaterShape
     {
-        None,
-        Shield_Level_1,
-        Shield_Level_2,
-        Shield_Rare,
-        Shield_Legendery
+        Medium,
+        Tall,
+        Rectangle
     }
 }

@@ -28,6 +28,7 @@ namespace SquadFighters
         public List<Bullet> Bullets;
         public Shield Shield;
         public bool IsShield;
+        public bool IsSwimming;
 
         public Player(string playerName)
         {
@@ -40,18 +41,22 @@ namespace SquadFighters
             Bullets = new List<Bullet>();
             IsShoot = false;
             IsShield = false;
+            IsSwimming = false;
         }
 
         public void LoadContent(ContentManager content)
         {
             Content = content;
             Texture = content.Load<Texture2D>("images/player/player");
+            Shield = new Shield(new Vector2(0, 0), ShieldType.None, 100);
+            Shield.LoadContent(content);
         }
 
-        public void Update()
+        public void Update(Map map)
         {
             UpdateRectangle();
             CheckKeyboardMovement();
+            IsSwimming = IsWaterIntersects(map.WaterObjects);
         }
 
         public void UpdateRectangle()
@@ -74,6 +79,17 @@ namespace SquadFighters
             Health = 100;
         }
 
+        public bool IsWaterIntersects(List<Water> waterObjects)
+        {
+            foreach (Water water in waterObjects)
+            {
+                if (Rectangle.Intersects(water.Rectangle))
+                    return true;
+            }
+
+            return false;
+        }
+
         public void CheckKeyboardMovement()
         {
             Direction = new Vector2((float)Math.Cos(Rotation) * 3f, (float)Math.Sin(Rotation) * 3f);
@@ -83,7 +99,7 @@ namespace SquadFighters
                 Speed = Direction;
                 Position += Speed;
             }
-           
+
             if (Keyboard.GetState().IsKeyDown(Keys.D))
                 Rotation += 0.05f;
             else if (Keyboard.GetState().IsKeyDown(Keys.A))
@@ -98,6 +114,9 @@ namespace SquadFighters
             {
                 IsShoot = false;
             }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.R))
+                Hit(5);
         }
 
         public void Shoot()
@@ -113,18 +132,18 @@ namespace SquadFighters
 
         private void SetDefaultPosition()
         {
-            Position = new Vector2(100,100);
+            Position = new Vector2(100, 100);
             Rectangle = new Rectangle((int)Position.X, (int)Position.Y, 0, 0);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Texture, Position, null, Color.White, Rotation, new Vector2(Texture.Width / 2, Texture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
+            spriteBatch.Draw(Texture, Position, null, IsSwimming ? Color.LightSkyBlue :Color.White, Rotation, new Vector2(Texture.Width / 2, Texture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
         }
 
         public override string ToString()
         {
-            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",";
+            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)Shield.ItemType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",";
         }
     }
 }
