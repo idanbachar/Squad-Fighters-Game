@@ -467,7 +467,11 @@ namespace SquadFighters
                     {
                         GameState = GameState.Loading;
                         JoinGame();
-                    } 
+                    }
+                    if (MainMenu.Buttons[1].Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
+                    {
+                        Exit();
+                    }
                 }
 
                 if(Mouse.GetState().LeftButton == ButtonState.Released)
