@@ -36,7 +36,7 @@ namespace SquadFighters
             SetDefaultPosition();
             Rotation = 0;
             MaxBulletsCapacity = 30;
-            BulletsCapacity = 0;
+            BulletsCapacity = 25;
             Bullets = new List<Bullet>();
             IsShoot = false;
             IsShield = false;
