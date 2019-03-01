@@ -39,8 +39,8 @@ namespace SquadFighters
         public SquadFighters()
         {
             Graphics = new GraphicsDeviceManager(this);
-            Graphics.PreferredBackBufferWidth = 500;
-            Graphics.PreferredBackBufferHeight = 700;
+            Graphics.PreferredBackBufferWidth = 450;
+            Graphics.PreferredBackBufferHeight = 650;
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             Players = new Dictionary<string, Player>();
@@ -58,7 +58,7 @@ namespace SquadFighters
             MainMenu = new MainMenu(2);
             MainMenu.LoadContent(Content);
 
-            Map = new Map(new Rectangle(0, 0, 1000, 1000), Content);
+            Map = new Map(new Rectangle(0, 0, 5000, 5000), Content);
         }
 
         public void ConnectToServer(string serverIp, int serverPort)
