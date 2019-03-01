@@ -17,6 +17,7 @@ namespace SquadFighters
         public SpriteFont LoadingFont;
         public SpriteFont GameTitleFont;
         public List<PlayerCard> PlayersCards;
+        public PlayerCard PlayerCard;
 
         public HUD()
         {
@@ -30,12 +31,6 @@ namespace SquadFighters
             ItemsCapacityFont = content.Load<SpriteFont>("fonts/items_capacity_font");
             LoadingFont = content.Load<SpriteFont>("fonts/loading");
             GameTitleFont = content.Load<SpriteFont>("fonts/gameTitle");
-        }
- 
-
-        public void DrawPlayerBullets(SpriteBatch spriteBatch, Player player)
-        {
-            spriteBatch.DrawString(PlayerBulletsFont, "Ammo: " + player.BulletsCapacity.ToString() + "/" + player.MaxBulletsCapacity.ToString(), new Vector2(0, SquadFighters.Graphics.PreferredBackBufferHeight - 50), Color.White);
         }
 
         public void DrawPlayersInfo(SpriteBatch spriteBatch, Player player)
@@ -66,12 +61,10 @@ namespace SquadFighters
 
         public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)
         {
-            foreach(PlayerCard playerCard in PlayersCards)
-            {
-                playerCard.Draw(spriteBatch);
-            }
+            PlayerCard.Draw(spriteBatch);
 
-            DrawPlayerBullets(spriteBatch, player);
+            foreach (PlayerCard playerCard in PlayersCards)
+                playerCard.Draw(spriteBatch);
         }
     }
 }

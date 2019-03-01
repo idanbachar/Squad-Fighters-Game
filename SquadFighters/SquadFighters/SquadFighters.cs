@@ -75,7 +75,7 @@ namespace SquadFighters
             player.LoadContent(Content);
             Players.Add(CurrentConnectedPlayerName, player);
 
-            PlayerCard playerCard = new PlayerCard(player.Name, player.Health);
+            PlayerCard playerCard = new PlayerCard(player.Name, player.Health, player.BulletsCapacity + "/" + player.MaxBulletsCapacity);
             playerCard.LoadContent(Content);
 
             HUD.PlayersCards.Add(playerCard);
@@ -86,11 +86,9 @@ namespace SquadFighters
             Player = new Player("idan" + new Random().Next(1000));
             Player.LoadContent(Content);
 
-            PlayerCard playerCard = new PlayerCard(Player.Name, Player.Health);
-            playerCard.LoadContent(Content);
-
-            HUD.PlayersCards.Add(playerCard);
-
+            HUD.PlayerCard = new PlayerCard(Player.Name, Player.Health, Player.BulletsCapacity + "/" + Player.MaxBulletsCapacity);
+            HUD.PlayerCard.LoadContent(Content);
+ 
             ConnectToServer(ServerIp, ServerPort);
 
             ReceiveThread = new Thread(ReceiveDataFromServer);
@@ -187,6 +185,7 @@ namespace SquadFighters
                         bool playerIsSwimming = bool.Parse(ReceivedDataArray[8].Split('=')[1]);
                         bool playerIsShield = bool.Parse(ReceivedDataArray[9].Split('=')[1]);
                         ShieldType playerShieldType = (ShieldType)int.Parse(ReceivedDataArray[10].Split('=')[1]);
+                        int playerBulletsCapacity = int.Parse(ReceivedDataArray[11].Split('=')[1]);
 
                         if (Players.ContainsKey(playerName))
                         {
@@ -200,9 +199,16 @@ namespace SquadFighters
                             Players[playerName].Direction.Y = playerDirectionY;
                             Players[playerName].IsSwimming = playerIsSwimming;
                             Players[playerName].IsShield = playerIsShield;
+                            Players[playerName].BulletsCapacity = playerBulletsCapacity;
 
                             Players[playerName].Shield = new Shield(new Vector2(0, 0), playerShieldType, 100);
                             Players[playerName].Shield.LoadContent(Content);
+
+                            for(int i = 0; i < HUD.PlayersCards.Count; i++)
+                            {
+                                if (HUD.PlayersCards[i].PlayerName == playerName && (HUD.PlayersCards[i].Shield.ItemType == ShieldType.None || HUD.PlayersCards[i].Shield.ItemType != playerShieldType))
+                                    HUD.PlayersCards[i].Shield = Players[playerName].Shield;
+                            }
 
                             if (playerIsShoot)
                             {
@@ -390,26 +396,18 @@ namespace SquadFighters
 
                 CheckItemsIntersects(Map.Items);
 
+                HUD.PlayerCard.SetPosition(new Vector2(0, 0));
+                HUD.PlayerCard.HealthBar.SetHealth(Player.Health);
+                HUD.PlayerCard.AmmoString = Player.BulletsCapacity + "/" + Player.MaxBulletsCapacity;
+
                 for(int i = 0; i < HUD.PlayersCards.Count; i++)
                 {
                     string playerName = HUD.PlayersCards[i].PlayerName;
 
-                    try
-                    {
-                        //if (Players.Count > 0)
-                        //    if (Players[playerName] != null && Players[playerName].IsShield)
-                        //    {
-                        //        HUD.PlayersCards[i].Shield = Players[playerName].Shield;
-                        //    }
-
-                        HUD.PlayersCards[i].SetPosition(new Vector2(HUD.PlayersCards[i].CardPosition.X, HUD.PlayersCards[i].CardRectangle.Height * i));
-                        HUD.PlayersCards[i].HealthBar.SetHealth(GetHealthByPlayerName(playerName));
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-                  
+                    HUD.PlayersCards[i].SetPosition(new Vector2(HUD.PlayersCards[i].CardPosition.X, HUD.PlayerCard.CardRectangle.Height + 10 + HUD.PlayersCards[i].CardRectangle.Height * i));
+                    HUD.PlayersCards[i].HealthBar.SetHealth(GetHealthByPlayerName(playerName));
+                    HUD.PlayersCards[i].AmmoString = Players[playerName].BulletsCapacity + "/" + Players[playerName].MaxBulletsCapacity;
+    
                 }
 
                 foreach (KeyValuePair<string, Player> otherPlayer in Players)

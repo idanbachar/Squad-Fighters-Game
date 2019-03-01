@@ -19,17 +19,22 @@ namespace SquadFighters
         public Shield Shield;
 
         private SpriteFont playerNameFont;
+        private SpriteFont playerAmmoFont;
+
         private Vector2 playerNamePosition;
+        private Vector2 playerAmmoPosition;
 
         public string PlayerName;
+        public string AmmoString;
 
-        public PlayerCard(string playerName, int health)
+        public PlayerCard(string playerName, int health, string ammoString)
         {
             PlayerName = playerName;
             CardPosition = new Vector2(0, 0);
             CardRectangle = new Rectangle((int)CardPosition.X, (int)CardPosition.Y, 0, 0);
             HealthBar = new HealthBar(health);
             Shield = new Shield(new Vector2(0, 0), ShieldType.None, 100);
+            AmmoString = ammoString;
         }
 
         public void LoadContent(ContentManager content)
@@ -40,6 +45,8 @@ namespace SquadFighters
             CardRectangle = new Rectangle((int)CardPosition.X, (int)CardPosition.Y, CardTexture.Width, CardTexture.Height);
 
             playerNameFont = content.Load<SpriteFont>("fonts/player_name_font");
+            playerAmmoFont = content.Load<SpriteFont>("fonts/bullets_count_font");
+
             Shield.LoadContent(content);
         }
 
@@ -47,6 +54,7 @@ namespace SquadFighters
         {
             CardPosition = new Vector2(newPosition.X, newPosition.Y);
             playerNamePosition = new Vector2(CardPosition.X + 5, CardPosition.Y + 3);
+            playerAmmoPosition = new Vector2(CardRectangle.Right - 100, newPosition.Y + 5);
 
             HealthBar.Position = new Vector2(playerNamePosition.X, playerNamePosition.Y + 20);
             HealthBar.Rectangle = new Rectangle((int)HealthBar.Position.X, (int)HealthBar.Position.Y, HealthBar.Rectangle.Width, HealthBar.Rectangle.Height);
@@ -55,7 +63,7 @@ namespace SquadFighters
             {
                 for(int i = 0; i < Shield.ShieldBars.Length; i++)
                 {
-                    Shield.ShieldBars[i].Position = new Vector2(HealthBar.Position.X + i * 75, HealthBar.Rectangle.Bottom + 5);
+                    Shield.ShieldBars[i].Position = new Vector2(HealthBar.Position.X + i * 75, HealthBar.Rectangle.Bottom );
                 }
             }
         }
@@ -70,6 +78,7 @@ namespace SquadFighters
                     shieldBar.Draw(spriteBatch);
             }
             spriteBatch.DrawString(playerNameFont, PlayerName, playerNamePosition, Color.Black);
+            spriteBatch.DrawString(playerAmmoFont, AmmoString, playerAmmoPosition, Color.Black);
         }
     }
 }
