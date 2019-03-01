@@ -373,19 +373,21 @@ namespace SquadFighters
                             otherPlayer.Value.Bullets.RemoveAt(i);
                     }
                 }
-
-                for (int i = 0; i < Players.Count; i++)
+                for (int i = 0; i < Player.Bullets.Count; i++)
                 {
-                    for (int j = 0; j < Player.Bullets.Count; j++)
+                    if (!Player.Bullets[i].IsFinished)
                     {
-                        if (Player.Bullets[j].Rectangle.Intersects(Players.ElementAt(i).Value.Rectangle))
-                            Player.Bullets[j].IsFinished = true;
+                        Player.Bullets[i].Update();
 
-                        if (!Player.Bullets[j].IsFinished)
-                            Player.Bullets[j].Update();
-                        else
-                            Player.Bullets.RemoveAt(j);
+                        for (int j = 0; j < Players.Count; j++)
+                        {
+                            if (Player.Bullets[i].Rectangle.Intersects(Players.ElementAt(j).Value.Rectangle))
+                                Player.Bullets[i].IsFinished = true;
+
+                        }
                     }
+                    else
+                        Player.Bullets.RemoveAt(i);
                 }
 
                 try
@@ -479,6 +481,9 @@ namespace SquadFighters
             {
                 spriteBatch.Begin();
 
+
+                HUD.DrawGameTitle(spriteBatch);
+
                 foreach (Button button in MainMenu.Buttons)
                 {
                     if (button.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
@@ -493,6 +498,8 @@ namespace SquadFighters
             {
                 spriteBatch.Begin();
 
+
+                HUD.DrawGameTitle(spriteBatch);
                 HUD.DrawLoading(spriteBatch, MaxItems, Map.Items.Count);
 
                 spriteBatch.End();

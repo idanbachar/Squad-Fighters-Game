@@ -20,12 +20,26 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/bullets_count_font.spritefont
 
+#begin fonts/gameTitle.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/gameTitle.spritefont
+
 #begin fonts/items_capacity_font.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
 /build:fonts/items_capacity_font.spritefont
+
+#begin fonts/loading.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/loading.spritefont
 
 #begin fonts/player_name_font.spritefont
 /importer:FontDescriptionImporter
