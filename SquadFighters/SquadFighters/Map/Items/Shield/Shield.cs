@@ -29,7 +29,7 @@ namespace SquadFighters
 
             for(int i = 0; i < ShieldBars.Length; i++)
             {
-                ShieldBars[i] = new ShieldBar(ItemType, new Vector2(i * 75, 50));
+                ShieldBars[i] = new ShieldBar(ItemType, new Vector2(5 + i * 75, 50));
                 ShieldBars[i].LoadContent(content);
             }
         }
@@ -39,6 +39,7 @@ namespace SquadFighters
             switch (ItemType)
             {
                 case ShieldType.Shield_Level_1:
+                case ShieldType.None:
                     return "shield_lv1";
                 case ShieldType.Shield_Level_2:
                     return "shield_lv2";

@@ -14,9 +14,9 @@ namespace SquadFighters
     public class SquadFighters : Game
     {
         public static GraphicsDeviceManager Graphics;
-        SpriteBatch spriteBatch;
+        private SpriteBatch spriteBatch;
 
-        public static Player Player;
+        public Player Player;
         private Camera Camera;
         private MainMenu MainMenu;
         private GameState GameState;
@@ -34,13 +34,12 @@ namespace SquadFighters
         private int ServerPort;
         public string[] ReceivedDataArray;
         private int MaxItems;
-        private int CurrentItemsLoaded;
 
         public SquadFighters()
         {
             Graphics = new GraphicsDeviceManager(this);
-            Graphics.PreferredBackBufferWidth = 500;
-            Graphics.PreferredBackBufferHeight = 700;
+            Graphics.PreferredBackBufferWidth = 450;
+            Graphics.PreferredBackBufferHeight = 650;
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             Players = new Dictionary<string, Player>();
@@ -54,11 +53,6 @@ namespace SquadFighters
         {
             base.Initialize();
             ContentManager = Content;
-
-            MainMenu = new MainMenu(2);
-            MainMenu.LoadContent(Content);
-
-            Map = new Map(new Rectangle(0, 0, 1000, 1000), Content);
         }
 
         public void ConnectToServer(string serverIp, int serverPort)
@@ -80,6 +74,11 @@ namespace SquadFighters
             Player player = new Player(CurrentConnectedPlayerName);
             player.LoadContent(Content);
             Players.Add(CurrentConnectedPlayerName, player);
+
+            PlayerCard playerCard = new PlayerCard(player.Name, player.Health, player.BulletsCapacity + "/" + player.MaxBulletsCapacity);
+            playerCard.LoadContent(Content);
+
+            HUD.PlayersCards.Add(playerCard);
         }
 
         public void JoinGame()
@@ -87,6 +86,9 @@ namespace SquadFighters
             Player = new Player("idan" + new Random().Next(1000));
             Player.LoadContent(Content);
 
+            HUD.PlayerCard = new PlayerCard(Player.Name, Player.Health, Player.BulletsCapacity + "/" + Player.MaxBulletsCapacity);
+            HUD.PlayerCard.LoadContent(Content);
+ 
             ConnectToServer(ServerIp, ServerPort);
 
             ReceiveThread = new Thread(ReceiveDataFromServer);
@@ -180,6 +182,10 @@ namespace SquadFighters
                         bool playerIsShoot = bool.Parse(ReceivedDataArray[5].Split('=')[1]);
                         float playerDirectionX = float.Parse(ReceivedDataArray[6].Split('=')[1]);
                         float playerDirectionY = float.Parse(ReceivedDataArray[7].Split('=')[1]);
+                        bool playerIsSwimming = bool.Parse(ReceivedDataArray[8].Split('=')[1]);
+                        bool playerIsShield = bool.Parse(ReceivedDataArray[9].Split('=')[1]);
+                        ShieldType playerShieldType = (ShieldType)int.Parse(ReceivedDataArray[10].Split('=')[1]);
+                        int playerBulletsCapacity = int.Parse(ReceivedDataArray[11].Split('=')[1]);
 
                         if (Players.ContainsKey(playerName))
                         {
@@ -191,6 +197,18 @@ namespace SquadFighters
                             Players[playerName].IsShoot = playerIsShoot;
                             Players[playerName].Direction.X = playerDirectionX;
                             Players[playerName].Direction.Y = playerDirectionY;
+                            Players[playerName].IsSwimming = playerIsSwimming;
+                            Players[playerName].IsShield = playerIsShield;
+                            Players[playerName].BulletsCapacity = playerBulletsCapacity;
+
+                            Players[playerName].Shield = new Shield(new Vector2(0, 0), playerShieldType, 100);
+                            Players[playerName].Shield.LoadContent(Content);
+
+                            for(int i = 0; i < HUD.PlayersCards.Count; i++)
+                            {
+                                if (HUD.PlayersCards[i].PlayerName == playerName && (HUD.PlayersCards[i].Shield.ItemType == ShieldType.None || HUD.PlayersCards[i].Shield.ItemType != playerShieldType))
+                                    HUD.PlayersCards[i].Shield = Players[playerName].Shield;
+                            }
 
                             if (playerIsShoot)
                             {
@@ -258,67 +276,74 @@ namespace SquadFighters
 
         public void CheckItemsIntersects(Dictionary<string, Item> items)
         {
-            for (int i = 0; i < items.Count; i++)
+            try
             {
-                if (Player.Rectangle.Intersects(items.ElementAt(i).Value.Rectangle))
+                for (int i = 0; i < items.Count; i++)
                 {
-                    if (items.ElementAt(i).Value is Food)
+                    if (Player.Rectangle.Intersects(items.ElementAt(i).Value.Rectangle))
                     {
-                        if (Player.Health < 100)
+                        if (items.ElementAt(i).Value is Food)
                         {
-                            int heal = ((Food)(items.ElementAt(i).Value)).GetHealth();
-                            Player.Heal(heal);
-                            string key = items.ElementAt(i).Key;
-
-                            items.Remove(key);
-                            SendOneDataToServer("Remove Item," + key);
-                        }
-                    }
-                    else if (items.ElementAt(i).Value is GunAmmo)
-                    {
-                        int capacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity;
-
-                        if (Player.BulletsCapacity + capacity <= Player.MaxBulletsCapacity)
-                        {
-                            Player.BulletsCapacity += capacity;
-                            string key = items.ElementAt(i).Key;
-
-                            items.Remove(key);
-                            SendOneDataToServer("Remove Item," + key);
-                        }
-                        else
-                        {
-                            if (Player.BulletsCapacity + capacity > Player.MaxBulletsCapacity && Player.BulletsCapacity != Player.MaxBulletsCapacity)
+                            if (Player.Health < 100)
                             {
-                                ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= Player.MaxBulletsCapacity - Player.BulletsCapacity;
-                                Player.BulletsCapacity = Player.MaxBulletsCapacity;
-
-                                int itemCapacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity;
+                                int heal = ((Food)(items.ElementAt(i).Value)).GetHealth();
+                                Player.Heal(heal);
                                 string key = items.ElementAt(i).Key;
-                                SendOneDataToServer("Update Item Capacity," + itemCapacity + "," + key);
+
+                                items.Remove(key);
+                                SendOneDataToServer("Remove Item," + key);
                             }
                         }
-                    }
-                    else if (items.ElementAt(i).Value is Shield)
-                    {
-                        if (Player.Shield == null || Player.Shield.ItemType < ((Shield)items.ElementAt(i).Value).ItemType)
+                        else if (items.ElementAt(i).Value is GunAmmo)
                         {
-                            Player.Shield = items.ElementAt(i).Value as Shield;
-                            Player.IsShield = true;
+                            int capacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity;
 
+                            if (Player.BulletsCapacity + capacity <= Player.MaxBulletsCapacity)
+                            {
+                                Player.BulletsCapacity += capacity;
+                                string key = items.ElementAt(i).Key;
+
+                                items.Remove(key);
+                                SendOneDataToServer("Remove Item," + key);
+                            }
+                            else
+                            {
+                                if (Player.BulletsCapacity + capacity > Player.MaxBulletsCapacity && Player.BulletsCapacity != Player.MaxBulletsCapacity)
+                                {
+                                    ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= Player.MaxBulletsCapacity - Player.BulletsCapacity;
+                                    Player.BulletsCapacity = Player.MaxBulletsCapacity;
+
+                                    int itemCapacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity;
+                                    string key = items.ElementAt(i).Key;
+                                    SendOneDataToServer("Update Item Capacity," + itemCapacity + "," + key);
+                                }
+                            }
+                        }
+                        else if (items.ElementAt(i).Value is Shield)
+                        {
+                            if (Player.Shield == null || Player.Shield.ItemType < ((Shield)items.ElementAt(i).Value).ItemType)
+                            {
+                                Player.Shield = items.ElementAt(i).Value as Shield;
+                                Player.IsShield = true;
+
+                                string key = items.ElementAt(i).Key;
+                                items.Remove(key);
+                                SendOneDataToServer("Remove Item," + key);
+                            }
+
+                        }
+                        else if (items.ElementAt(i).Value is Helmet)
+                        {
                             string key = items.ElementAt(i).Key;
                             items.Remove(key);
                             SendOneDataToServer("Remove Item," + key);
                         }
-
-                    }
-                    else if (items.ElementAt(i).Value is Helmet)
-                    {
-                        string key = items.ElementAt(i).Key;
-                        items.Remove(key);
-                        SendOneDataToServer("Remove Item," + key);
                     }
                 }
+            }
+            catch (Exception)
+            {
+
             }
         }
 
@@ -332,11 +357,28 @@ namespace SquadFighters
             HUD.LoadContent(Content);
 
             Random rndItem = new Random();
+
+            MainMenu = new MainMenu(2);
+            MainMenu.LoadContent(Content);
+
+            Map = new Map(new Rectangle(0, 0, 5000, 5000));
+            Map.LoadContent(Content);
         }
 
         protected override void UnloadContent()
         {
 
+        }
+
+        public int GetHealthByPlayerName(string name)
+        {
+            foreach (KeyValuePair<string, Player> otherPlayer in Players)
+                if (name == otherPlayer.Key) return otherPlayer.Value.Health;
+
+            if (name == Player.Name)
+                return Player.Health;
+
+            return 0;
         }
 
         protected override void Update(GameTime gameTime)
@@ -350,10 +392,23 @@ namespace SquadFighters
             if (GameState == GameState.Game)
             {
                 Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
-                Player.Update();
+                Player.Update(Map);
 
                 CheckItemsIntersects(Map.Items);
 
+                HUD.PlayerCard.SetPosition(new Vector2(0, 0));
+                HUD.PlayerCard.HealthBar.SetHealth(Player.Health);
+                HUD.PlayerCard.AmmoString = Player.BulletsCapacity + "/" + Player.MaxBulletsCapacity;
+
+                for(int i = 0; i < HUD.PlayersCards.Count; i++)
+                {
+                    string playerName = HUD.PlayersCards[i].PlayerName;
+
+                    HUD.PlayersCards[i].SetPosition(new Vector2(HUD.PlayersCards[i].CardPosition.X, HUD.PlayerCard.CardRectangle.Height + 10 + HUD.PlayersCards[i].CardRectangle.Height * i));
+                    HUD.PlayersCards[i].HealthBar.SetHealth(GetHealthByPlayerName(playerName));
+                    HUD.PlayersCards[i].AmmoString = Players[playerName].BulletsCapacity + "/" + Players[playerName].MaxBulletsCapacity;
+    
+                }
 
                 foreach (KeyValuePair<string, Player> otherPlayer in Players)
                 {
@@ -373,19 +428,21 @@ namespace SquadFighters
                             otherPlayer.Value.Bullets.RemoveAt(i);
                     }
                 }
-
-                for (int i = 0; i < Players.Count; i++)
+                for (int i = 0; i < Player.Bullets.Count; i++)
                 {
-                    for (int j = 0; j < Player.Bullets.Count; j++)
+                    if (!Player.Bullets[i].IsFinished)
                     {
-                        if (Player.Bullets[j].Rectangle.Intersects(Players.ElementAt(i).Value.Rectangle))
-                            Player.Bullets[j].IsFinished = true;
+                        Player.Bullets[i].Update();
 
-                        if (!Player.Bullets[j].IsFinished)
-                            Player.Bullets[j].Update();
-                        else
-                            Player.Bullets.RemoveAt(j);
+                        for (int j = 0; j < Players.Count; j++)
+                        {
+                            if (Player.Bullets[i].Rectangle.Intersects(Players.ElementAt(j).Value.Rectangle))
+                                Player.Bullets[i].IsFinished = true;
+
+                        }
                     }
+                    else
+                        Player.Bullets.RemoveAt(i);
                 }
 
                 try
@@ -430,6 +487,8 @@ namespace SquadFighters
             {
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, Camera.Transform);
 
+                Map.Draw(spriteBatch);
+
                 try
                 {
                     for (int i = 0; i < Map.Items.Count; i++)
@@ -450,13 +509,15 @@ namespace SquadFighters
 
                 foreach (KeyValuePair<string, Player> otherPlayer in Players)
                 {
-                    otherPlayer.Value.Draw(spriteBatch);
+                    if(!otherPlayer.Value.IsSwimming)
+                        otherPlayer.Value.Draw(spriteBatch);
 
                     for (int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
                         otherPlayer.Value.Bullets[i].Draw(spriteBatch);
 
                     HUD.DrawPlayersInfo(spriteBatch, otherPlayer.Value);
                 }
+
 
                 Player.Draw(spriteBatch);
                 HUD.DrawPlayerInfo(spriteBatch, Player);
@@ -479,6 +540,9 @@ namespace SquadFighters
             {
                 spriteBatch.Begin();
 
+
+                HUD.DrawGameTitle(spriteBatch);
+
                 foreach (Button button in MainMenu.Buttons)
                 {
                     if (button.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
@@ -493,6 +557,8 @@ namespace SquadFighters
             {
                 spriteBatch.Begin();
 
+
+                HUD.DrawGameTitle(spriteBatch);
                 HUD.DrawLoading(spriteBatch, MaxItems, Map.Items.Count);
 
                 spriteBatch.End();

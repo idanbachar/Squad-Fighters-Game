@@ -31,6 +31,7 @@ namespace SquadFighters
             switch (ShieldType)
             {
                 case ShieldType.Shield_Level_1:
+                case ShieldType.None:
                     return "armor_lv1";
                 case ShieldType.Shield_Level_2:
                     return "armor_lv2";
