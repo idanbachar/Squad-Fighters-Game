@@ -14,7 +14,7 @@ namespace SquadFighters
         public Rectangle Rectangle;
         public Vector2 Position;
         public Texture2D Texture;
-        private int Health;
+        public int Health;
 
         public HealthBar(int health)
         {

@@ -27,6 +27,9 @@ namespace SquadFighters
         public static ContentManager ContentManager;
         private bool isPressed;
 
+        private Vector2 CameraPosition;
+        private int CameraPlayersIndex;
+
         //Online
         private Thread ReceiveThread;
         private Thread SendPlayerDataThread;
@@ -47,6 +50,7 @@ namespace SquadFighters
             ServerPort = 7895;
             Window.Title = "SquadFighters: Battle Royale";
             GameState = GameState.MainMenu;
+            CameraPlayersIndex = -1;
         }
 
         protected override void Initialize()
@@ -186,6 +190,7 @@ namespace SquadFighters
                         bool playerIsShield = bool.Parse(ReceivedDataArray[9].Split('=')[1]);
                         ShieldType playerShieldType = (ShieldType)int.Parse(ReceivedDataArray[10].Split('=')[1]);
                         int playerBulletsCapacity = int.Parse(ReceivedDataArray[11].Split('=')[1]);
+                        bool playerIsDead = bool.Parse(ReceivedDataArray[12].Split('=')[1]);
 
                         if (Players.ContainsKey(playerName))
                         {
@@ -201,14 +206,15 @@ namespace SquadFighters
                             Players[playerName].IsShield = playerIsShield;
                             Players[playerName].ShieldType = playerShieldType;
                             Players[playerName].BulletsCapacity = playerBulletsCapacity;
+                            Players[playerName].IsDead = playerIsDead;
+                            
 
-                            for(int i = 0; i < HUD.PlayersCards.Count; i++)
+                            for (int i = 0; i < HUD.PlayersCards.Count; i++)
                             {
                                 if (HUD.PlayersCards[i].PlayerName == playerName)
                                 {
                                     HUD.PlayersCards[i].CanBubble = playerIsSwimming;
-                                    //HUD.PlayersCards[i].ShieldBars[0].ShieldType == ShieldType.None || 
-                                    if ((HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType) )
+                                    if ((HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType))
                                     {
                                         for (int j = 0; j < HUD.PlayersCards[i].ShieldBars.Length; j++)
                                         {
@@ -217,11 +223,6 @@ namespace SquadFighters
                                         }
                                     }
                                 }
-                            }
-
-                            if (playerIsShoot)
-                            {
-                                Players[playerName].Shoot();
                             }
                         }
                         else
@@ -273,7 +274,13 @@ namespace SquadFighters
 
                         Console.WriteLine(ReceivedDataString);
                     }
- 
+
+                    else if (ReceivedDataString.Contains("ShootData"))
+                    {
+                        string playerName =  ReceivedDataArray[1].Split('=')[1];
+                        Players[playerName].Shoot();
+                    }
+
                     Thread.Sleep(50);
                 }
                 catch (Exception e)
@@ -406,9 +413,43 @@ namespace SquadFighters
 
             if (GameState == GameState.Game)
             {
-                Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
 
-                if(Keyboard.GetState().IsKeyDown(Keys.Tab))
+                if (Player.IsDead)
+                {
+                    if (Keyboard.GetState().IsKeyDown(Keys.Right) && !isPressed)
+                    {
+                        isPressed = true;
+
+                        if (CameraPlayersIndex < Players.Count - 1)
+                        {
+                            CameraPlayersIndex++;
+                            CameraPosition = Players.ElementAt(CameraPlayersIndex).Value.Position;
+                        }
+                        else
+                        {
+                            CameraPlayersIndex = -1;
+                            CameraPosition = Player.Position;
+                        }
+                    }
+
+                    if (Keyboard.GetState().IsKeyUp(Keys.Right))
+                    {
+                        isPressed = false;
+                    }
+                }
+                else
+                {
+                    CameraPosition = Player.Position;
+                }
+
+                if (!Player.IsDead)
+                    Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
+                else if(Player.IsDead && CameraPlayersIndex != -1)
+                    Camera.Focus(Players.ElementAt(CameraPlayersIndex).Value.Position, Map.Rectangle.Width, Map.Rectangle.Height);
+                else if(Player.IsDead && CameraPlayersIndex == -1)
+                    Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
+
+                if (Keyboard.GetState().IsKeyDown(Keys.Tab))
                 {
                     foreach (PlayerCard playerCard in HUD.PlayersCards)
                         playerCard.Visible = true;
@@ -417,6 +458,19 @@ namespace SquadFighters
                 {
                     foreach (PlayerCard playerCard in HUD.PlayersCards)
                         playerCard.Visible = false;
+                }
+
+                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Player.IsShoot)
+                {
+                    if (Player.BulletsCapacity > 0)
+                    {
+                        Player.Shoot();
+                        SendOneDataToServer("ShootData=true,PlayerShotName=" + Player.Name);
+                    }
+                }
+                if (Keyboard.GetState().IsKeyUp(Keys.Space))
+                {
+                    Player.IsShoot = false;
                 }
 
 
