@@ -61,7 +61,6 @@ namespace SquadFighters
             {
                 Client = new TcpClient(ServerIp, ServerPort);
                 SendOneDataToServer("Load Map");
-                //SendOneDataToServer(Player.Name + ",Connected.");
             }
             catch (Exception e)
             {
@@ -87,6 +86,7 @@ namespace SquadFighters
             Player.LoadContent(Content);
 
             HUD.PlayerCard = new PlayerCard(Player.Name, Player.Health, Player.BulletsCapacity + "/" + Player.MaxBulletsCapacity);
+            HUD.PlayerCard.Visible = true;
             HUD.PlayerCard.LoadContent(Content);
  
             ConnectToServer(ServerIp, ServerPort);
@@ -199,15 +199,19 @@ namespace SquadFighters
                             Players[playerName].Direction.Y = playerDirectionY;
                             Players[playerName].IsSwimming = playerIsSwimming;
                             Players[playerName].IsShield = playerIsShield;
+                            Players[playerName].ShieldType = playerShieldType;
                             Players[playerName].BulletsCapacity = playerBulletsCapacity;
-
-                            Players[playerName].Shield = new Shield(new Vector2(0, 0), playerShieldType, 100);
-                            Players[playerName].Shield.LoadContent(Content);
 
                             for(int i = 0; i < HUD.PlayersCards.Count; i++)
                             {
-                                if (HUD.PlayersCards[i].PlayerName == playerName && (HUD.PlayersCards[i].Shield.ItemType == ShieldType.None || HUD.PlayersCards[i].Shield.ItemType != playerShieldType))
-                                    HUD.PlayersCards[i].Shield = Players[playerName].Shield;
+                                if (HUD.PlayersCards[i].PlayerName == playerName && (HUD.PlayersCards[i].ShieldBars[0].ShieldType == ShieldType.None || HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType))
+                                {
+                                    for (int j = 0; j < HUD.PlayersCards[i].ShieldBars.Length; j++)
+                                    {
+                                        HUD.PlayersCards[i].ShieldBars[j].ShieldType = Players[playerName].ShieldType;
+                                        HUD.PlayersCards[i].ShieldBars[j].LoadContent(Content);
+                                    }
+                                }
                             }
 
                             if (playerIsShoot)
@@ -321,9 +325,15 @@ namespace SquadFighters
                         }
                         else if (items.ElementAt(i).Value is Shield)
                         {
-                            if (Player.Shield == null || Player.Shield.ItemType < ((Shield)items.ElementAt(i).Value).ItemType)
+                            if (Player.ShieldType == ShieldType.None || Player.ShieldType < ((Shield)items.ElementAt(i).Value).ItemType)
                             {
-                                Player.Shield = items.ElementAt(i).Value as Shield;
+                                Player.ShieldType = ((Shield)items.ElementAt(i).Value).ItemType;
+
+                                for (int j = 0; j < HUD.PlayerCard.ShieldBars.Length; j++)
+                                {
+                                    HUD.PlayerCard.ShieldBars[j].ShieldType = ((Shield)items.ElementAt(i).Value).ItemType;
+                                    HUD.PlayerCard.ShieldBars[j].LoadContent(Content);
+                                }
                                 Player.IsShield = true;
 
                                 string key = items.ElementAt(i).Key;
@@ -392,8 +402,20 @@ namespace SquadFighters
             if (GameState == GameState.Game)
             {
                 Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
-                Player.Update(Map);
 
+                if(Keyboard.GetState().IsKeyDown(Keys.Tab))
+                {
+                    foreach (PlayerCard playerCard in HUD.PlayersCards)
+                        playerCard.Visible = true;
+                }
+                if (Keyboard.GetState().IsKeyUp(Keys.Tab))
+                {
+                    foreach (PlayerCard playerCard in HUD.PlayersCards)
+                        playerCard.Visible = false;
+                }
+
+
+                Player.Update(Map);
                 CheckItemsIntersects(Map.Items);
 
                 HUD.PlayerCard.SetPosition(new Vector2(0, 0));
@@ -534,7 +556,7 @@ namespace SquadFighters
 
                 if (Player.IsShield)
                 {
-                    foreach (ShieldBar shieldbar in Player.Shield.ShieldBars)
+                    foreach (ShieldBar shieldbar in HUD.PlayerCard.ShieldBars)
                         shieldbar.Draw(spriteBatch);
                 }
 
