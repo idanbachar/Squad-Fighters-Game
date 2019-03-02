@@ -16,6 +16,7 @@ namespace SquadFighters
         public SpriteFont ItemsCapacityFont;
         public SpriteFont LoadingFont;
         public SpriteFont GameTitleFont;
+        public SpriteFont DeadFont;
         public List<PlayerCard> PlayersCards;
         public PlayerCard PlayerCard;
 
@@ -31,6 +32,7 @@ namespace SquadFighters
             ItemsCapacityFont = content.Load<SpriteFont>("fonts/items_capacity_font");
             LoadingFont = content.Load<SpriteFont>("fonts/loading");
             GameTitleFont = content.Load<SpriteFont>("fonts/gameTitle");
+            DeadFont = content.Load<SpriteFont>("fonts/dead_font");
         }
 
         public void DrawPlayersInfo(SpriteBatch spriteBatch, Player player)
@@ -66,6 +68,9 @@ namespace SquadFighters
             foreach (PlayerCard playerCard in PlayersCards)
                 if (playerCard.Visible)
                     playerCard.Draw(spriteBatch);
+
+            if (PlayerCard.HealthBar.Health <= 0)
+                spriteBatch.DrawString(DeadFont, "You Are Dead :(", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 200), Color.White);
         }
     }
 }

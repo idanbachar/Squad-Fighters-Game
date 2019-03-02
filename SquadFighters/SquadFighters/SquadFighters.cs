@@ -186,6 +186,7 @@ namespace SquadFighters
                         bool playerIsShield = bool.Parse(ReceivedDataArray[9].Split('=')[1]);
                         ShieldType playerShieldType = (ShieldType)int.Parse(ReceivedDataArray[10].Split('=')[1]);
                         int playerBulletsCapacity = int.Parse(ReceivedDataArray[11].Split('=')[1]);
+                        bool playerIsDead = bool.Parse(ReceivedDataArray[12].Split('=')[1]);
 
                         if (Players.ContainsKey(playerName))
                         {
@@ -201,8 +202,9 @@ namespace SquadFighters
                             Players[playerName].IsShield = playerIsShield;
                             Players[playerName].ShieldType = playerShieldType;
                             Players[playerName].BulletsCapacity = playerBulletsCapacity;
+                            Players[playerName].IsDead = playerIsDead;
 
-                            for(int i = 0; i < HUD.PlayersCards.Count; i++)
+                            for (int i = 0; i < HUD.PlayersCards.Count; i++)
                             {
                                 if (HUD.PlayersCards[i].PlayerName == playerName)
                                 {

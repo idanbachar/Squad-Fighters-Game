@@ -21,6 +21,7 @@ namespace SquadFighters
         public float Rotation;
         public bool IsShoot;
         public Texture2D Texture;
+        public Texture2D DeadSignTexture;
         public Vector2 Position;
         public Vector2 Direction;
         public Vector2 Speed;
@@ -29,6 +30,7 @@ namespace SquadFighters
         public ShieldType ShieldType;
         public bool IsShield;
         public bool IsSwimming;
+        public bool IsDead;
 
         public Player(string playerName)
         {
@@ -42,12 +44,14 @@ namespace SquadFighters
             IsShoot = false;
             IsShield = false;
             IsSwimming = false;
+            IsDead = false;
         }
 
         public void LoadContent(ContentManager content)
         {
             Content = content;
             Texture = content.Load<Texture2D>("images/player/player");
+            DeadSignTexture = content.Load<Texture2D>("images/player/player_dead_sign");
             ShieldType = ShieldType.None;
         }
 
@@ -55,7 +59,13 @@ namespace SquadFighters
         {
             UpdateRectangle();
             CheckKeyboardMovement();
+            CheckIsDead();
             IsSwimming = IsWaterIntersects(map.WaterObjects);
+        }
+
+        public void CheckIsDead()
+        {
+            IsDead = Health <= 0;
         }
 
         public void UpdateRectangle()
@@ -93,25 +103,28 @@ namespace SquadFighters
         {
             Direction = new Vector2((float)Math.Cos(Rotation) * 3f, (float)Math.Sin(Rotation) * 3f);
 
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
+            if (!IsDead)
             {
-                Speed = Direction;
-                Position += Speed;
-            }
+                if (Keyboard.GetState().IsKeyDown(Keys.W))
+                {
+                    Speed = Direction;
+                    Position += Speed;
+                }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
-                Rotation += 0.05f;
-            else if (Keyboard.GetState().IsKeyDown(Keys.A))
-                Rotation -= 0.05f;
+                if (Keyboard.GetState().IsKeyDown(Keys.D))
+                    Rotation += 0.05f;
+                else if (Keyboard.GetState().IsKeyDown(Keys.A))
+                    Rotation -= 0.05f;
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Space) && !IsShoot)
-            {
-                if (BulletsCapacity > 0)
-                    Shoot();
-            }
-            if (Keyboard.GetState().IsKeyUp(Keys.Space))
-            {
-                IsShoot = false;
+                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !IsShoot)
+                {
+                    if (BulletsCapacity > 0)
+                        Shoot();
+                }
+                if (Keyboard.GetState().IsKeyUp(Keys.Space))
+                {
+                    IsShoot = false;
+                }
             }
 
             if (Keyboard.GetState().IsKeyDown(Keys.R))
@@ -138,11 +151,14 @@ namespace SquadFighters
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Texture, Position, null, IsSwimming ? Color.LightSkyBlue :Color.White, Rotation, new Vector2(Texture.Width / 2, Texture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
+
+            if (IsDead)
+                spriteBatch.Draw(DeadSignTexture, Position, null, Color.White, Rotation, new Vector2(DeadSignTexture.Width / 2, DeadSignTexture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
         }
 
         public override string ToString()
         {
-            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",";
+            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",";
         }
     }
 }
