@@ -26,7 +26,7 @@ namespace SquadFighters
         public Vector2 Speed;
         public Rectangle Rectangle;
         public List<Bullet> Bullets;
-        public Shield Shield;
+        public ShieldType ShieldType;
         public bool IsShield;
         public bool IsSwimming;
 
@@ -48,8 +48,7 @@ namespace SquadFighters
         {
             Content = content;
             Texture = content.Load<Texture2D>("images/player/player");
-            Shield = new Shield(new Vector2(0, 0), ShieldType.None, 100);
-            Shield.LoadContent(content);
+            ShieldType = ShieldType.None;
         }
 
         public void Update(Map map)
@@ -143,7 +142,7 @@ namespace SquadFighters
 
         public override string ToString()
         {
-            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)Shield.ItemType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",";
+            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",";
         }
     }
 }

@@ -64,7 +64,8 @@ namespace SquadFighters
             PlayerCard.Draw(spriteBatch);
 
             foreach (PlayerCard playerCard in PlayersCards)
-                playerCard.Draw(spriteBatch);
+                if (playerCard.Visible)
+                    playerCard.Draw(spriteBatch);
         }
     }
 }

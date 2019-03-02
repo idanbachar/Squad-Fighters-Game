@@ -14,24 +14,16 @@ namespace SquadFighters
     {
         public int Armor;
         public ShieldType ItemType;
-        public ShieldBar[] ShieldBars;
 
         public Shield(Vector2 itemPosition, ShieldType itemType, int capacity) : base(itemPosition)
         {
             ItemType = itemType;
-            ShieldBars = new ShieldBar[3];
             Armor = capacity;
         }
 
         public override void LoadContent(ContentManager content)
         {
             Texture = content.Load<Texture2D>("images/items/shields/" + GetShieldName());
-
-            for(int i = 0; i < ShieldBars.Length; i++)
-            {
-                ShieldBars[i] = new ShieldBar(ItemType, new Vector2(5 + i * 75, 50));
-                ShieldBars[i].LoadContent(content);
-            }
         }
 
         private string GetShieldName()
