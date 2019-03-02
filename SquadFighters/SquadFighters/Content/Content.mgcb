@@ -48,6 +48,18 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/player_name_font.spritefont
 
+#begin images/HUD/bubble.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/HUD/bubble.png
+
 #begin images/HUD/health_bar.png
 /importer:TextureImporter
 /processor:TextureProcessor

@@ -204,12 +204,17 @@ namespace SquadFighters
 
                             for(int i = 0; i < HUD.PlayersCards.Count; i++)
                             {
-                                if (HUD.PlayersCards[i].PlayerName == playerName && (HUD.PlayersCards[i].ShieldBars[0].ShieldType == ShieldType.None || HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType))
+                                if (HUD.PlayersCards[i].PlayerName == playerName)
                                 {
-                                    for (int j = 0; j < HUD.PlayersCards[i].ShieldBars.Length; j++)
+                                    HUD.PlayersCards[i].CanBubble = playerIsSwimming;
+
+                                    if ((HUD.PlayersCards[i].ShieldBars[0].ShieldType == ShieldType.None || HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType))
                                     {
-                                        HUD.PlayersCards[i].ShieldBars[j].ShieldType = Players[playerName].ShieldType;
-                                        HUD.PlayersCards[i].ShieldBars[j].LoadContent(Content);
+                                        for (int j = 0; j < HUD.PlayersCards[i].ShieldBars.Length; j++)
+                                        {
+                                            HUD.PlayersCards[i].ShieldBars[j].ShieldType = Players[playerName].ShieldType;
+                                            HUD.PlayersCards[i].ShieldBars[j].LoadContent(Content);
+                                        }
                                     }
                                 }
                             }
@@ -380,15 +385,15 @@ namespace SquadFighters
 
         }
 
-        public int GetHealthByPlayerName(string name)
+        public Player GetPlayerByName(string name)
         {
             foreach (KeyValuePair<string, Player> otherPlayer in Players)
-                if (name == otherPlayer.Key) return otherPlayer.Value.Health;
+                if (name == otherPlayer.Key) return otherPlayer.Value;
 
             if (name == Player.Name)
-                return Player.Health;
+                return Player;
 
-            return 0;
+            return null;
         }
 
         protected override void Update(GameTime gameTime)
@@ -418,18 +423,18 @@ namespace SquadFighters
                 Player.Update(Map);
                 CheckItemsIntersects(Map.Items);
 
-                HUD.PlayerCard.SetPosition(new Vector2(0, 0));
-                HUD.PlayerCard.HealthBar.SetHealth(Player.Health);
-                HUD.PlayerCard.AmmoString = Player.BulletsCapacity + "/" + Player.MaxBulletsCapacity;
+                HUD.PlayerCard.Update(Player, new Vector2(0, 0));
+                if (HUD.PlayerCard.IsBubbleHit)
+                {
+                    Player.Hit(1);
+                }
 
-                for(int i = 0; i < HUD.PlayersCards.Count; i++)
+                for (int i = 0; i < HUD.PlayersCards.Count; i++)
                 {
                     string playerName = HUD.PlayersCards[i].PlayerName;
 
-                    HUD.PlayersCards[i].SetPosition(new Vector2(HUD.PlayersCards[i].CardPosition.X, HUD.PlayerCard.CardRectangle.Height + 10 + HUD.PlayersCards[i].CardRectangle.Height * i));
-                    HUD.PlayersCards[i].HealthBar.SetHealth(GetHealthByPlayerName(playerName));
-                    HUD.PlayersCards[i].AmmoString = Players[playerName].BulletsCapacity + "/" + Players[playerName].MaxBulletsCapacity;
-    
+                    Vector2 position = new Vector2(HUD.PlayersCards[i].CardPosition.X, HUD.PlayerCard.CardRectangle.Height + 10 + HUD.PlayersCards[i].CardRectangle.Height * i);
+                    HUD.PlayersCards[i].Update(GetPlayerByName(playerName), position);
                 }
 
                 foreach (KeyValuePair<string, Player> otherPlayer in Players)
