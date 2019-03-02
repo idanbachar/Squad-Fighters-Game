@@ -49,6 +49,7 @@
     <Compile Include="Map\World\Background.cs" />
     <Compile Include="Map\World\Water\Water.cs" />
     <Compile Include="Map\World\Water\WaterShape.cs" />
+    <Compile Include="UI\Bubble.cs" />
     <Compile Include="UI\HealthBar.cs" />
     <Compile Include="UI\PlayerCard.cs" />
     <Compile Include="SquadFighters.cs" />

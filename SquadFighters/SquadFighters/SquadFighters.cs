@@ -61,7 +61,6 @@ namespace SquadFighters
             {
                 Client = new TcpClient(ServerIp, ServerPort);
                 SendOneDataToServer("Load Map");
-                //SendOneDataToServer(Player.Name + ",Connected.");
             }
             catch (Exception e)
             {
@@ -87,6 +86,7 @@ namespace SquadFighters
             Player.LoadContent(Content);
 
             HUD.PlayerCard = new PlayerCard(Player.Name, Player.Health, Player.BulletsCapacity + "/" + Player.MaxBulletsCapacity);
+            HUD.PlayerCard.Visible = true;
             HUD.PlayerCard.LoadContent(Content);
  
             ConnectToServer(ServerIp, ServerPort);
@@ -199,15 +199,24 @@ namespace SquadFighters
                             Players[playerName].Direction.Y = playerDirectionY;
                             Players[playerName].IsSwimming = playerIsSwimming;
                             Players[playerName].IsShield = playerIsShield;
+                            Players[playerName].ShieldType = playerShieldType;
                             Players[playerName].BulletsCapacity = playerBulletsCapacity;
-
-                            Players[playerName].Shield = new Shield(new Vector2(0, 0), playerShieldType, 100);
-                            Players[playerName].Shield.LoadContent(Content);
 
                             for(int i = 0; i < HUD.PlayersCards.Count; i++)
                             {
-                                if (HUD.PlayersCards[i].PlayerName == playerName && (HUD.PlayersCards[i].Shield.ItemType == ShieldType.None || HUD.PlayersCards[i].Shield.ItemType != playerShieldType))
-                                    HUD.PlayersCards[i].Shield = Players[playerName].Shield;
+                                if (HUD.PlayersCards[i].PlayerName == playerName)
+                                {
+                                    HUD.PlayersCards[i].CanBubble = playerIsSwimming;
+                                    //HUD.PlayersCards[i].ShieldBars[0].ShieldType == ShieldType.None || 
+                                    if ((HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType) )
+                                    {
+                                        for (int j = 0; j < HUD.PlayersCards[i].ShieldBars.Length; j++)
+                                        {
+                                            HUD.PlayersCards[i].ShieldBars[j].ShieldType = Players[playerName].ShieldType;
+                                            HUD.PlayersCards[i].ShieldBars[j].LoadContent(Content);
+                                        }
+                                    }
+                                }
                             }
 
                             if (playerIsShoot)
@@ -321,9 +330,15 @@ namespace SquadFighters
                         }
                         else if (items.ElementAt(i).Value is Shield)
                         {
-                            if (Player.Shield == null || Player.Shield.ItemType < ((Shield)items.ElementAt(i).Value).ItemType)
+                            if (Player.ShieldType == ShieldType.None || Player.ShieldType < ((Shield)items.ElementAt(i).Value).ItemType)
                             {
-                                Player.Shield = items.ElementAt(i).Value as Shield;
+                                Player.ShieldType = ((Shield)items.ElementAt(i).Value).ItemType;
+
+                                for (int j = 0; j < HUD.PlayerCard.ShieldBars.Length; j++)
+                                {
+                                    HUD.PlayerCard.ShieldBars[j].ShieldType = ((Shield)items.ElementAt(i).Value).ItemType;
+                                    HUD.PlayerCard.ShieldBars[j].LoadContent(Content);
+                                }
                                 Player.IsShield = true;
 
                                 string key = items.ElementAt(i).Key;
@@ -370,15 +385,15 @@ namespace SquadFighters
 
         }
 
-        public int GetHealthByPlayerName(string name)
+        public Player GetPlayerByName(string name)
         {
             foreach (KeyValuePair<string, Player> otherPlayer in Players)
-                if (name == otherPlayer.Key) return otherPlayer.Value.Health;
+                if (name == otherPlayer.Key) return otherPlayer.Value;
 
             if (name == Player.Name)
-                return Player.Health;
+                return Player;
 
-            return 0;
+            return null;
         }
 
         protected override void Update(GameTime gameTime)
@@ -392,22 +407,34 @@ namespace SquadFighters
             if (GameState == GameState.Game)
             {
                 Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
-                Player.Update(Map);
 
+                if(Keyboard.GetState().IsKeyDown(Keys.Tab))
+                {
+                    foreach (PlayerCard playerCard in HUD.PlayersCards)
+                        playerCard.Visible = true;
+                }
+                if (Keyboard.GetState().IsKeyUp(Keys.Tab))
+                {
+                    foreach (PlayerCard playerCard in HUD.PlayersCards)
+                        playerCard.Visible = false;
+                }
+
+
+                Player.Update(Map);
                 CheckItemsIntersects(Map.Items);
 
-                HUD.PlayerCard.SetPosition(new Vector2(0, 0));
-                HUD.PlayerCard.HealthBar.SetHealth(Player.Health);
-                HUD.PlayerCard.AmmoString = Player.BulletsCapacity + "/" + Player.MaxBulletsCapacity;
+                HUD.PlayerCard.Update(Player, new Vector2(0, 0));
+                if (HUD.PlayerCard.IsBubbleHit)
+                {
+                    Player.Hit(1);
+                }
 
-                for(int i = 0; i < HUD.PlayersCards.Count; i++)
+                for (int i = 0; i < HUD.PlayersCards.Count; i++)
                 {
                     string playerName = HUD.PlayersCards[i].PlayerName;
 
-                    HUD.PlayersCards[i].SetPosition(new Vector2(HUD.PlayersCards[i].CardPosition.X, HUD.PlayerCard.CardRectangle.Height + 10 + HUD.PlayersCards[i].CardRectangle.Height * i));
-                    HUD.PlayersCards[i].HealthBar.SetHealth(GetHealthByPlayerName(playerName));
-                    HUD.PlayersCards[i].AmmoString = Players[playerName].BulletsCapacity + "/" + Players[playerName].MaxBulletsCapacity;
-    
+                    Vector2 position = new Vector2(HUD.PlayersCards[i].CardPosition.X, HUD.PlayerCard.CardRectangle.Height + 10 + HUD.PlayersCards[i].CardRectangle.Height * i);
+                    HUD.PlayersCards[i].Update(GetPlayerByName(playerName), position);
                 }
 
                 foreach (KeyValuePair<string, Player> otherPlayer in Players)
@@ -419,7 +446,37 @@ namespace SquadFighters
                         if (otherPlayer.Value.Bullets[i].Rectangle.Intersects(Player.Rectangle))
                         {
                             otherPlayer.Value.Bullets[i].IsFinished = true;
-                            Player.Hit(otherPlayer.Value.Bullets[i].Damage);
+
+                            ShieldType playerShieldType = HUD.PlayerCard.ShieldBars[2].ShieldType;
+
+                            switch (playerShieldType)
+                            {
+                                case ShieldType.None:
+                                    Player.Hit(otherPlayer.Value.Bullets[i].Damage);
+                                    break;
+                                case ShieldType.Shield_Level_1:
+                                case ShieldType.Shield_Level_2:
+                                case ShieldType.Shield_Rare:
+                                case ShieldType.Shield_Legendery:
+                                    for (int j = 0; j < HUD.PlayerCard.ShieldBars.Length; j++)
+                                    {
+                                        if (HUD.PlayerCard.ShieldBars[0].Armor > 0)
+                                            HUD.PlayerCard.ShieldBars[0].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                        else
+                                        {
+                                            if (HUD.PlayerCard.ShieldBars[1].Armor > 0)
+                                                HUD.PlayerCard.ShieldBars[1].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                            else
+                                            {
+                                                if (HUD.PlayerCard.ShieldBars[2].Armor > 0)
+                                                    HUD.PlayerCard.ShieldBars[2].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                            }
+                                        }
+
+                                    }
+                                    break;
+                            }
+                            
                         }
 
                         if (!otherPlayer.Value.Bullets[i].IsFinished)
@@ -534,7 +591,7 @@ namespace SquadFighters
 
                 if (Player.IsShield)
                 {
-                    foreach (ShieldBar shieldbar in Player.Shield.ShieldBars)
+                    foreach (ShieldBar shieldbar in HUD.PlayerCard.ShieldBars)
                         shieldbar.Draw(spriteBatch);
                 }
 
