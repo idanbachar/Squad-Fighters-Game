@@ -27,6 +27,9 @@ namespace SquadFighters
         public static ContentManager ContentManager;
         private bool isPressed;
 
+        private Vector2 CameraPosition;
+        private int CameraPlayersIndex;
+
         //Online
         private Thread ReceiveThread;
         private Thread SendPlayerDataThread;
@@ -47,6 +50,7 @@ namespace SquadFighters
             ServerPort = 7895;
             Window.Title = "SquadFighters: Battle Royale";
             GameState = GameState.MainMenu;
+            CameraPlayersIndex = -1;
         }
 
         protected override void Initialize()
@@ -409,9 +413,43 @@ namespace SquadFighters
 
             if (GameState == GameState.Game)
             {
-                Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
 
-                if(Keyboard.GetState().IsKeyDown(Keys.Tab))
+                if (Player.IsDead)
+                {
+                    if (Keyboard.GetState().IsKeyDown(Keys.Right) && !isPressed)
+                    {
+                        isPressed = true;
+
+                        if (CameraPlayersIndex < Players.Count - 1)
+                        {
+                            CameraPlayersIndex++;
+                            CameraPosition = Players.ElementAt(CameraPlayersIndex).Value.Position;
+                        }
+                        else
+                        {
+                            CameraPlayersIndex = -1;
+                            CameraPosition = Player.Position;
+                        }
+                    }
+
+                    if (Keyboard.GetState().IsKeyUp(Keys.Right))
+                    {
+                        isPressed = false;
+                    }
+                }
+                else
+                {
+                    CameraPosition = Player.Position;
+                }
+
+                if (!Player.IsDead)
+                    Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
+                else if(Player.IsDead && CameraPlayersIndex != -1)
+                    Camera.Focus(Players.ElementAt(CameraPlayersIndex).Value.Position, Map.Rectangle.Width, Map.Rectangle.Height);
+                else if(Player.IsDead && CameraPlayersIndex == -1)
+                    Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
+
+                if (Keyboard.GetState().IsKeyDown(Keys.Tab))
                 {
                     foreach (PlayerCard playerCard in HUD.PlayersCards)
                         playerCard.Visible = true;
