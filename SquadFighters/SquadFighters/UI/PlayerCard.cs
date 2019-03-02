@@ -28,6 +28,8 @@ namespace SquadFighters
         public string PlayerName;
         public string AmmoString;
         public bool Visible;
+
+
         public bool CanBubble;
         private int BubbleIndex;
         private int BubbleDelayTimer;
@@ -78,7 +80,7 @@ namespace SquadFighters
             CardRectangle = new Rectangle((int)CardPosition.X, (int)CardPosition.Y, CardRectangle.Width, CardRectangle.Height);
 
             playerNamePosition = new Vector2(CardPosition.X + 5, CardPosition.Y + 3);
-            playerAmmoPosition = new Vector2(CardRectangle.Right - 100, newPosition.Y + 5);
+            playerAmmoPosition = new Vector2(CardRectangle.Right - 60, newPosition.Y + 5);
 
             HealthBar.Position = new Vector2(playerNamePosition.X, playerNamePosition.Y + 20);
             HealthBar.Rectangle = new Rectangle((int)HealthBar.Position.X, (int)HealthBar.Position.Y, HealthBar.Rectangle.Width, HealthBar.Rectangle.Height);
@@ -141,8 +143,7 @@ namespace SquadFighters
             HealthBar.Draw(spriteBatch);
 
             foreach (ShieldBar shieldBar in ShieldBars)
-                if (shieldBar.ShieldType != ShieldType.None)
-                    shieldBar.Draw(spriteBatch);
+                shieldBar.Draw(spriteBatch);
 
 
             if (CanBubble && !IsBubbleHit)
