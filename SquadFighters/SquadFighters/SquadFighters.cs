@@ -207,8 +207,8 @@ namespace SquadFighters
                                 if (HUD.PlayersCards[i].PlayerName == playerName)
                                 {
                                     HUD.PlayersCards[i].CanBubble = playerIsSwimming;
-
-                                    if ((HUD.PlayersCards[i].ShieldBars[0].ShieldType == ShieldType.None || HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType))
+                                    //HUD.PlayersCards[i].ShieldBars[0].ShieldType == ShieldType.None || 
+                                    if ((HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType) )
                                     {
                                         for (int j = 0; j < HUD.PlayersCards[i].ShieldBars.Length; j++)
                                         {
@@ -446,7 +446,37 @@ namespace SquadFighters
                         if (otherPlayer.Value.Bullets[i].Rectangle.Intersects(Player.Rectangle))
                         {
                             otherPlayer.Value.Bullets[i].IsFinished = true;
-                            Player.Hit(otherPlayer.Value.Bullets[i].Damage);
+
+                            ShieldType playerShieldType = HUD.PlayerCard.ShieldBars[2].ShieldType;
+
+                            switch (playerShieldType)
+                            {
+                                case ShieldType.None:
+                                    Player.Hit(otherPlayer.Value.Bullets[i].Damage);
+                                    break;
+                                case ShieldType.Shield_Level_1:
+                                case ShieldType.Shield_Level_2:
+                                case ShieldType.Shield_Rare:
+                                case ShieldType.Shield_Legendery:
+                                    for (int j = 0; j < HUD.PlayerCard.ShieldBars.Length; j++)
+                                    {
+                                        if (HUD.PlayerCard.ShieldBars[0].Armor > 0)
+                                            HUD.PlayerCard.ShieldBars[0].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                        else
+                                        {
+                                            if (HUD.PlayerCard.ShieldBars[1].Armor > 0)
+                                                HUD.PlayerCard.ShieldBars[1].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                            else
+                                            {
+                                                if (HUD.PlayerCard.ShieldBars[2].Armor > 0)
+                                                    HUD.PlayerCard.ShieldBars[2].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                            }
+                                        }
+
+                                    }
+                                    break;
+                            }
+                            
                         }
 
                         if (!otherPlayer.Value.Bullets[i].IsFinished)
