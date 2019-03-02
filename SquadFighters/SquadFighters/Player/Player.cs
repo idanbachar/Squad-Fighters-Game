@@ -116,15 +116,6 @@ namespace SquadFighters
                 else if (Keyboard.GetState().IsKeyDown(Keys.A))
                     Rotation -= 0.05f;
 
-                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !IsShoot)
-                {
-                    if (BulletsCapacity > 0)
-                        Shoot();
-                }
-                if (Keyboard.GetState().IsKeyUp(Keys.Space))
-                {
-                    IsShoot = false;
-                }
             }
 
             if (Keyboard.GetState().IsKeyDown(Keys.R))

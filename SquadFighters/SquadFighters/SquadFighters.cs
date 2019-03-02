@@ -203,14 +203,14 @@ namespace SquadFighters
                             Players[playerName].ShieldType = playerShieldType;
                             Players[playerName].BulletsCapacity = playerBulletsCapacity;
                             Players[playerName].IsDead = playerIsDead;
+                            
 
                             for (int i = 0; i < HUD.PlayersCards.Count; i++)
                             {
                                 if (HUD.PlayersCards[i].PlayerName == playerName)
                                 {
                                     HUD.PlayersCards[i].CanBubble = playerIsSwimming;
-                                    //HUD.PlayersCards[i].ShieldBars[0].ShieldType == ShieldType.None || 
-                                    if ((HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType) )
+                                    if ((HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType))
                                     {
                                         for (int j = 0; j < HUD.PlayersCards[i].ShieldBars.Length; j++)
                                         {
@@ -219,11 +219,6 @@ namespace SquadFighters
                                         }
                                     }
                                 }
-                            }
-
-                            if (playerIsShoot)
-                            {
-                                Players[playerName].Shoot();
                             }
                         }
                         else
@@ -275,7 +270,13 @@ namespace SquadFighters
 
                         Console.WriteLine(ReceivedDataString);
                     }
- 
+
+                    else if (ReceivedDataString.Contains("ShootData"))
+                    {
+                        string playerName =  ReceivedDataArray[1].Split('=')[1];
+                        Players[playerName].Shoot();
+                    }
+
                     Thread.Sleep(50);
                 }
                 catch (Exception e)
@@ -419,6 +420,19 @@ namespace SquadFighters
                 {
                     foreach (PlayerCard playerCard in HUD.PlayersCards)
                         playerCard.Visible = false;
+                }
+
+                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Player.IsShoot)
+                {
+                    if (Player.BulletsCapacity > 0)
+                    {
+                        Player.Shoot();
+                        SendOneDataToServer("ShootData=true,PlayerShotName=" + Player.Name);
+                    }
+                }
+                if (Keyboard.GetState().IsKeyUp(Keys.Space))
+                {
+                    Player.IsShoot = false;
                 }
 
 
