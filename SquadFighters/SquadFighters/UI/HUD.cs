@@ -70,7 +70,7 @@ namespace SquadFighters
                     playerCard.Draw(spriteBatch);
 
             if (PlayerCard.HealthBar.Health <= 0)
-                spriteBatch.DrawString(DeadFont, "You Are Dead :(", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 200), Color.White);
+                spriteBatch.DrawString(DeadFont, "You Are Dead :(", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 200), Color.Red);
         }
     }
 }
