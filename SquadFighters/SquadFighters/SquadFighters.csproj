@@ -42,7 +42,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Camera\Camera.cs" />
-    <Compile Include="GameState.cs" />
+    <Compile Include="Game\GameState.cs" />
     <Compile Include="Main Menu\Buttons\Button.cs" />
     <Compile Include="Main Menu\Buttons\ButtonType.cs" />
     <Compile Include="Main Menu\MainMenu.cs" />
@@ -52,7 +52,7 @@
     <Compile Include="UI\Bubble.cs" />
     <Compile Include="UI\HealthBar.cs" />
     <Compile Include="UI\PlayerCard.cs" />
-    <Compile Include="SquadFighters.cs" />
+    <Compile Include="Game\SquadFighters.cs" />
     <Compile Include="Map\Items\Ammo\AmmoType.cs" />
     <Compile Include="Map\Items\Food\Food.cs" />
     <Compile Include="Map\Items\Ammo\GunAmmo.cs" />

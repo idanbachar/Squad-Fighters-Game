@@ -8,8 +8,8 @@ namespace SquadFighters
 {
     public enum GameState
     {
-        MainMenu,
-        Loading,
-        Game
+        MainMenu, //תפריט ראשי
+        Loading, // טעינה
+        Game //משחק
     }
 }

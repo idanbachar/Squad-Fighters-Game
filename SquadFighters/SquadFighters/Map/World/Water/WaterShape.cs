@@ -8,8 +8,8 @@ namespace SquadFighters
 {
     public enum WaterShape
     {
-        Medium,
-        Tall,
-        Rectangle
+        Medium, //בינוני
+        Tall, // ארוך
+        Rectangle // מלבני
     }
 }

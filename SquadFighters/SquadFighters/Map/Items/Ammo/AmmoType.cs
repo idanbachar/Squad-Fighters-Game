@@ -8,7 +8,7 @@ namespace SquadFighters
 {
     public enum AmmoType
     {
-        Bullet,
-        Rocket
+        Bullet, //כדור
+        Rocket // טיל
     }
 }
