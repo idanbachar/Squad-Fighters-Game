@@ -8,7 +8,7 @@ namespace SquadFighters
 {
     public enum ButtonType
     {
-        JoinGame,
-        Exit
+        JoinGame, // התחבר למשחק
+        Exit // צא מהמשחק
     }
 }
