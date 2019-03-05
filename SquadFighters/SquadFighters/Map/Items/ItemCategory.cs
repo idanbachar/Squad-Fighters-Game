@@ -12,9 +12,9 @@ namespace SquadFighters
 {
     public enum ItemCategory
     {
-        Ammo,
-        Food,
-        Shield,
-        Helmet
+        Ammo, //תחמושת
+        Food, //אוכל
+        Shield, //מגן
+        Helmet //קסדה
     }
 }

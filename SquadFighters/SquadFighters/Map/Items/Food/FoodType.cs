@@ -8,8 +8,8 @@ namespace SquadFighters
 {
     public enum FoodType
     {
-        Banana,
-        Orange,
-        Pear
+        Banana, // בננה
+        Orange, // תפוז
+        Pear // אגס
     }
 }
