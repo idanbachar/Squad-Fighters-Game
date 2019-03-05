@@ -576,13 +576,19 @@ namespace SquadFighters
                 //עדכון תמידי ובדיקת נגיעת השחקן הנוכחי בשאר הפריטים שבמשחק
                 CheckItemsIntersects(Map.Items);
 
+                //בודק אם השחקן הנוכחי לחץ על R
                 if (Keyboard.GetState().IsKeyDown(Keys.R))
                 {
+                    //בודק אם השחקן הנוכחי במגע עם אחד השחקנים
                     if (GetOtherPlayerIntersects(Players) != null)
                     {
-                        Player intersectedPlayer = GetOtherPlayerIntersects(Players);
+
+                        Player intersectedPlayer = GetOtherPlayerIntersects(Players); //במידה ונוגע באחד השחקנים, מקבל את השחקן שנוגע בך
+
+                        //בודק אם השחקן הנוכחי מת
                         if (intersectedPlayer.IsDead)
                         {
+                            //מחייה את השחקן עד שנגמר זמן ההחייאה
                             if (!Player.IsFinishedRevive)
                             {
                                 Player.RevivePlayer();
@@ -591,17 +597,18 @@ namespace SquadFighters
                             }
                             else
                             {
-                                SendOneDataToServer("Revive=true,RevivedName=" + intersectedPlayer.Name);
-                                Player.ResetRevive();
-                                Player.OtherPlayerRevivingName = string.Empty;
-                                Player.ReviveCountUpString = string.Empty;
+                                SendOneDataToServer("Revive=true,RevivedName=" + intersectedPlayer.Name); //שולח הודעה לשרת על איזה שחקן קיבל החייאה
+                                Player.ResetRevive(); //איפוס
+                                Player.OtherPlayerRevivingName = string.Empty; //איפוס
+                                Player.ReviveCountUpString = string.Empty; //איפוס
                             }
                         }
                     }
                 }
 
+                //בודק אם השחקן הנוכחי הפסיק ללחוץ על R
                 if (Keyboard.GetState().IsKeyUp(Keys.R)) {
-                    Player.ResetRevive();
+                    Player.ResetRevive(); //איפוס
                 }
 
                 //עדכון תמידי של כרטיסיית השחקן הנוכחי
@@ -816,7 +823,7 @@ namespace SquadFighters
                 // צייר את שם השחקן הנוכחי מעל הראש
                 HUD.DrawPlayerInfo(spriteBatch, Player);
 
-
+                // בדיקה אם השחקן הנוכחי מחייה שחקן אחר
                 if(Player.IsReviving)
                     spriteBatch.DrawString(GlobalFont, "Reviving " + Player.OtherPlayerRevivingName + "(" + Player.ReviveCountUpString + ")", new Vector2(Player.Position.X + 20, Player.Position.Y + 30), Color.Red);
 
