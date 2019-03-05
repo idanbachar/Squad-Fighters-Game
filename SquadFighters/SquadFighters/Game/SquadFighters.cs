@@ -30,6 +30,8 @@ namespace SquadFighters
         private Vector2 CameraPosition; //מיקום התבייתות מצלמה
         private int CameraPlayersIndex; //אינדקס מצלמה
 
+        private SpriteFont GlobalFont; // פונט גלובלי
+
         //משתני רשת
         private Thread ReceiveThread; //קבלת נתונים מהשרת
         private Thread SendPlayerDataThread; //שליחת נתונים לשרת
@@ -202,6 +204,9 @@ namespace SquadFighters
                         ShieldType playerShieldType = (ShieldType)int.Parse(ReceivedDataArray[10].Split('=')[1]);
                         int playerBulletsCapacity = int.Parse(ReceivedDataArray[11].Split('=')[1]);
                         bool playerIsDead = bool.Parse(ReceivedDataArray[12].Split('=')[1]);
+                        bool playerIsReviving = bool.Parse(ReceivedDataArray[13].Split('=')[1]);
+                        string otherPlayerRevivingName = ReceivedDataArray[14].Split('=')[1];
+                        string playerReviveCountUpString = ReceivedDataArray[15].Split('=')[1];
 
                         //כל זה יקרה אך ורק אם השחקן אכן התחבר מקודם
                         if (Players.ContainsKey(playerName))
@@ -219,7 +224,10 @@ namespace SquadFighters
                             Players[playerName].ShieldType = playerShieldType; // סוג ההגנה
                             Players[playerName].BulletsCapacity = playerBulletsCapacity; //כמות תחמושת נוכחית
                             Players[playerName].IsDead = playerIsDead; // האם השחקן מת
-                            
+                            Players[playerName].IsReviving = playerIsReviving; // האם השחקן הנוכחי מחייה שחקן אחר
+                            Players[playerName].OtherPlayerRevivingName = otherPlayerRevivingName; // בהנחה והשחקן הנוכחי מחייה שחקן אחר, השג את שמו
+                            Players[playerName].ReviveCountUpString = playerReviveCountUpString; // מלל שמופיע כשמחיים
+
                             //עדכון הערכים עבור אותו שחקן בכרטיסייה שלו
                             for (int i = 0; i < HUD.PlayersCards.Count; i++)
                             {
@@ -313,6 +321,13 @@ namespace SquadFighters
                         //בצע ירייה עבור השחקן שירה
                         Players[playerName].Shoot();
                     }
+                    else if (ReceivedDataString.Contains("Revive=true"))
+                    {
+                        string playerName = ReceivedDataArray[1].Split('=')[1];
+
+                        if (Player.Name == playerName)
+                            Player.Heal(100);
+                    }
 
                     Thread.Sleep(50);
                 }
@@ -321,6 +336,17 @@ namespace SquadFighters
                     Console.WriteLine(e.Message);
                 }
             }
+        }
+
+        public Player GetOtherPlayerIntersects(Dictionary<string, Player> otherPlayers)
+        {
+            foreach (KeyValuePair<string, Player> otherPlayer in otherPlayers)
+            {
+                if (Player.Rectangle.Intersects(otherPlayer.Value.Rectangle))
+                    return otherPlayer.Value;
+            }
+
+            return null;
         }
 
         //בדיקת מגע עם הפריטים שבמפה
@@ -419,6 +445,9 @@ namespace SquadFighters
 
             //יצירת מחלקת המצלמה
             Camera = new Camera(GraphicsDevice.Viewport);
+
+            //טעינת פונט גלובלי
+            GlobalFont = Content.Load<SpriteFont>("fonts/player_name_font");
 
             //יצירת מערכת התצוגה UI של השחקן
             HUD = new HUD();
@@ -546,6 +575,34 @@ namespace SquadFighters
 
                 //עדכון תמידי ובדיקת נגיעת השחקן הנוכחי בשאר הפריטים שבמשחק
                 CheckItemsIntersects(Map.Items);
+
+                if (Keyboard.GetState().IsKeyDown(Keys.R))
+                {
+                    if (GetOtherPlayerIntersects(Players) != null)
+                    {
+                        Player intersectedPlayer = GetOtherPlayerIntersects(Players);
+                        if (intersectedPlayer.IsDead)
+                        {
+                            if (!Player.IsFinishedRevive)
+                            {
+                                Player.RevivePlayer();
+                                Player.OtherPlayerRevivingName = intersectedPlayer.Name;
+                                Player.ReviveCountUpString = (int)(((double)Player.ReviveTimer / (double)Player.ReviveMaxTime) * 100) + "%";
+                            }
+                            else
+                            {
+                                SendOneDataToServer("Revive=true,RevivedName=" + intersectedPlayer.Name);
+                                Player.ResetRevive();
+                                Player.OtherPlayerRevivingName = string.Empty;
+                                Player.ReviveCountUpString = string.Empty;
+                            }
+                        }
+                    }
+                }
+
+                if (Keyboard.GetState().IsKeyUp(Keys.R)) {
+                    Player.ResetRevive();
+                }
 
                 //עדכון תמידי של כרטיסיית השחקן הנוכחי
                 HUD.PlayerCard.Update(Player, new Vector2(0, 0));
@@ -747,6 +804,10 @@ namespace SquadFighters
 
                     // צייר את שמות השחקנים שהתחברו מעל הראש שלהם
                     HUD.DrawPlayersInfo(spriteBatch, otherPlayer.Value);
+
+                    // בדיקה האם שחקן אחר מחייה את השחקן הנוכחי
+                    if(otherPlayer.Value.IsReviving && otherPlayer.Value.OtherPlayerRevivingName == Player.Name)
+                        spriteBatch.DrawString(GlobalFont, "You have been\nrevived by " + otherPlayer.Value.Name + "(" + otherPlayer.Value.ReviveCountUpString + ")", new Vector2(otherPlayer.Value.Position.X + 20, otherPlayer.Value.Position.Y + 30), Color.Red);
                 }
 
                 // צייר את השחקן הנוכחי
@@ -754,6 +815,10 @@ namespace SquadFighters
 
                 // צייר את שם השחקן הנוכחי מעל הראש
                 HUD.DrawPlayerInfo(spriteBatch, Player);
+
+
+                if(Player.IsReviving)
+                    spriteBatch.DrawString(GlobalFont, "Reviving " + Player.OtherPlayerRevivingName + "(" + Player.ReviveCountUpString + ")", new Vector2(Player.Position.X + 20, Player.Position.Y + 30), Color.Red);
 
                 // סיים ציור AlphaBlend
                 spriteBatch.End();

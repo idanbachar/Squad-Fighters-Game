@@ -31,6 +31,12 @@ namespace SquadFighters
         public bool IsShield;
         public bool IsSwimming;
         public bool IsDead;
+        public int ReviveMaxTime;
+        public int ReviveTimer;
+        public bool IsFinishedRevive;
+        public bool IsReviving;
+        public string OtherPlayerRevivingName;
+        public string ReviveCountUpString;
 
         public Player(string playerName)
         {
@@ -45,6 +51,12 @@ namespace SquadFighters
             IsShield = false;
             IsSwimming = false;
             IsDead = false;
+            ReviveTimer = 0;
+            IsFinishedRevive = false;
+            ReviveMaxTime = 300;
+            IsReviving = false;
+            OtherPlayerRevivingName = string.Empty;
+            ReviveCountUpString = string.Empty;
         }
 
         public void LoadContent(ContentManager content)
@@ -61,6 +73,29 @@ namespace SquadFighters
             CheckKeyboardMovement();
             CheckIsDead();
             IsSwimming = IsWaterIntersects(map.WaterObjects);
+        }
+
+        public void RevivePlayer()
+        {
+            if (ReviveTimer < ReviveMaxTime)
+            {
+                ReviveTimer++;
+                IsFinishedRevive = false;
+                IsReviving = true;
+            }
+            else
+            {
+                ReviveTimer = 0;
+                IsFinishedRevive = true;
+                IsReviving = false;
+            }
+        }
+
+        public void ResetRevive()
+        {
+            ReviveTimer = 0;
+            IsFinishedRevive = false;
+            IsReviving = false;
         }
 
         public void CheckIsDead()
@@ -118,7 +153,7 @@ namespace SquadFighters
 
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.R))
+            if (Keyboard.GetState().IsKeyDown(Keys.K))
                 Hit(5);
         }
 
@@ -149,7 +184,7 @@ namespace SquadFighters
 
         public override string ToString()
         {
-            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",";
+            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",PlayerIsReviving=" + IsReviving + ",RevivingPlayerName="  + OtherPlayerRevivingName + ",PlayerReviveCountUpString=" + ReviveCountUpString + ",";
         }
     }
 }
