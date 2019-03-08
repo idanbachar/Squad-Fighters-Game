@@ -37,12 +37,12 @@ namespace SquadFighters
         public bool IsReviving;
         public string OtherPlayerRevivingName;
         public string ReviveCountUpString;
+        public Team Team;
 
         public Player(string playerName)
         {
             Name = playerName;
             SetDefaultHealth();
-            SetDefaultPosition();
             Rotation = 0;
             MaxBulletsCapacity = 30;
             BulletsCapacity = 0;
@@ -55,8 +55,9 @@ namespace SquadFighters
             IsFinishedRevive = false;
             ReviveMaxTime = 300;
             IsReviving = false;
-            OtherPlayerRevivingName = string.Empty;
-            ReviveCountUpString = string.Empty;
+            OtherPlayerRevivingName = "None";
+            ReviveCountUpString = "0/0";
+            Team = Team.Alpha;
         }
 
         public void LoadContent(ContentManager content)
@@ -65,6 +66,7 @@ namespace SquadFighters
             Texture = content.Load<Texture2D>("images/player/player");
             DeadSignTexture = content.Load<Texture2D>("images/player/player_dead_sign");
             ShieldType = ShieldType.None;
+            SetDefaultPosition();
         }
 
         public void Update(Map map)
@@ -153,8 +155,6 @@ namespace SquadFighters
 
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.K))
-                Hit(5);
         }
 
         public void Shoot()
@@ -170,13 +170,18 @@ namespace SquadFighters
 
         private void SetDefaultPosition()
         {
-            Position = new Vector2(100, 100);
+            Position = new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - Texture.Width / 2, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - Texture.Height / 2);
             Rectangle = new Rectangle((int)Position.X, (int)Position.Y, 0, 0);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Texture, Position, null, IsSwimming ? Color.LightSkyBlue :Color.White, Rotation, new Vector2(Texture.Width / 2, Texture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
+            spriteBatch.Draw(Texture, Position, null, 
+                                                     IsSwimming ? Color.LightSkyBlue : 
+                                                     Team == Team.Alpha ? Color.White : 
+                                                     Team == Team.Beta ? Color.Yellow : 
+                                                     Team == Team.Omega ? Color.Purple : Color.White,
+                                                     Rotation, new Vector2(Texture.Width / 2, Texture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
 
             if (IsDead)
                 spriteBatch.Draw(DeadSignTexture, Position, null, Color.White, Rotation, new Vector2(DeadSignTexture.Width / 2, DeadSignTexture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
@@ -184,7 +189,7 @@ namespace SquadFighters
 
         public override string ToString()
         {
-            return "PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",PlayerIsReviving=" + IsReviving + ",RevivingPlayerName="  + OtherPlayerRevivingName + ",PlayerReviveCountUpString=" + ReviveCountUpString + ",";
+            return ServerMethod.PlayerData.ToString() + "=true,PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",PlayerIsReviving=" + IsReviving + ",RevivingPlayerName="  + OtherPlayerRevivingName + ",PlayerReviveCountUpString=" + ReviveCountUpString + ",PlayerTeam=" + (int)Team + ",";
         }
     }
 }

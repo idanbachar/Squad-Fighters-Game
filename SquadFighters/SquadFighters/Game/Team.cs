@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace SquadFighters
 {
-    public enum ButtonType
+    public enum Team
     {
-        JoinGame, // התחבר למשחק
-        Exit, // צא מהמשחק
         Alpha,
         Beta,
         Omega

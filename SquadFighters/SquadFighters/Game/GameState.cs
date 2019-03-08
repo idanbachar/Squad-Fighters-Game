@@ -10,6 +10,8 @@ namespace SquadFighters
     {
         MainMenu, //תפריט ראשי
         Loading, // טעינה
-        Game //משחק
+        Game, //משחק
+        ChooseTeam, //בחירת קבוצה
+        SelectColor // בחירת צבע
     }
 }
