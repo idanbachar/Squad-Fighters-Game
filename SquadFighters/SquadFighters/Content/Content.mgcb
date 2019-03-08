@@ -259,7 +259,7 @@
 /processorParam:TextureFormat=Color
 /build:images/main menu/buttons/alpha.png
 
-#begin images/main menu/buttons/bravo.png
+#begin images/main menu/buttons/beta.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -269,7 +269,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:images/main menu/buttons/bravo.png;images/main menu/buttons/beta.png
+/build:images/main menu/buttons/beta.png
 
 #begin images/main menu/buttons/exit.png
 /importer:TextureImporter

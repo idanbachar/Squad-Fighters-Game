@@ -43,7 +43,6 @@ namespace SquadFighters
         {
             Name = playerName;
             SetDefaultHealth();
-            SetDefaultPosition();
             Rotation = 0;
             MaxBulletsCapacity = 30;
             BulletsCapacity = 0;
@@ -67,6 +66,7 @@ namespace SquadFighters
             Texture = content.Load<Texture2D>("images/player/player");
             DeadSignTexture = content.Load<Texture2D>("images/player/player_dead_sign");
             ShieldType = ShieldType.None;
+            SetDefaultPosition();
         }
 
         public void Update(Map map)
@@ -170,7 +170,7 @@ namespace SquadFighters
 
         private void SetDefaultPosition()
         {
-            Position = new Vector2(100, 100);
+            Position = new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - Texture.Width / 2, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - Texture.Height / 2);
             Rectangle = new Rectangle((int)Position.X, (int)Position.Y, 0, 0);
         }
 
