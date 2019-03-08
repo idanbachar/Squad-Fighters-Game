@@ -70,12 +70,13 @@ namespace SquadFighters
             try
             {
                 Client = new TcpClient(ServerIp, ServerPort); //ניסיון התחברות לשרת
-                SendOneDataToServer(ServerMethod.StartDownloadMapData.ToString()); //במידה והצליח שלח לשרת הודעת טעינת מפה
 
+                SendOneDataToServer(ServerMethod.StartDownloadMapData.ToString()); //במידה והצליח שלח לשרת הודעת טעינת מפה
                 ReceiveThread = new Thread(ReceiveDataFromServer);
                 ReceiveThread.Start();
 
                 new Thread(CheckKeyBoard).Start();
+
             }
             catch (Exception e)
             {
@@ -107,6 +108,18 @@ namespace SquadFighters
             HUD.PlayerCard.LoadContent(Content);
  
             ConnectToServer(ServerIp, ServerPort);
+        }
+
+        public void JoinMatch()
+        {
+            GameState = GameState.Game;
+
+            //והתחל לשלוח באופן חוזר מידע על השחקן הנוכחי
+            SendPlayerDataThread = new Thread(() => SendPlayerDataToServer());
+            SendPlayerDataThread.Start();
+
+            //עדכון תמידי ובדיקת נגיעת השחקן הנוכחי בשאר הפריטים שבמשחק
+            new Thread(() => CheckItemsIntersects(Map.Items)).Start();
         }
 
         //שליחת מידע בודד לשרת
@@ -214,6 +227,7 @@ namespace SquadFighters
                         bool playerIsReviving = bool.Parse(ReceivedDataArray[14].Split('=')[1]);
                         string otherPlayerRevivingName = ReceivedDataArray[15].Split('=')[1];
                         string playerReviveCountUpString = ReceivedDataArray[16].Split('=')[1];
+                        Team playerTeam = (Team)int.Parse(ReceivedDataArray[17].Split('=')[1]);
 
                         //כל זה יקרה אך ורק אם השחקן אכן התחבר מקודם
                         if (Players.ContainsKey(playerName))
@@ -236,6 +250,7 @@ namespace SquadFighters
                                 Players[playerName].IsReviving = playerIsReviving; // האם השחקן הנוכחי מחייה שחקן אחר
                                 Players[playerName].OtherPlayerRevivingName = otherPlayerRevivingName; // בהנחה והשחקן הנוכחי מחייה שחקן אחר, השג את שמו
                                 Players[playerName].ReviveCountUpString = playerReviveCountUpString; // מלל שמופיע כשמחיים
+                                Players[playerName].Team = playerTeam; //קבוצה
 
                                 //עדכון הערכים עבור אותו שחקן בכרטיסייה שלו
                                 for (int i = 0; i < HUD.PlayersCards.Count; i++)
@@ -283,7 +298,6 @@ namespace SquadFighters
                         //הדפס בקונסול
                         Console.WriteLine(ReceivedDataString);
 
-
                     } //במידה והמידע שהתקבל מכיל מחיקת פריט
                     else if (ReceivedDataString.Contains(ServerMethod.RemoveItem.ToString()))
                     {
@@ -316,18 +330,11 @@ namespace SquadFighters
                     else if (ReceivedDataString == ServerMethod.MapDataDownloadCompleted.ToString())
                     {
                         //מצב משחק יתחלף למשחק
-                        GameState = GameState.Game;
+                        GameState = GameState.ChooseTeam;
 
                         //שלח הודעה לשרת שהצטרף שחקן
                         SendOneDataToServer(Player.Name + "," + ServerMethod.PlayerConnected);
 
-                        //והתחל לשלוח באופן חוזר מידע על השחקן הנוכחי
-                        SendPlayerDataThread = new Thread(() => SendPlayerDataToServer());
-                        SendPlayerDataThread.Start();
-
-                        //עדכון תמידי ובדיקת נגיעת השחקן הנוכחי בשאר הפריטים שבמשחק
-                        new Thread(() => CheckItemsIntersects(Map.Items)).Start();
-                        Console.WriteLine(ReceivedDataString);
                     }
                     //במידה והתקבל מידע על ירייה
                     if (ReceivedDataString.Contains(ServerMethod.ShootData.ToString()))
@@ -589,9 +596,9 @@ namespace SquadFighters
                 // אם השחקן לא מת
                 if (!Player.IsDead)
                     Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height); // המצלמה תתביית על השחקן הנוכחי בלבד
-                else if(Player.IsDead && CameraPlayersIndex != -1)  // המצלמה תיתן להחליף בין מצלמת שחקנים spectate
+                else if (Player.IsDead && CameraPlayersIndex != -1)  // המצלמה תיתן להחליף בין מצלמת שחקנים spectate
                     Camera.Focus(Players.ElementAt(CameraPlayersIndex).Value.Position, Map.Rectangle.Width, Map.Rectangle.Height);
-                else if(Player.IsDead && CameraPlayersIndex == -1) //המצלמה תתביית על השחקן הנוכחי בלבד
+                else if (Player.IsDead && CameraPlayersIndex == -1) //המצלמה תתביית על השחקן הנוכחי בלבד
                     Camera.Focus(Player.Position, Map.Rectangle.Width, Map.Rectangle.Height);
 
                 //אם השחקן הנוכחי הקיש tab
@@ -644,7 +651,8 @@ namespace SquadFighters
                 }
 
                 //בודק אם השחקן הנוכחי הפסיק ללחוץ על R
-                if (Keyboard.GetState().IsKeyUp(Keys.R)) {
+                if (Keyboard.GetState().IsKeyUp(Keys.R))
+                {
                     Player.ResetRevive(); //איפוס
                 }
 
@@ -718,7 +726,7 @@ namespace SquadFighters
                                     }
                                     break;
                             }
-                            
+
                         }
 
                         // במידה ולא נעצרה הירייה
@@ -763,12 +771,14 @@ namespace SquadFighters
 
                 }
             } // במידה וסוג המשחק הוא תפריט ראשי
-            else if(GameState == GameState.MainMenu)
+            else if (GameState == GameState.MainMenu)
             {
                 //במידה ונלחץ קליק שמאלי בעכבר
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed && !isPressed)
                 {
                     isPressed = true;
+
+                    /*           כפתורי תפריט ראשי             */
 
                     //ונהיה על הכפתור של Join Game
                     if (MainMenu.Buttons[0].Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
@@ -782,11 +792,46 @@ namespace SquadFighters
                     if (MainMenu.Buttons[1].Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
                     {
                         // צא מהמשחק
-                        Exit();
+                        Environment.Exit(Environment.ExitCode);
                     }
                 }
 
-                if(Mouse.GetState().LeftButton == ButtonState.Released)
+                if (Mouse.GetState().LeftButton == ButtonState.Released)
+                {
+                    isPressed = false;
+                }
+            }
+            else if (GameState == GameState.ChooseTeam)
+            {
+                //במידה ונלחץ קליק שמאלי בעכבר
+                if (Mouse.GetState().LeftButton == ButtonState.Pressed && !isPressed)
+                {
+                    isPressed = true;
+
+                    foreach (Button team in MainMenu.Teams)
+                    {
+                        if (team.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
+                        {
+                            switch (team.ButtonType)
+                            {
+                                case ButtonType.Alpha:
+                                    Player.Team = Team.Alpha;
+                                    JoinMatch();
+                                    break;
+                                case ButtonType.Beta:
+                                    Player.Team = Team.Beta;
+                                    JoinMatch();
+                                    break;
+                                case ButtonType.Omega:
+                                    Player.Team = Team.Omega;
+                                    JoinMatch();
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                if (Mouse.GetState().LeftButton == ButtonState.Released)
                 {
                     isPressed = false;
                 }
@@ -921,6 +966,23 @@ namespace SquadFighters
 
 
                 // סיום ציור רגיל
+                spriteBatch.End();
+            }
+
+            else if(GameState == GameState.ChooseTeam)
+            {
+                spriteBatch.Begin();
+
+                HUD.DrawGameTitle(spriteBatch);
+
+                HUD.DrawChooseTeam(spriteBatch);
+
+                foreach(Button button in MainMenu.Teams)
+                    if (button.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
+                        button.Draw(spriteBatch, true); // הפוך כפתור לבהיר
+                    else//אחרת
+                        button.Draw(spriteBatch, false);// הפוך כפתור לכהה
+
                 spriteBatch.End();
             }
 

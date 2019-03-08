@@ -247,6 +247,30 @@
 /processorParam:TextureFormat=Color
 /build:images/items/shields/shield_rare.png
 
+#begin images/main menu/buttons/alpha.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/main menu/buttons/alpha.png
+
+#begin images/main menu/buttons/bravo.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/main menu/buttons/bravo.png;images/main menu/buttons/beta.png
+
 #begin images/main menu/buttons/exit.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -270,6 +294,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:images/main menu/buttons/join game.png;images/main menu/buttons/joingame.png
+
+#begin images/main menu/buttons/omega.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/main menu/buttons/omega.png
 
 #begin images/map/background.png
 /importer:TextureImporter

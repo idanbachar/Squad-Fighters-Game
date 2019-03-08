@@ -44,6 +44,7 @@
     <Compile Include="Camera\Camera.cs" />
     <Compile Include="Connection\ServerMethod.cs" />
     <Compile Include="Game\GameState.cs" />
+    <Compile Include="Game\Team.cs" />
     <Compile Include="Main Menu\Buttons\Button.cs" />
     <Compile Include="Main Menu\Buttons\ButtonType.cs" />
     <Compile Include="Main Menu\MainMenu.cs" />

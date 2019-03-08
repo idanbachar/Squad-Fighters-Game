@@ -37,6 +37,7 @@ namespace SquadFighters
         public bool IsReviving;
         public string OtherPlayerRevivingName;
         public string ReviveCountUpString;
+        public Team Team;
 
         public Player(string playerName)
         {
@@ -57,6 +58,7 @@ namespace SquadFighters
             IsReviving = false;
             OtherPlayerRevivingName = "None";
             ReviveCountUpString = "0/0";
+            Team = Team.Alpha;
         }
 
         public void LoadContent(ContentManager content)
@@ -174,7 +176,12 @@ namespace SquadFighters
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Texture, Position, null, IsSwimming ? Color.LightSkyBlue :Color.White, Rotation, new Vector2(Texture.Width / 2, Texture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
+            spriteBatch.Draw(Texture, Position, null, 
+                                                     IsSwimming ? Color.LightSkyBlue : 
+                                                     Team == Team.Alpha ? Color.White : 
+                                                     Team == Team.Beta ? Color.Yellow : 
+                                                     Team == Team.Omega ? Color.Purple : Color.White,
+                                                     Rotation, new Vector2(Texture.Width / 2, Texture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
 
             if (IsDead)
                 spriteBatch.Draw(DeadSignTexture, Position, null, Color.White, Rotation, new Vector2(DeadSignTexture.Width / 2, DeadSignTexture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
@@ -182,7 +189,7 @@ namespace SquadFighters
 
         public override string ToString()
         {
-            return ServerMethod.PlayerData.ToString() + "=true,PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",PlayerIsReviving=" + IsReviving + ",RevivingPlayerName="  + OtherPlayerRevivingName + ",PlayerReviveCountUpString=" + ReviveCountUpString + ",";
+            return ServerMethod.PlayerData.ToString() + "=true,PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",PlayerIsReviving=" + IsReviving + ",RevivingPlayerName="  + OtherPlayerRevivingName + ",PlayerReviveCountUpString=" + ReviveCountUpString + ",PlayerTeam=" + (int)Team + ",";
         }
     }
 }

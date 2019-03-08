@@ -47,7 +47,12 @@ namespace SquadFighters
 
         public void DrawGameTitle(SpriteBatch spriteBatch)
         {
-            spriteBatch.DrawString(GameTitleFont, "SquadFighters", new Vector2(100, 100), Color.White);
+            spriteBatch.DrawString(GameTitleFont, "Squad Fighters", new Vector2(90, 80), Color.Black);
+        }
+
+        public void DrawChooseTeam(SpriteBatch spriteBatch)
+        {
+            spriteBatch.DrawString(LoadingFont, "Choose Team", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, 140), Color.White);
         }
 
         public void DrawLoading(SpriteBatch spriteBatch, double MaxItems, double CurrentItemsLoaded)
@@ -58,7 +63,7 @@ namespace SquadFighters
             {
                 percent = (double)((CurrentItemsLoaded / MaxItems) * 100);
             }
-            spriteBatch.DrawString(LoadingFont, "Loading..(" + (int)percent + "%)", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 75), Color.Black);
+            spriteBatch.DrawString(LoadingFont, "Downloading (" + (int)percent + "% ..)", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 75), Color.Black);
         }
 
         public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)
