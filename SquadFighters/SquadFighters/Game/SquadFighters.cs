@@ -74,6 +74,8 @@ namespace SquadFighters
 
                 ReceiveThread = new Thread(ReceiveDataFromServer);
                 ReceiveThread.Start();
+
+                new Thread(CheckKeyBoard).Start();
             }
             catch (Exception e)
             {
@@ -115,8 +117,6 @@ namespace SquadFighters
                 NetworkStream stream = Client.GetStream();
                 byte[] bytes = Encoding.ASCII.GetBytes(data);
                 stream.Write(bytes, 0, bytes.Length);
-
-                Thread.Sleep(130);
             }
             catch (Exception e)
             {
@@ -168,12 +168,16 @@ namespace SquadFighters
             //רוץ כל הזמן
             while (true)
             {
+
                 //נסה לבצע
                 try
                 {
                     NetworkStream netStream = Client.GetStream();
                     byte[] bytes = new byte[10024];
-                    netStream.Read(bytes, 0, bytes.Length);
+                    lock (netStream)
+                    {
+                        netStream.Read(bytes, 0, bytes.Length);
+                    }
                     string data = Encoding.ASCII.GetString(bytes);
                     string ReceivedDataString = data.Substring(0, data.IndexOf("\0"));
                     ReceivedDataArray = ReceivedDataString.Split(','); //מערך שבו כל הפרמטרים מופרדים באמצעות פסיקים
@@ -185,7 +189,10 @@ namespace SquadFighters
 
                         if (CurrentConnectedPlayerName != Player.Name)
                         {
-                            AddPlayer(CurrentConnectedPlayerName);
+                            lock (Players)
+                            {
+                                AddPlayer(CurrentConnectedPlayerName);
+                            }
                             Console.WriteLine(ReceivedDataString);
                         }
                     } //בדיקה אם במידע שהתקבל מופיע שם השחקן, ובמידה וכן עדכן את הנתונים שלו
@@ -211,45 +218,48 @@ namespace SquadFighters
                         //כל זה יקרה אך ורק אם השחקן אכן התחבר מקודם
                         if (Players.ContainsKey(playerName))
                         {
-                            Players[playerName].Name = playerName; //שם שחקן
-                            Players[playerName].Position.X = playerX; //מיקום קורדינטת X של השחקן   
-                            Players[playerName].Position.Y = playerY; // מיקום קורדינטת Y של השחקן
-                            Players[playerName].Rotation = playerRotation; //זווית השחקן
-                            Players[playerName].Health = playerHealth; //בריאות השחקן
-                            Players[playerName].IsShoot = playerIsShoot; //האם השחקן יורה
-                            Players[playerName].Direction.X = playerDirectionX; //כיוון השחקן בציר ה X
-                            Players[playerName].Direction.Y = playerDirectionY; // כיוון השחקן בציר ה Y
-                            Players[playerName].IsSwimming = playerIsSwimming; // האם השחקן שוחה
-                            Players[playerName].IsShield = playerIsShield; // האם לשחקן יש הגנה
-                            Players[playerName].ShieldType = playerShieldType; // סוג ההגנה
-                            Players[playerName].BulletsCapacity = playerBulletsCapacity; //כמות תחמושת נוכחית
-                            Players[playerName].IsDead = playerIsDead; // האם השחקן מת
-                            Players[playerName].IsReviving = playerIsReviving; // האם השחקן הנוכחי מחייה שחקן אחר
-                            Players[playerName].OtherPlayerRevivingName = otherPlayerRevivingName; // בהנחה והשחקן הנוכחי מחייה שחקן אחר, השג את שמו
-                            Players[playerName].ReviveCountUpString = playerReviveCountUpString; // מלל שמופיע כשמחיים
-
-                            //עדכון הערכים עבור אותו שחקן בכרטיסייה שלו
-                            for (int i = 0; i < HUD.PlayersCards.Count; i++)
+                            lock (Players)
                             {
-                                //בדוק אם שם בעל הכרטיסייה שווה לשם השחקן שהגיע עליו המידע
-                                if (HUD.PlayersCards[i].PlayerName == playerName) 
-                                {
-                                    // עדכן האם יכול להציג את הבועות ליד הכרטיסייה של השחקן שהתקבל
-                                    HUD.PlayersCards[i].CanBubble = playerIsSwimming;
+                                Players[playerName].Name = playerName; //שם שחקן
+                                Players[playerName].Position.X = playerX; //מיקום קורדינטת X של השחקן   
+                                Players[playerName].Position.Y = playerY; // מיקום קורדינטת Y של השחקן
+                                Players[playerName].Rotation = playerRotation; //זווית השחקן
+                                Players[playerName].Health = playerHealth; //בריאות השחקן
+                                Players[playerName].IsShoot = playerIsShoot; //האם השחקן יורה
+                                Players[playerName].Direction.X = playerDirectionX; //כיוון השחקן בציר ה X
+                                Players[playerName].Direction.Y = playerDirectionY; // כיוון השחקן בציר ה Y
+                                Players[playerName].IsSwimming = playerIsSwimming; // האם השחקן שוחה
+                                Players[playerName].IsShield = playerIsShield; // האם לשחקן יש הגנה
+                                Players[playerName].ShieldType = playerShieldType; // סוג ההגנה
+                                Players[playerName].BulletsCapacity = playerBulletsCapacity; //כמות תחמושת נוכחית
+                                Players[playerName].IsDead = playerIsDead; // האם השחקן מת
+                                Players[playerName].IsReviving = playerIsReviving; // האם השחקן הנוכחי מחייה שחקן אחר
+                                Players[playerName].OtherPlayerRevivingName = otherPlayerRevivingName; // בהנחה והשחקן הנוכחי מחייה שחקן אחר, השג את שמו
+                                Players[playerName].ReviveCountUpString = playerReviveCountUpString; // מלל שמופיע כשמחיים
 
-                                    //עשה פעולה זו רק אם אין לך הגנה מלפני
-                                    if ((HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType))
+                                //עדכון הערכים עבור אותו שחקן בכרטיסייה שלו
+                                for (int i = 0; i < HUD.PlayersCards.Count; i++)
+                                {
+                                    //בדוק אם שם בעל הכרטיסייה שווה לשם השחקן שהגיע עליו המידע
+                                    if (HUD.PlayersCards[i].PlayerName == playerName)
                                     {
-                                        //עדכון בר ההגנה בכרטיסיה של אותו שחקן
-                                        for (int j = 0; j < HUD.PlayersCards[i].ShieldBars.Length; j++) //רוץ על כל ברי ההגנה
+                                        // עדכן האם יכול להציג את הבועות ליד הכרטיסייה של השחקן שהתקבל
+                                        HUD.PlayersCards[i].CanBubble = playerIsSwimming;
+
+                                        //עשה פעולה זו רק אם אין לך הגנה מלפני
+                                        if ((HUD.PlayersCards[i].ShieldBars[0].ShieldType != playerShieldType))
                                         {
-                                            HUD.PlayersCards[i].ShieldBars[j].ShieldType = Players[playerName].ShieldType; //עדכן את סוג בר ההגנה בכרטיסייה
-                                            HUD.PlayersCards[i].ShieldBars[j].LoadContent(Content); // טען את סוג בר ההגנה בכרטיסייה
+                                            //עדכון בר ההגנה בכרטיסיה של אותו שחקן
+                                            for (int j = 0; j < HUD.PlayersCards[i].ShieldBars.Length; j++) //רוץ על כל ברי ההגנה
+                                            {
+                                                HUD.PlayersCards[i].ShieldBars[j].ShieldType = Players[playerName].ShieldType; //עדכן את סוג בר ההגנה בכרטיסייה
+                                                HUD.PlayersCards[i].ShieldBars[j].LoadContent(Content); // טען את סוג בר ההגנה בכרטיסייה
+                                            }
                                         }
                                     }
                                 }
                             }
-                        } 
+                        }
                         else //במידה ולא התחבר מקודם השחקן, וזו הפעם הראשונה
                         {
                             //צור שחקן חדש
@@ -278,7 +288,10 @@ namespace SquadFighters
                     else if (ReceivedDataString.Contains(ServerMethod.RemoveItem.ToString()))
                     {
                         string itemKey = ReceivedDataArray[1];
-                        Map.Items.Remove(itemKey); //הסר את הפריט שהתקבל
+                        lock (Map.Items)
+                        {
+                            Map.Items.Remove(itemKey); //הסר את הפריט שהתקבל
+                        }
                         Console.WriteLine(ReceivedDataString);
                     }//במידע והמידע שהתקבל מכיל עדכון כמות פריט
                     else if (ReceivedDataString.Contains(ServerMethod.UpdateItemCapacity.ToString()))
@@ -290,7 +303,10 @@ namespace SquadFighters
                         if (Map.Items[itemKey] is GunAmmo)
                         {
                             //אם כן עדכן במפה את הכמות של הפריט שהתקבל
-                            ((GunAmmo)(Map.Items[itemKey])).Capacity = receivedCapacity;
+                            lock (Map.Items)
+                            {
+                                ((GunAmmo)(Map.Items[itemKey])).Capacity = receivedCapacity;
+                            }
                         }
 
                         //הדפס בקונסול
@@ -316,7 +332,7 @@ namespace SquadFighters
                     //במידה והתקבל מידע על ירייה
                     if (ReceivedDataString.Contains(ServerMethod.ShootData.ToString()))
                     {
-                        string playerName =  ReceivedDataArray[1].Split('=')[1];
+                        string playerName = ReceivedDataArray[1].Split('=')[1];
 
                         //בצע ירייה עבור השחקן שירה
                         Players[playerName].Shoot();
@@ -329,7 +345,7 @@ namespace SquadFighters
                             Player.Heal(100);
                     }
 
-   
+
                 }
                 catch (Exception e)
                 {
@@ -375,8 +391,11 @@ namespace SquadFighters
                                     Player.Heal(heal); //העלאת בריאות לשחקן
                                     string key = items.ElementAt(i).Key; //השגת המפתח של המילון
 
-                                    items.Remove(key); //מחק את הפריט מהמפה
-                                    SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "," + key); //שלח עדכון לשרת על הפריט שנמחק על מנת שיימחק גם בשרת
+                                    lock (Map.Items)
+                                    {
+                                        items.Remove(key); //מחק את הפריט מהמפה
+                                    }
+                                    SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "=true," + key); //שלח עדכון לשרת על הפריט שנמחק על מנת שיימחק גם בשרת
                                 }
                             } //אם זה תחמושת
                             else if (items.ElementAt(i).Value is GunAmmo)
@@ -387,9 +406,11 @@ namespace SquadFighters
                                 {
                                     Player.BulletsCapacity += capacity; //עדכן את תחמושת השחקן בתחמושת החדשה
                                     string key = items.ElementAt(i).Key; // השגת המפתח של המילון
-
-                                    items.Remove(key); //מחק את הפריט מהמפה
-                                    SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "," + key); //שלח עדכון לשרת על הפריט שנמחק על מנת שיימחק גם בשרת
+                                    lock (Map.Items)
+                                    {
+                                        items.Remove(key); //מחק את הפריט מהמפה
+                                    }
+                                    SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "=true," + key); //שלח עדכון לשרת על הפריט שנמחק על מנת שיימחק גם בשרת
                                 }
                                 else //במידה והתחמושת שנגע בה השחקן תביא לשחקן יותר תחמושת משיכול לסחוב
                                 {
@@ -401,7 +422,7 @@ namespace SquadFighters
 
                                         int itemCapacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity; //השג את כמות התחמושת שנשארה לפריט לאחר השינוי
                                         string key = items.ElementAt(i).Key; //השג את המפתח של המילון
-                                        SendOneDataToServer(ServerMethod.UpdateItemCapacity.ToString() + "," + itemCapacity + "," + key); //שלח עדכון לשרת על עדכון הכמות של הפריט
+                                        SendOneDataToServer(ServerMethod.UpdateItemCapacity.ToString() + "=true," + itemCapacity + "," + key); //שלח עדכון לשרת על עדכון הכמות של הפריט
                                     }
                                 }
                             } // אם זה מגן
@@ -421,8 +442,11 @@ namespace SquadFighters
                                     Player.IsShield = true; //עדכן את השחקן למכיל הגנה
 
                                     string key = items.ElementAt(i).Key; //השגת מפתח המילון
-                                    items.Remove(key); //מחיקת הפריט
-                                    SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "," + key); //שלח עדכון לשרת על הפריט שנמחק על מנת שיימחק גם בשרת
+                                    lock (Map.Items)
+                                    {
+                                        items.Remove(key); //מחיקת הפריט
+                                    }
+                                    SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "=true," + key); //שלח עדכון לשרת על הפריט שנמחק על מנת שיימחק גם בשרת
                                 }
 
                             } //לא בשימוש
@@ -430,7 +454,7 @@ namespace SquadFighters
                             {
                                 string key = items.ElementAt(i).Key;
                                 items.Remove(key);
-                                SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "," + key);
+                                SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "=true," + key);
                             }
                         }
                     }
@@ -440,7 +464,7 @@ namespace SquadFighters
 
                 }
 
-                Thread.Sleep(50);
+                Thread.Sleep(100);
             }
         }
 
@@ -491,13 +515,40 @@ namespace SquadFighters
             return null; // אחרת תחזיר אובייקט ריק
         }
 
+        public void CheckKeyBoard()
+        {
+            while (true)
+            {
+                // אם השחקן הנוכחי הקיש רווח
+                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Player.IsShoot)
+                {
+
+                    // אם לשחקן הנוכחי יש תחמושת
+                    if (Player.BulletsCapacity > 0)
+                    {
+                        // השחקן הנוכחי יבצע יריה
+                        Player.Shoot();
+
+                        //וישלח עדכון לשרת שהוא ירה
+                        SendOneDataToServer(ServerMethod.ShootData.ToString() + "=true,PlayerShotName=" + Player.Name);
+  
+                    }
+                }
+                if (Keyboard.GetState().IsKeyUp(Keys.Space))
+                {
+                    Player.IsShoot = false;
+                }
+
+                Thread.Sleep(100);
+            }
+        }
+
         //עדכון משחק
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
-                DisconnectFromServer();
-                Exit();
+                Environment.Exit(Environment.ExitCode);
             }
 
             // אם סוג המשחק הוא משחק
@@ -558,25 +609,6 @@ namespace SquadFighters
                         playerCard.Visible = false;
                 }
 
-                // אם השחקן הנוכחי הקיש רווח
-                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Player.IsShoot)
-                {
-
-                    // אם לשחקן הנוכחי יש תחמושת
-                    if (Player.BulletsCapacity > 0)
-                    {
-                        // השחקן הנוכחי יבצע יריה
-                        Player.Shoot();
-
-                        //וישלח עדכון לשרת שהוא ירה
-                        SendOneDataToServer(ServerMethod.ShootData.ToString() + ",PlayerShotName=" + Player.Name);
-
-                    }
-                }
-                if (Keyboard.GetState().IsKeyUp(Keys.Space))
-                {
-                    Player.IsShoot = false;
-                }
 
                 //עדכון תמידי של השחקן הנוכחי
                 Player.Update(Map);
@@ -602,7 +634,7 @@ namespace SquadFighters
                             }
                             else
                             {
-                                SendOneDataToServer(ServerMethod.Revive.ToString() + ",RevivedName=" + intersectedPlayer.Name); //שולח הודעה לשרת על איזה שחקן קיבל החייאה
+                                SendOneDataToServer(ServerMethod.Revive.ToString() + "=true,RevivedName=" + intersectedPlayer.Name); //שולח הודעה לשרת על איזה שחקן קיבל החייאה
                                 Player.ResetRevive(); //איפוס
                                 Player.OtherPlayerRevivingName = string.Empty; //איפוס
                                 Player.ReviveCountUpString = string.Empty; //איפוס

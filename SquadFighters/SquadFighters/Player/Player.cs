@@ -55,8 +55,8 @@ namespace SquadFighters
             IsFinishedRevive = false;
             ReviveMaxTime = 300;
             IsReviving = false;
-            OtherPlayerRevivingName = string.Empty;
-            ReviveCountUpString = string.Empty;
+            OtherPlayerRevivingName = "None";
+            ReviveCountUpString = "0/0";
         }
 
         public void LoadContent(ContentManager content)
@@ -153,8 +153,6 @@ namespace SquadFighters
 
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.K))
-                Hit(5);
         }
 
         public void Shoot()
@@ -184,7 +182,7 @@ namespace SquadFighters
 
         public override string ToString()
         {
-            return ServerMethod.PlayerData.ToString() + ",PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",PlayerIsReviving=" + IsReviving + ",RevivingPlayerName="  + OtherPlayerRevivingName + ",PlayerReviveCountUpString=" + ReviveCountUpString + ",";
+            return ServerMethod.PlayerData.ToString() + "=true,PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",PlayerIsReviving=" + IsReviving + ",RevivingPlayerName="  + OtherPlayerRevivingName + ",PlayerReviveCountUpString=" + ReviveCountUpString + ",";
         }
     }
 }
