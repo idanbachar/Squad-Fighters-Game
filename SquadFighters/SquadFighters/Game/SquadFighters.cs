@@ -526,27 +526,30 @@ namespace SquadFighters
         {
             while (true)
             {
-                // אם השחקן הנוכחי הקיש רווח
-                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Player.IsShoot)
+                if (!Player.IsDead)
                 {
-
-                    // אם לשחקן הנוכחי יש תחמושת
-                    if (Player.BulletsCapacity > 0)
+                    // אם השחקן הנוכחי הקיש רווח
+                    if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Player.IsShoot)
                     {
-                        // השחקן הנוכחי יבצע יריה
-                        Player.Shoot();
+                        // אם לשחקן הנוכחי יש תחמושת
+                        if (Player.BulletsCapacity > 0)
+                        {
+                            // השחקן הנוכחי יבצע יריה
+                            Player.Shoot();
 
-                        //וישלח עדכון לשרת שהוא ירה
-                        SendOneDataToServer(ServerMethod.ShootData.ToString() + "=true,PlayerShotName=" + Player.Name);
-  
+                            //וישלח עדכון לשרת שהוא ירה
+                            SendOneDataToServer(ServerMethod.ShootData.ToString() + "=true,PlayerShotName=" + Player.Name);
+                        }
                     }
                 }
+
                 if (Keyboard.GetState().IsKeyUp(Keys.Space))
                 {
                     Player.IsShoot = false;
                 }
 
                 Thread.Sleep(100);
+
             }
         }
 
@@ -623,28 +626,31 @@ namespace SquadFighters
                 //בודק אם השחקן הנוכחי לחץ על R
                 if (Keyboard.GetState().IsKeyDown(Keys.R))
                 {
-                    //בודק אם השחקן הנוכחי במגע עם אחד השחקנים
-                    if (GetOtherPlayerIntersects(Players) != null)
+                    if (!Player.IsDead)
                     {
-
-                        Player intersectedPlayer = GetOtherPlayerIntersects(Players); //במידה ונוגע באחד השחקנים, מקבל את השחקן שנוגע בך
-
-                        //בודק אם השחקן הנוכחי מת
-                        if (intersectedPlayer.IsDead && intersectedPlayer.Team == Player.Team)
+                        //בודק אם השחקן הנוכחי במגע עם אחד השחקנים
+                        if (GetOtherPlayerIntersects(Players) != null)
                         {
-                            //מחייה את השחקן עד שנגמר זמן ההחייאה
-                            if (!Player.IsFinishedRevive)
+
+                            Player intersectedPlayer = GetOtherPlayerIntersects(Players); //במידה ונוגע באחד השחקנים, מקבל את השחקן שנוגע בך
+
+                            //בודק אם השחקן הנוכחי מת
+                            if (intersectedPlayer.IsDead && intersectedPlayer.Team == Player.Team)
                             {
-                                Player.RevivePlayer();
-                                Player.OtherPlayerRevivingName = intersectedPlayer.Name;
-                                Player.ReviveCountUpString = (int)(((double)Player.ReviveTimer / (double)Player.ReviveMaxTime) * 100) + "%";
-                            }
-                            else
-                            {
-                                SendOneDataToServer(ServerMethod.Revive.ToString() + "=true,RevivedName=" + intersectedPlayer.Name); //שולח הודעה לשרת על איזה שחקן קיבל החייאה
-                                Player.ResetRevive(); //איפוס
-                                Player.OtherPlayerRevivingName = string.Empty; //איפוס
-                                Player.ReviveCountUpString = string.Empty; //איפוס
+                                //מחייה את השחקן עד שנגמר זמן ההחייאה
+                                if (!Player.IsFinishedRevive)
+                                {
+                                    Player.RevivePlayer();
+                                    Player.OtherPlayerRevivingName = intersectedPlayer.Name;
+                                    Player.ReviveCountUpString = (int)(((double)Player.ReviveTimer / (double)Player.ReviveMaxTime) * 100) + "%";
+                                }
+                                else
+                                {
+                                    SendOneDataToServer(ServerMethod.Revive.ToString() + "=true,RevivedName=" + intersectedPlayer.Name); //שולח הודעה לשרת על איזה שחקן קיבל החייאה
+                                    Player.ResetRevive(); //איפוס
+                                    Player.OtherPlayerRevivingName = string.Empty; //איפוס
+                                    Player.ReviveCountUpString = string.Empty; //איפוס
+                                }
                             }
                         }
                     }
