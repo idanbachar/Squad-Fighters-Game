@@ -630,7 +630,7 @@ namespace SquadFighters
                         Player intersectedPlayer = GetOtherPlayerIntersects(Players); //במידה ונוגע באחד השחקנים, מקבל את השחקן שנוגע בך
 
                         //בודק אם השחקן הנוכחי מת
-                        if (intersectedPlayer.IsDead)
+                        if (intersectedPlayer.IsDead && intersectedPlayer.Team == Player.Team)
                         {
                             //מחייה את השחקן עד שנגמר זמן ההחייאה
                             if (!Player.IsFinishedRevive)
@@ -688,7 +688,7 @@ namespace SquadFighters
                     for (int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
                     {
                         // אם היריה שלהם פגעה בשחקן הנוכחי
-                        if (otherPlayer.Value.Bullets[i].Rectangle.Intersects(Player.Rectangle))
+                        if (otherPlayer.Value.Bullets[i].Rectangle.Intersects(Player.Rectangle) && otherPlayer.Value.Team != Player.Team)
                         {
                             //הפסק את היריה
                             otherPlayer.Value.Bullets[i].IsFinished = true;
@@ -750,7 +750,7 @@ namespace SquadFighters
                         for (int j = 0; j < Players.Count; j++)
                         {
                             // אם הכדור נגע באחד השחקנים שהתחברו
-                            if (Player.Bullets[i].Rectangle.Intersects(Players.ElementAt(j).Value.Rectangle))
+                            if (Player.Bullets[i].Rectangle.Intersects(Players.ElementAt(j).Value.Rectangle) && Player.Team != Players.ElementAt(j).Value.Team)
                                 Player.Bullets[i].IsFinished = true; // עצור את הירייה
 
                         }
