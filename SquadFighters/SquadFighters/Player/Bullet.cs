@@ -30,7 +30,7 @@ namespace SquadFighters
             IsFinished = false;
             Timer = 0;
             MaxTimer = 40;
-            Damage = 5;
+            Damage = 20;
         }
 
         public void LoadContent(ContentManager content)
