@@ -32,8 +32,9 @@ namespace SquadFighters
 
         private SpriteFont GlobalFont; // פונט גלובלי
 
+        private List<Popup> Popups;
+
         //משתני רשת
-        private ServerMethod ServerMethod;
         private Thread ReceiveThread; //קבלת נתונים מהשרת
         private Thread SendPlayerDataThread; //שליחת נתונים לשרת
         private string ServerIp; // כתובת אייפי של השרת
@@ -54,7 +55,7 @@ namespace SquadFighters
             Window.Title = "SquadFighters: Battle Royale";
             GameState = GameState.MainMenu;
             CameraPlayersIndex = -1;
-            ServerMethod = ServerMethod.None;
+            Popups = new List<Popup>();
         }
 
         protected override void Initialize()
@@ -113,6 +114,9 @@ namespace SquadFighters
         public void JoinMatch()
         {
             GameState = GameState.Game;
+            Player.Visible = true;
+
+            SendOneDataToServer(Player.Name + "," + ServerMethod.JoinedMatch);
 
             //והתחל לשלוח באופן חוזר מידע על השחקן הנוכחי
             SendPlayerDataThread = new Thread(() => SendPlayerDataToServer());
@@ -228,6 +232,7 @@ namespace SquadFighters
                         string otherPlayerRevivingName = ReceivedDataArray[15].Split('=')[1];
                         string playerReviveCountUpString = ReceivedDataArray[16].Split('=')[1];
                         Team playerTeam = (Team)int.Parse(ReceivedDataArray[17].Split('=')[1]);
+                        bool playerVisible = bool.Parse(ReceivedDataArray[18].Split('=')[1]);
 
                         //כל זה יקרה אך ורק אם השחקן אכן התחבר מקודם
                         if (Players.ContainsKey(playerName))
@@ -251,6 +256,7 @@ namespace SquadFighters
                                 Players[playerName].OtherPlayerRevivingName = otherPlayerRevivingName; // בהנחה והשחקן הנוכחי מחייה שחקן אחר, השג את שמו
                                 Players[playerName].ReviveCountUpString = playerReviveCountUpString; // מלל שמופיע כשמחיים
                                 Players[playerName].Team = playerTeam; //קבוצה
+                                Players[playerName].Visible = playerVisible; // בלתי נראה
 
                                 //עדכון הערכים עבור אותו שחקן בכרטיסייה שלו
                                 for (int i = 0; i < HUD.PlayersCards.Count; i++)
@@ -351,7 +357,11 @@ namespace SquadFighters
                         if (Player.Name == playerName)
                             Player.Heal(100);
                     }
-
+                    else if (ReceivedDataString.Contains(ServerMethod.JoinedMatch.ToString()))
+                    {
+                        string playerName = ReceivedDataArray[0];
+                        HUD.AddPopup(playerName + " Joined.", new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Medium);
+                    }
 
                 }
                 catch (Exception e)
@@ -361,6 +371,11 @@ namespace SquadFighters
 
                 Thread.Sleep(20);
             }
+        }
+
+        public void AddNoneHudPopup(string text, Vector2 position, bool isMove, PopupLabelType popupLabelType, PopupSizeType popupSizeType)
+        {
+            Popups.Add(new Popup(text, position, isMove, popupLabelType, popupSizeType));
         }
 
         public Player GetOtherPlayerIntersects(Dictionary<string, Player> otherPlayers)
@@ -396,6 +411,8 @@ namespace SquadFighters
                                 {
                                     int heal = ((Food)(items.ElementAt(i).Value)).GetHealth(); //השג את כמות הבריאות שהאוכל שנגע בשחקן מעניק
                                     Player.Heal(heal); //העלאת בריאות לשחקן
+                                    AddNoneHudPopup("+" + heal + "hp", Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
+
                                     string key = items.ElementAt(i).Key; //השגת המפתח של המילון
 
                                     lock (Map.Items)
@@ -412,6 +429,8 @@ namespace SquadFighters
                                 if (Player.BulletsCapacity + capacity <= Player.MaxBulletsCapacity) //בדיקה שכמות התחמושת הנוכחית של השחקן בשילוב של התחמושת שקיבל קטנה מהכמות המקסימלית שיכול להחזיק
                                 {
                                     Player.BulletsCapacity += capacity; //עדכן את תחמושת השחקן בתחמושת החדשה
+                                    AddNoneHudPopup("+" + capacity + " Ammo", Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
+
                                     string key = items.ElementAt(i).Key; // השגת המפתח של המילון
                                     lock (Map.Items)
                                     {
@@ -424,8 +443,11 @@ namespace SquadFighters
                                     //בדוק אם התחמושת של השחקן בשילוב עם התחמושת שקיבל גדולה מהכמות המקסימלית שיכול להחזיק וגם שכמות הכדורים הנוכחית לא שווה לכמות המקסימלית
                                     if (Player.BulletsCapacity + capacity > Player.MaxBulletsCapacity && Player.BulletsCapacity != Player.MaxBulletsCapacity)
                                     {
-                                        ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= Player.MaxBulletsCapacity - Player.BulletsCapacity; //עדכן בפריט את עודף התחמושת שנשאר
+                                        int finalCapacity = Player.MaxBulletsCapacity - Player.BulletsCapacity;
+                                       ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= finalCapacity; //עדכן בפריט את עודף התחמושת שנשאר
+
                                         Player.BulletsCapacity = Player.MaxBulletsCapacity; //מלא את כמות התחמושת של השחקן עד הכמות המקסימלית
+                                        AddNoneHudPopup("+" + finalCapacity + " Ammo", Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
 
                                         int itemCapacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity; //השג את כמות התחמושת שנשארה לפריט לאחר השינוי
                                         string key = items.ElementAt(i).Key; //השג את המפתח של המילון
@@ -447,6 +469,8 @@ namespace SquadFighters
                                         HUD.PlayerCard.ShieldBars[j].LoadContent(Content); //טען את ברי ההגנה
                                     }
                                     Player.IsShield = true; //עדכן את השחקן למכיל הגנה
+
+                                    AddNoneHudPopup("+" + Player.ShieldType.ToString(), Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
 
                                     string key = items.ElementAt(i).Key; //השגת מפתח המילון
                                     lock (Map.Items)
@@ -526,27 +550,34 @@ namespace SquadFighters
         {
             while (true)
             {
-                // אם השחקן הנוכחי הקיש רווח
-                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Player.IsShoot)
+                if (!Player.IsDead)
                 {
-
-                    // אם לשחקן הנוכחי יש תחמושת
-                    if (Player.BulletsCapacity > 0)
+                    // אם השחקן הנוכחי הקיש רווח
+                    if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Player.IsShoot)
                     {
-                        // השחקן הנוכחי יבצע יריה
-                        Player.Shoot();
+                        // אם לשחקן הנוכחי יש תחמושת
+                        if (Player.BulletsCapacity > 0)
+                        {
+                            // השחקן הנוכחי יבצע יריה
+                            Player.Shoot();
 
-                        //וישלח עדכון לשרת שהוא ירה
-                        SendOneDataToServer(ServerMethod.ShootData.ToString() + "=true,PlayerShotName=" + Player.Name);
-  
+                            //וישלח עדכון לשרת שהוא ירה
+                            SendOneDataToServer(ServerMethod.ShootData.ToString() + "=true,PlayerShotName=" + Player.Name);
+                        }
+                        else
+                        {
+                            HUD.AddPopup("No Ammo!", new Vector2(Graphics.PreferredBackBufferWidth / 2 - 100, 100), false, PopupLabelType.Warning, PopupSizeType.Big);
+                        }
                     }
                 }
+
                 if (Keyboard.GetState().IsKeyUp(Keys.Space))
                 {
                     Player.IsShoot = false;
                 }
 
                 Thread.Sleep(100);
+
             }
         }
 
@@ -620,31 +651,36 @@ namespace SquadFighters
                 //עדכון תמידי של השחקן הנוכחי
                 Player.Update(Map);
 
+                
+
                 //בודק אם השחקן הנוכחי לחץ על R
                 if (Keyboard.GetState().IsKeyDown(Keys.R))
                 {
-                    //בודק אם השחקן הנוכחי במגע עם אחד השחקנים
-                    if (GetOtherPlayerIntersects(Players) != null)
+                    if (!Player.IsDead)
                     {
-
-                        Player intersectedPlayer = GetOtherPlayerIntersects(Players); //במידה ונוגע באחד השחקנים, מקבל את השחקן שנוגע בך
-
-                        //בודק אם השחקן הנוכחי מת
-                        if (intersectedPlayer.IsDead && intersectedPlayer.Team == Player.Team)
+                        //בודק אם השחקן הנוכחי במגע עם אחד השחקנים
+                        if (GetOtherPlayerIntersects(Players) != null)
                         {
-                            //מחייה את השחקן עד שנגמר זמן ההחייאה
-                            if (!Player.IsFinishedRevive)
+
+                            Player intersectedPlayer = GetOtherPlayerIntersects(Players); //במידה ונוגע באחד השחקנים, מקבל את השחקן שנוגע בך
+
+                            //בודק אם השחקן הנוכחי מת
+                            if (intersectedPlayer.IsDead && intersectedPlayer.Team == Player.Team)
                             {
-                                Player.RevivePlayer();
-                                Player.OtherPlayerRevivingName = intersectedPlayer.Name;
-                                Player.ReviveCountUpString = (int)(((double)Player.ReviveTimer / (double)Player.ReviveMaxTime) * 100) + "%";
-                            }
-                            else
-                            {
-                                SendOneDataToServer(ServerMethod.Revive.ToString() + "=true,RevivedName=" + intersectedPlayer.Name); //שולח הודעה לשרת על איזה שחקן קיבל החייאה
-                                Player.ResetRevive(); //איפוס
-                                Player.OtherPlayerRevivingName = string.Empty; //איפוס
-                                Player.ReviveCountUpString = string.Empty; //איפוס
+                                //מחייה את השחקן עד שנגמר זמן ההחייאה
+                                if (!Player.IsFinishedRevive)
+                                {
+                                    Player.RevivePlayer();
+                                    Player.OtherPlayerRevivingName = intersectedPlayer.Name;
+                                    Player.ReviveCountUpString = (int)(((double)Player.ReviveTimer / (double)Player.ReviveMaxTime) * 100) + "%";
+                                }
+                                else
+                                {
+                                    SendOneDataToServer(ServerMethod.Revive.ToString() + "=true,RevivedName=" + intersectedPlayer.Name); //שולח הודעה לשרת על איזה שחקן קיבל החייאה
+                                    Player.ResetRevive(); //איפוס
+                                    Player.OtherPlayerRevivingName = string.Empty; //איפוס
+                                    Player.ReviveCountUpString = string.Empty; //איפוס
+                                }
                             }
                         }
                     }
@@ -658,6 +694,18 @@ namespace SquadFighters
 
                 //עדכון תמידי של כרטיסיית השחקן הנוכחי
                 HUD.PlayerCard.Update(Player, new Vector2(0, 0));
+
+                //עדכון הפופאפים של ה ui
+                HUD.UpdatePopups();
+
+                //רןץ על הפופאפים שלא קשורים ל ui
+                for (int i = 0; i < Popups.Count; i++)
+                {
+                    if (Popups[i].IsShowing)
+                        Popups[i].Update();
+                    else
+                        Popups.RemoveAt(i);
+                }
 
                 //אם השחקן הנוכחי סיים את כל הבועות כשהוא בתוך המים
                 if (HUD.PlayerCard.IsBubbleHit)
@@ -688,43 +736,48 @@ namespace SquadFighters
                     for (int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
                     {
                         // אם היריה שלהם פגעה בשחקן הנוכחי
-                        if (otherPlayer.Value.Bullets[i].Rectangle.Intersects(Player.Rectangle) && otherPlayer.Value.Team != Player.Team)
+                        if (otherPlayer.Value.Bullets[i].Rectangle.Intersects(Player.Rectangle) && otherPlayer.Value.Team != Player.Team && Player.Visible)
                         {
-                            //הפסק את היריה
-                            otherPlayer.Value.Bullets[i].IsFinished = true;
 
-                            ShieldType playerShieldType = HUD.PlayerCard.ShieldBars[2].ShieldType; // השג את סוג הבר של השחקן הנוכחי
-
-                            // בדוק את סוג ההגנה של השחקן
-                            switch (playerShieldType)
+                            if (!Player.IsDead) //אם השחקן הנוכחי בחיים
                             {
-                                case ShieldType.None: // במידה ואין
-                                    Player.Hit(otherPlayer.Value.Bullets[i].Damage); // תוריד לשחקן הנוכחי את הבריאות לפי עוצמת פגיעת היריה
-                                    break;
-                                case ShieldType.Shield_Level_1: // אם לשחקן יש הגנה בכללי
-                                case ShieldType.Shield_Level_2:
-                                case ShieldType.Shield_Rare:
-                                case ShieldType.Shield_Legendery:
+                                //הפסק את היריה
+                                otherPlayer.Value.Bullets[i].IsFinished = true;
 
-                                    //רוץ על כל ברי ההגנה שבכל הכרטיסיות של השחקן הנוכחי
-                                    for (int j = 0; j < HUD.PlayerCard.ShieldBars.Length; j++)
-                                    {
-                                        // הורד הגנה בהתאם
-                                        if (HUD.PlayerCard.ShieldBars[0].Armor > 0)
-                                            HUD.PlayerCard.ShieldBars[0].Hit(otherPlayer.Value.Bullets[i].Damage);
-                                        else
+                                ShieldType playerShieldType = HUD.PlayerCard.ShieldBars[2].ShieldType; // השג את סוג הבר של השחקן הנוכחי
+
+                                // בדוק את סוג ההגנה של השחקן
+                                switch (playerShieldType)
+                                {
+                                    case ShieldType.None: // במידה ואין
+                                        Player.Hit(otherPlayer.Value.Bullets[i].Damage); // תוריד לשחקן הנוכחי את הבריאות לפי עוצמת פגיעת היריה
+                                        AddNoneHudPopup("-" + otherPlayer.Value.Bullets[i].Damage + "hp", Player.Position, true, PopupLabelType.Warning, PopupSizeType.Medium);
+                                        break;
+                                    case ShieldType.Shield_Level_1: // אם לשחקן יש הגנה בכללי
+                                    case ShieldType.Shield_Level_2:
+                                    case ShieldType.Shield_Rare:
+                                    case ShieldType.Shield_Legendery:
+
+                                        //רוץ על כל ברי ההגנה שבכל הכרטיסיות של השחקן הנוכחי
+                                        for (int j = 0; j < HUD.PlayerCard.ShieldBars.Length; j++)
                                         {
-                                            if (HUD.PlayerCard.ShieldBars[1].Armor > 0)
-                                                HUD.PlayerCard.ShieldBars[1].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                            // הורד הגנה בהתאם
+                                            if (HUD.PlayerCard.ShieldBars[0].Armor > 0)
+                                                HUD.PlayerCard.ShieldBars[0].Hit(otherPlayer.Value.Bullets[i].Damage);
                                             else
                                             {
-                                                if (HUD.PlayerCard.ShieldBars[2].Armor > 0)
-                                                    HUD.PlayerCard.ShieldBars[2].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                                if (HUD.PlayerCard.ShieldBars[1].Armor > 0)
+                                                    HUD.PlayerCard.ShieldBars[1].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                                else
+                                                {
+                                                    if (HUD.PlayerCard.ShieldBars[2].Armor > 0)
+                                                        HUD.PlayerCard.ShieldBars[2].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                                }
                                             }
-                                        }
 
-                                    }
-                                    break;
+                                        }
+                                        break;
+                                }
                             }
 
                         }
@@ -751,8 +804,15 @@ namespace SquadFighters
                         {
                             // אם הכדור נגע באחד השחקנים שהתחברו
                             if (Player.Bullets[i].Rectangle.Intersects(Players.ElementAt(j).Value.Rectangle) && Player.Team != Players.ElementAt(j).Value.Team)
-                                Player.Bullets[i].IsFinished = true; // עצור את הירייה
-
+                            {
+                                //בדיקה אם שאר השחקנים בחיים
+                                if (!Players.ElementAt(j).Value.IsDead)
+                                {
+                                    Player.Bullets[i].IsFinished = true; // עצור את הירייה
+                                    AddNoneHudPopup("-" + Player.Bullets[i].Damage + "hp", Players.ElementAt(j).Value.Position, true, PopupLabelType.Warning, PopupSizeType.Medium);
+                                    break;
+                                }
+                            }
                         }
                     }
                     else // אחרת
@@ -883,16 +943,22 @@ namespace SquadFighters
                 // רוץ על כל השחקנים שהתחברו למשחק
                 foreach (KeyValuePair<string, Player> otherPlayer in Players)
                 {
-                    // אם השחקנים לא בתוך המים
-                    if(!otherPlayer.Value.IsSwimming)
-                        otherPlayer.Value.Draw(spriteBatch); //צייר את השחקנים
+
+                    //אם השחקן הנוכחי ושאר השחקנים באותה הקבוצה
+                    if (otherPlayer.Value.Team == Player.Team)
+                        otherPlayer.Value.Draw(spriteBatch); //צייר שחקנים
+                    else //אחרת
+                    {
+                        if(!otherPlayer.Value.IsSwimming) //בדוק אם שאר השחקנים לא שוחים
+                            otherPlayer.Value.Draw(spriteBatch); //אם לא תצייר
+                    }
 
                     // רוץ על כל היריות של השחקנים שהתחברו
                     for (int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
                         otherPlayer.Value.Bullets[i].Draw(spriteBatch); //צייר את היריות של השחקנים שהתחברו
 
                     // צייר את שמות השחקנים שהתחברו מעל הראש שלהם
-                    HUD.DrawPlayersInfo(spriteBatch, otherPlayer.Value);
+                    HUD.DrawPlayersInfo(spriteBatch, otherPlayer.Value, Player);
 
                     // בדיקה האם שחקן אחר מחייה את השחקן הנוכחי
                     if(otherPlayer.Value.IsReviving && otherPlayer.Value.OtherPlayerRevivingName == Player.Name)
@@ -908,6 +974,11 @@ namespace SquadFighters
                 // בדיקה אם השחקן הנוכחי מחייה שחקן אחר
                 if(Player.IsReviving)
                     spriteBatch.DrawString(GlobalFont, "Reviving " + Player.OtherPlayerRevivingName + "(" + Player.ReviveCountUpString + ")", new Vector2(Player.Position.X + 20, Player.Position.Y + 30), Color.Red);
+
+
+                //צייר פופאפים ללא UI
+                foreach (Popup popup in Popups)
+                    popup.Draw(spriteBatch);
 
                 // סיים ציור AlphaBlend
                 spriteBatch.End();
