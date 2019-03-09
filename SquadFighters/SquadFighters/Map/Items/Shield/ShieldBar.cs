@@ -32,16 +32,16 @@ namespace SquadFighters
                     Armor = 0;
                     break;
                 case ShieldType.Shield_Level_1:
-                    Armor = 10;
+                    Armor = 50;
                     break;
                 case ShieldType.Shield_Level_2:
-                    Armor = 15;
+                    Armor = 75;
                     break;
                 case ShieldType.Shield_Rare:
-                    Armor = 25;
+                    Armor = 100;
                     break;
                 case ShieldType.Shield_Legendery:
-                    Armor = 30;
+                    Armor = 150;
                     break;
             }
         }

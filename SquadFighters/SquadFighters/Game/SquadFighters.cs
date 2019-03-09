@@ -712,7 +712,6 @@ namespace SquadFighters
                 {
                     //השחקן ייפגע
                     Player.Hit(1);
-                    AddNoneHudPopup("-1hp", Player.Position, true, PopupLabelType.Warning, PopupSizeType.Medium);
                 }
 
                 // רוץ על כל כרטיסיות השחקנים שהתחברו
