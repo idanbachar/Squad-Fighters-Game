@@ -17,6 +17,9 @@ namespace SquadFighters
         public SpriteFont LoadingFont;
         public SpriteFont GameTitleFont;
         public SpriteFont DeadFont;
+        public SpriteFont PlayerCoordinatesFont;
+        public SpriteFont ChooseTeamFont;
+
         public List<PlayerCard> PlayersCards;
         public List<Popup> Popups;
         public PlayerCard PlayerCard;
@@ -35,6 +38,8 @@ namespace SquadFighters
             LoadingFont = content.Load<SpriteFont>("fonts/loading");
             GameTitleFont = content.Load<SpriteFont>("fonts/gameTitle");
             DeadFont = content.Load<SpriteFont>("fonts/dead_font");
+            PlayerCoordinatesFont = content.Load<SpriteFont>("fonts/player_coordinates");
+            ChooseTeamFont = content.Load<SpriteFont>("fonts/choose_team");
         }
 
         public void UpdatePopups()
@@ -48,9 +53,9 @@ namespace SquadFighters
             }
         }
 
-        public void AddPopup(string text, Vector2 position, bool isMove, PopupLabelType popupLabelType)
+        public void AddPopup(string text, Vector2 position, bool isMove, PopupLabelType popupLabelType, PopupSizeType popupSizeType)
         {
-            Popups.Add(new Popup(text, position, isMove, popupLabelType));
+            Popups.Add(new Popup(text, position, isMove, popupLabelType, popupSizeType));
         }
 
         public void DrawPlayersInfo(SpriteBatch spriteBatch, Player player, Player currentPlayer)
@@ -85,7 +90,7 @@ namespace SquadFighters
 
         public void DrawChooseTeam(SpriteBatch spriteBatch)
         {
-            spriteBatch.DrawString(LoadingFont, "Choose Team", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, 140), Color.White);
+            spriteBatch.DrawString(ChooseTeamFont, "Choose Team", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, 140), Color.White);
         }
 
         public void DrawLoading(SpriteBatch spriteBatch, double MaxItems, double CurrentItemsLoaded)
@@ -124,7 +129,7 @@ namespace SquadFighters
 
         public void DrawPlayerCoordinates(SpriteBatch spriteBatch, Player player)
         {
-            spriteBatch.DrawString(PlayerBulletsFont, "(x=" + (int)player.Position.X + ",Y=" + (int)player.Position.Y + ")", new Vector2(50, SquadFighters.Graphics.PreferredBackBufferHeight - 50), Color.Black);
+            spriteBatch.DrawString(PlayerCoordinatesFont, "(x=" + (int)player.Position.X + ",Y=" + (int)player.Position.Y + ")", new Vector2(50, SquadFighters.Graphics.PreferredBackBufferHeight - 50), Color.Black);
         }
 
         public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)

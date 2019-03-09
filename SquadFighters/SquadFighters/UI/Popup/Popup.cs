@@ -18,8 +18,9 @@ namespace SquadFighters
         private int timeLimiter;
         private int timer;
         public PopupLabelType PopupLabelType;
+        public PopupSizeType PopupSizeType;
 
-        public Popup(string text, Vector2 position, bool isMove, PopupLabelType popupLabelType)
+        public Popup(string text, Vector2 position, bool isMove, PopupLabelType popupLabelType, PopupSizeType popupSizeType)
         {
             Text = text;
             Position = new Vector2(position.X, position.Y);
@@ -28,13 +29,13 @@ namespace SquadFighters
             timer = 0;
             IsMove = isMove;
             PopupLabelType = popupLabelType;
+            PopupSizeType = popupSizeType;
             LoadContent();
         }
 
         public void LoadContent()
         {
-            string fontName = PopupLabelType == PopupLabelType.Regular || PopupLabelType == PopupLabelType.Nice ? "items_capacity_font" : "loading";
-            Font = SquadFighters.ContentManager.Load<SpriteFont>("fonts/" + fontName);
+            Font = SquadFighters.ContentManager.Load<SpriteFont>("fonts/" + PopupSizeType.ToString());
         }
 
         public void Update()

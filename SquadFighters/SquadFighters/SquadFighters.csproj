@@ -74,6 +74,7 @@
     <Compile Include="UI\HUD.cs" />
     <Compile Include="UI\Popup\Popup.cs" />
     <Compile Include="UI\Popup\PopupLabelType.cs" />
+    <Compile Include="UI\Popup\PopupSizeType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
