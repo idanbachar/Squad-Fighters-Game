@@ -48,9 +48,9 @@ namespace SquadFighters
             }
         }
 
-        public void AddPopup(string text, Vector2 position, bool isMove)
+        public void AddPopup(string text, Vector2 position, bool isMove, PopupLabelType popupLabelType)
         {
-            Popups.Add(new Popup(text, position, isMove));
+            Popups.Add(new Popup(text, position, isMove, popupLabelType));
         }
 
         public void DrawPlayersInfo(SpriteBatch spriteBatch, Player player, Player currentPlayer)
@@ -96,7 +96,7 @@ namespace SquadFighters
             {
                 percent = (double)((CurrentItemsLoaded / MaxItems) * 100);
             }
-            spriteBatch.DrawString(LoadingFont, "Downloading (" + (int)percent + "% ..)", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 75), Color.Black);
+            spriteBatch.DrawString(LoadingFont, "Downloading\nGame Data(" + (int)percent + "% ..)", new Vector2(70, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 75), Color.Black);
         }
 
         public void DrawPopups(SpriteBatch spriteBatch)
@@ -122,9 +122,16 @@ namespace SquadFighters
 
         }
 
+        public void DrawPlayerCoordinates(SpriteBatch spriteBatch, Player player)
+        {
+            spriteBatch.DrawString(PlayerBulletsFont, "(x=" + (int)player.Position.X + ",Y=" + (int)player.Position.Y + ")", new Vector2(50, SquadFighters.Graphics.PreferredBackBufferHeight - 50), Color.Black);
+        }
+
         public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)
         {
             DrawPopups(spriteBatch);
+
+            DrawPlayerCoordinates(spriteBatch, player);
 
             DrawPlayersCards(spriteBatch);
 

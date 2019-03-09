@@ -35,7 +35,6 @@ namespace SquadFighters
         private List<Popup> Popups;
 
         //משתני רשת
-        private ServerMethod ServerMethod;
         private Thread ReceiveThread; //קבלת נתונים מהשרת
         private Thread SendPlayerDataThread; //שליחת נתונים לשרת
         private string ServerIp; // כתובת אייפי של השרת
@@ -56,7 +55,6 @@ namespace SquadFighters
             Window.Title = "SquadFighters: Battle Royale";
             GameState = GameState.MainMenu;
             CameraPlayersIndex = -1;
-            ServerMethod = ServerMethod.None;
             Popups = new List<Popup>();
         }
 
@@ -362,7 +360,7 @@ namespace SquadFighters
                     else if (ReceivedDataString.Contains(ServerMethod.JoinedMatch.ToString()))
                     {
                         string playerName = ReceivedDataArray[0];
-                        HUD.AddPopup(playerName + " Joined.", new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false);
+                        HUD.AddPopup(playerName + " Joined.", new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular);
                     }
 
                 }
@@ -375,9 +373,9 @@ namespace SquadFighters
             }
         }
 
-        public void AddNoneHudPopup(string text, Vector2 position, bool isMove)
+        public void AddNoneHudPopup(string text, Vector2 position, bool isMove, PopupLabelType popupLabelType)
         {
-            Popups.Add(new Popup(text, position, isMove));
+            Popups.Add(new Popup(text, position, isMove, popupLabelType));
         }
 
         public Player GetOtherPlayerIntersects(Dictionary<string, Player> otherPlayers)
@@ -413,7 +411,7 @@ namespace SquadFighters
                                 {
                                     int heal = ((Food)(items.ElementAt(i).Value)).GetHealth(); //השג את כמות הבריאות שהאוכל שנגע בשחקן מעניק
                                     Player.Heal(heal); //העלאת בריאות לשחקן
-                                    AddNoneHudPopup("+" + heal + "hp", Player.Position, true);
+                                    AddNoneHudPopup("+" + heal + "hp", Player.Position, true, PopupLabelType.Nice);
 
                                     string key = items.ElementAt(i).Key; //השגת המפתח של המילון
 
@@ -431,7 +429,7 @@ namespace SquadFighters
                                 if (Player.BulletsCapacity + capacity <= Player.MaxBulletsCapacity) //בדיקה שכמות התחמושת הנוכחית של השחקן בשילוב של התחמושת שקיבל קטנה מהכמות המקסימלית שיכול להחזיק
                                 {
                                     Player.BulletsCapacity += capacity; //עדכן את תחמושת השחקן בתחמושת החדשה
-                                    AddNoneHudPopup("+" + capacity + " Ammo", Player.Position, true);
+                                    AddNoneHudPopup("+" + capacity + " Ammo", Player.Position, true, PopupLabelType.Nice);
 
                                     string key = items.ElementAt(i).Key; // השגת המפתח של המילון
                                     lock (Map.Items)
@@ -449,7 +447,7 @@ namespace SquadFighters
                                        ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= finalCapacity; //עדכן בפריט את עודף התחמושת שנשאר
 
                                         Player.BulletsCapacity = Player.MaxBulletsCapacity; //מלא את כמות התחמושת של השחקן עד הכמות המקסימלית
-                                        AddNoneHudPopup("+" + finalCapacity + " Ammo", Player.Position, true);
+                                        AddNoneHudPopup("+" + finalCapacity + " Ammo", Player.Position, true, PopupLabelType.Nice);
 
                                         int itemCapacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity; //השג את כמות התחמושת שנשארה לפריט לאחר השינוי
                                         string key = items.ElementAt(i).Key; //השג את המפתח של המילון
@@ -472,7 +470,7 @@ namespace SquadFighters
                                     }
                                     Player.IsShield = true; //עדכן את השחקן למכיל הגנה
 
-                                    AddNoneHudPopup("+" + Player.ShieldType.ToString(), Player.Position, true);
+                                    AddNoneHudPopup("+" + Player.ShieldType.ToString(), Player.Position, true, PopupLabelType.Nice);
 
                                     string key = items.ElementAt(i).Key; //השגת מפתח המילון
                                     lock (Map.Items)
@@ -565,6 +563,10 @@ namespace SquadFighters
 
                             //וישלח עדכון לשרת שהוא ירה
                             SendOneDataToServer(ServerMethod.ShootData.ToString() + "=true,PlayerShotName=" + Player.Name);
+                        }
+                        else
+                        {
+                            HUD.AddPopup("No Ammo!", new Vector2(Graphics.PreferredBackBufferWidth / 2 - 100, 100), false, PopupLabelType.Warning);
                         }
                     }
                 }
