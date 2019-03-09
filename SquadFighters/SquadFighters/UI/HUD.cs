@@ -18,11 +18,13 @@ namespace SquadFighters
         public SpriteFont GameTitleFont;
         public SpriteFont DeadFont;
         public List<PlayerCard> PlayersCards;
+        public List<Popup> Popups;
         public PlayerCard PlayerCard;
 
         public HUD()
         {
             PlayersCards = new List<PlayerCard>();
+            Popups = new List<Popup>();
         }
  
         public void LoadContent(ContentManager content)
@@ -35,9 +37,27 @@ namespace SquadFighters
             DeadFont = content.Load<SpriteFont>("fonts/dead_font");
         }
 
-        public void DrawPlayersInfo(SpriteBatch spriteBatch, Player player)
+        public void UpdatePopups()
         {
-            spriteBatch.DrawString(PlayerNameFont, player.Name, new Vector2(player.Position.X - 30, player.Position.Y - 50), Color.Black);
+            for(int i = 0; i < Popups.Count; i++)
+            {
+                if (Popups[i].IsShowing)
+                    Popups[i].Update();
+                else
+                    Popups.RemoveAt(i);
+            }
+        }
+
+        public void AddPopup(string text, Vector2 position, bool isMove)
+        {
+            Popups.Add(new Popup(text, position, isMove));
+        }
+
+        public void DrawPlayersInfo(SpriteBatch spriteBatch, Player player, Player currentPlayer)
+        {
+            if (!player.IsSwimming && player.Visible)
+                spriteBatch.DrawString(PlayerNameFont, player.Name, new Vector2(player.Position.X - 30, player.Position.Y - 50),
+                    player.Team != currentPlayer.Team ? Color.Red : Color.Green);
         }
 
         public void DrawPlayerInfo(SpriteBatch spriteBatch, Player player)
@@ -66,17 +86,37 @@ namespace SquadFighters
             spriteBatch.DrawString(LoadingFont, "Downloading (" + (int)percent + "% ..)", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 75), Color.Black);
         }
 
-        public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)
+        public void DrawPopups(SpriteBatch spriteBatch)
+        {
+            foreach (Popup popup in Popups)
+                popup.Draw(spriteBatch);
+        }
+
+        public void DrawPlayersCards(SpriteBatch spriteBatch)
         {
             PlayerCard.Draw(spriteBatch);
 
             foreach (PlayerCard playerCard in PlayersCards)
                 if (playerCard.Visible)
                     playerCard.Draw(spriteBatch);
+        }
+
+        public void DrawDeadMessage(SpriteBatch spriteBatch)
+        {
 
             if (PlayerCard.HealthBar.Health <= 0)
                 spriteBatch.DrawString(DeadFont, "You Are Dead :(", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 200), Color.Red);
 
+        }
+
+        public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)
+        {
+
+            DrawPopups(spriteBatch);
+
+            DrawPlayersCards(spriteBatch);
+
+            DrawDeadMessage(spriteBatch);
         }
     }
 }

@@ -113,6 +113,9 @@ namespace SquadFighters
         public void JoinMatch()
         {
             GameState = GameState.Game;
+            Player.Visible = true;
+
+            SendOneDataToServer(Player.Name + "," + ServerMethod.JoinedMatch);
 
             //והתחל לשלוח באופן חוזר מידע על השחקן הנוכחי
             SendPlayerDataThread = new Thread(() => SendPlayerDataToServer());
@@ -228,6 +231,7 @@ namespace SquadFighters
                         string otherPlayerRevivingName = ReceivedDataArray[15].Split('=')[1];
                         string playerReviveCountUpString = ReceivedDataArray[16].Split('=')[1];
                         Team playerTeam = (Team)int.Parse(ReceivedDataArray[17].Split('=')[1]);
+                        bool playerVisible = bool.Parse(ReceivedDataArray[18].Split('=')[1]);
 
                         //כל זה יקרה אך ורק אם השחקן אכן התחבר מקודם
                         if (Players.ContainsKey(playerName))
@@ -251,6 +255,7 @@ namespace SquadFighters
                                 Players[playerName].OtherPlayerRevivingName = otherPlayerRevivingName; // בהנחה והשחקן הנוכחי מחייה שחקן אחר, השג את שמו
                                 Players[playerName].ReviveCountUpString = playerReviveCountUpString; // מלל שמופיע כשמחיים
                                 Players[playerName].Team = playerTeam; //קבוצה
+                                Players[playerName].Visible = playerVisible; // בלתי נראה
 
                                 //עדכון הערכים עבור אותו שחקן בכרטיסייה שלו
                                 for (int i = 0; i < HUD.PlayersCards.Count; i++)
@@ -351,7 +356,11 @@ namespace SquadFighters
                         if (Player.Name == playerName)
                             Player.Heal(100);
                     }
-
+                    else if (ReceivedDataString.Contains(ServerMethod.JoinedMatch.ToString()))
+                    {
+                        string playerName = ReceivedDataArray[0];
+                        HUD.AddPopup(playerName + " Joined.", new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false);
+                    }
 
                 }
                 catch (Exception e)
@@ -623,6 +632,8 @@ namespace SquadFighters
                 //עדכון תמידי של השחקן הנוכחי
                 Player.Update(Map);
 
+                
+
                 //בודק אם השחקן הנוכחי לחץ על R
                 if (Keyboard.GetState().IsKeyDown(Keys.R))
                 {
@@ -665,6 +676,9 @@ namespace SquadFighters
                 //עדכון תמידי של כרטיסיית השחקן הנוכחי
                 HUD.PlayerCard.Update(Player, new Vector2(0, 0));
 
+                //עדכון הפופאפים
+                HUD.UpdatePopups();
+
                 //אם השחקן הנוכחי סיים את כל הבועות כשהוא בתוך המים
                 if (HUD.PlayerCard.IsBubbleHit)
                 {
@@ -694,7 +708,7 @@ namespace SquadFighters
                     for (int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
                     {
                         // אם היריה שלהם פגעה בשחקן הנוכחי
-                        if (otherPlayer.Value.Bullets[i].Rectangle.Intersects(Player.Rectangle) && otherPlayer.Value.Team != Player.Team)
+                        if (otherPlayer.Value.Bullets[i].Rectangle.Intersects(Player.Rectangle) && otherPlayer.Value.Team != Player.Team && Player.Visible)
                         {
                             //הפסק את היריה
                             otherPlayer.Value.Bullets[i].IsFinished = true;
@@ -757,8 +771,10 @@ namespace SquadFighters
                         {
                             // אם הכדור נגע באחד השחקנים שהתחברו
                             if (Player.Bullets[i].Rectangle.Intersects(Players.ElementAt(j).Value.Rectangle) && Player.Team != Players.ElementAt(j).Value.Team)
+                            {
                                 Player.Bullets[i].IsFinished = true; // עצור את הירייה
-
+                                break;
+                            }
                         }
                     }
                     else // אחרת
@@ -898,7 +914,7 @@ namespace SquadFighters
                         otherPlayer.Value.Bullets[i].Draw(spriteBatch); //צייר את היריות של השחקנים שהתחברו
 
                     // צייר את שמות השחקנים שהתחברו מעל הראש שלהם
-                    HUD.DrawPlayersInfo(spriteBatch, otherPlayer.Value);
+                    HUD.DrawPlayersInfo(spriteBatch, otherPlayer.Value, Player);
 
                     // בדיקה האם שחקן אחר מחייה את השחקן הנוכחי
                     if(otherPlayer.Value.IsReviving && otherPlayer.Value.OtherPlayerRevivingName == Player.Name)
