@@ -182,9 +182,9 @@ namespace SquadFighters
             {
                 spriteBatch.Draw(Texture, Position, null,
                                                          IsSwimming ? Color.LightSkyBlue :
-                                                         Team == Team.Alpha ? Color.White :
+                                                         Team == Team.Alpha ? new Color(71, 252, 234) :
                                                          Team == Team.Beta ? Color.Yellow :
-                                                         Team == Team.Omega ? Color.Purple : Color.White,
+                                                         Team == Team.Omega ? Color.Purple : new Color(71, 252, 234),
                                                          Rotation, new Vector2(Texture.Width / 2, Texture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
 
                 if (IsDead)

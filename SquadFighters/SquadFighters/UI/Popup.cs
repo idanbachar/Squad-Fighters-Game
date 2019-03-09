@@ -23,7 +23,7 @@ namespace SquadFighters
             Text = text;
             Position = new Vector2(position.X, position.Y);
             IsShowing = true;
-            timeLimiter = 300;
+            timeLimiter = !isMove ? 300 : 70;
             timer = 0;
             IsMove = isMove;
             LoadContent();
@@ -53,7 +53,7 @@ namespace SquadFighters
 
         private void Move()
         {
-            Position.Y -= 5;
+            Position.Y -= 2;
         }
 
         public void Draw(SpriteBatch spriteBatch)

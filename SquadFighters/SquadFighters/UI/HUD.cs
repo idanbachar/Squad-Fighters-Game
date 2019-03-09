@@ -55,14 +55,27 @@ namespace SquadFighters
 
         public void DrawPlayersInfo(SpriteBatch spriteBatch, Player player, Player currentPlayer)
         {
-            if (!player.IsSwimming && player.Visible)
-                spriteBatch.DrawString(PlayerNameFont, player.Name, new Vector2(player.Position.X - 30, player.Position.Y - 50),
-                    player.Team != currentPlayer.Team ? Color.Red : Color.Green);
+            if (player.Visible)
+            {
+                if (player.Team == currentPlayer.Team)
+                {
+                    spriteBatch.DrawString(PlayerNameFont, player.Name, new Vector2(player.Position.X - 30, player.Position.Y - 70),
+                        player.Team != currentPlayer.Team ? Color.Red : Color.Green);
+                }
+                else
+                {
+                    if(!player.IsSwimming)
+                    {
+                        spriteBatch.DrawString(PlayerNameFont, player.Name, new Vector2(player.Position.X - 30, player.Position.Y - 70),
+                            player.Team != currentPlayer.Team ? Color.Red : Color.Green);
+                    }
+                }
+            }
         }
 
         public void DrawPlayerInfo(SpriteBatch spriteBatch, Player player)
         {
-            spriteBatch.DrawString(PlayerNameFont, "You", new Vector2(player.Position.X - 30, player.Position.Y - 50), Color.Blue);
+            spriteBatch.DrawString(PlayerNameFont, "You", new Vector2(player.Position.X - 30, player.Position.Y - 70), Color.Blue);
         }
 
         public void DrawGameTitle(SpriteBatch spriteBatch)
@@ -111,7 +124,6 @@ namespace SquadFighters
 
         public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)
         {
-
             DrawPopups(spriteBatch);
 
             DrawPlayersCards(spriteBatch);

@@ -32,6 +32,8 @@ namespace SquadFighters
 
         private SpriteFont GlobalFont; // פונט גלובלי
 
+        private List<Popup> Popups;
+
         //משתני רשת
         private ServerMethod ServerMethod;
         private Thread ReceiveThread; //קבלת נתונים מהשרת
@@ -55,6 +57,7 @@ namespace SquadFighters
             GameState = GameState.MainMenu;
             CameraPlayersIndex = -1;
             ServerMethod = ServerMethod.None;
+            Popups = new List<Popup>();
         }
 
         protected override void Initialize()
@@ -372,6 +375,11 @@ namespace SquadFighters
             }
         }
 
+        public void AddNoneHudPopup(string text, Vector2 position, bool isMove)
+        {
+            Popups.Add(new Popup(text, position, isMove));
+        }
+
         public Player GetOtherPlayerIntersects(Dictionary<string, Player> otherPlayers)
         {
             foreach (KeyValuePair<string, Player> otherPlayer in otherPlayers)
@@ -405,6 +413,8 @@ namespace SquadFighters
                                 {
                                     int heal = ((Food)(items.ElementAt(i).Value)).GetHealth(); //השג את כמות הבריאות שהאוכל שנגע בשחקן מעניק
                                     Player.Heal(heal); //העלאת בריאות לשחקן
+                                    AddNoneHudPopup("+" + heal + "hp", Player.Position, true);
+
                                     string key = items.ElementAt(i).Key; //השגת המפתח של המילון
 
                                     lock (Map.Items)
@@ -421,6 +431,8 @@ namespace SquadFighters
                                 if (Player.BulletsCapacity + capacity <= Player.MaxBulletsCapacity) //בדיקה שכמות התחמושת הנוכחית של השחקן בשילוב של התחמושת שקיבל קטנה מהכמות המקסימלית שיכול להחזיק
                                 {
                                     Player.BulletsCapacity += capacity; //עדכן את תחמושת השחקן בתחמושת החדשה
+                                    AddNoneHudPopup("+" + capacity + " Ammo", Player.Position, true);
+
                                     string key = items.ElementAt(i).Key; // השגת המפתח של המילון
                                     lock (Map.Items)
                                     {
@@ -433,8 +445,11 @@ namespace SquadFighters
                                     //בדוק אם התחמושת של השחקן בשילוב עם התחמושת שקיבל גדולה מהכמות המקסימלית שיכול להחזיק וגם שכמות הכדורים הנוכחית לא שווה לכמות המקסימלית
                                     if (Player.BulletsCapacity + capacity > Player.MaxBulletsCapacity && Player.BulletsCapacity != Player.MaxBulletsCapacity)
                                     {
-                                        ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= Player.MaxBulletsCapacity - Player.BulletsCapacity; //עדכן בפריט את עודף התחמושת שנשאר
+                                        int finalCapacity = Player.MaxBulletsCapacity - Player.BulletsCapacity;
+                                       ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= finalCapacity; //עדכן בפריט את עודף התחמושת שנשאר
+
                                         Player.BulletsCapacity = Player.MaxBulletsCapacity; //מלא את כמות התחמושת של השחקן עד הכמות המקסימלית
+                                        AddNoneHudPopup("+" + finalCapacity + " Ammo", Player.Position, true);
 
                                         int itemCapacity = ((GunAmmo)(items.ElementAt(i).Value)).Capacity; //השג את כמות התחמושת שנשארה לפריט לאחר השינוי
                                         string key = items.ElementAt(i).Key; //השג את המפתח של המילון
@@ -456,6 +471,8 @@ namespace SquadFighters
                                         HUD.PlayerCard.ShieldBars[j].LoadContent(Content); //טען את ברי ההגנה
                                     }
                                     Player.IsShield = true; //עדכן את השחקן למכיל הגנה
+
+                                    AddNoneHudPopup("+" + Player.ShieldType.ToString(), Player.Position, true);
 
                                     string key = items.ElementAt(i).Key; //השגת מפתח המילון
                                     lock (Map.Items)
@@ -676,8 +693,17 @@ namespace SquadFighters
                 //עדכון תמידי של כרטיסיית השחקן הנוכחי
                 HUD.PlayerCard.Update(Player, new Vector2(0, 0));
 
-                //עדכון הפופאפים
+                //עדכון הפופאפים של ה ui
                 HUD.UpdatePopups();
+
+                //רןץ על הפופאפים שלא קשורים ל ui
+                for (int i = 0; i < Popups.Count; i++)
+                {
+                    if (Popups[i].IsShowing)
+                        Popups[i].Update();
+                    else
+                        Popups.RemoveAt(i);
+                }
 
                 //אם השחקן הנוכחי סיים את כל הבועות כשהוא בתוך המים
                 if (HUD.PlayerCard.IsBubbleHit)
@@ -905,9 +931,15 @@ namespace SquadFighters
                 // רוץ על כל השחקנים שהתחברו למשחק
                 foreach (KeyValuePair<string, Player> otherPlayer in Players)
                 {
-                    // אם השחקנים לא בתוך המים
-                    if(!otherPlayer.Value.IsSwimming)
-                        otherPlayer.Value.Draw(spriteBatch); //צייר את השחקנים
+
+                    //אם השחקן הנוכחי ושאר השחקנים באותה הקבוצה
+                    if (otherPlayer.Value.Team == Player.Team)
+                        otherPlayer.Value.Draw(spriteBatch); //צייר שחקנים
+                    else //אחרת
+                    {
+                        if(!otherPlayer.Value.IsSwimming) //בדוק אם שאר השחקנים לא שוחים
+                            otherPlayer.Value.Draw(spriteBatch); //אם לא תצייר
+                    }
 
                     // רוץ על כל היריות של השחקנים שהתחברו
                     for (int i = 0; i < otherPlayer.Value.Bullets.Count; i++)
@@ -930,6 +962,11 @@ namespace SquadFighters
                 // בדיקה אם השחקן הנוכחי מחייה שחקן אחר
                 if(Player.IsReviving)
                     spriteBatch.DrawString(GlobalFont, "Reviving " + Player.OtherPlayerRevivingName + "(" + Player.ReviveCountUpString + ")", new Vector2(Player.Position.X + 20, Player.Position.Y + 30), Color.Red);
+
+
+                //צייר פופאפים ללא UI
+                foreach (Popup popup in Popups)
+                    popup.Draw(spriteBatch);
 
                 // סיים ציור AlphaBlend
                 spriteBatch.End();
