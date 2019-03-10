@@ -39,6 +39,9 @@ namespace SquadFighters
         public string ReviveCountUpString;
         public Team Team;
         public bool Visible;
+        public int Kills;
+        public int Deaths;
+        public int Level;
 
         public Player(string playerName)
         {
@@ -60,6 +63,9 @@ namespace SquadFighters
             ReviveCountUpString = "0/0";
             Team = Team.Alpha;
             Visible = false;
+            Kills = 0;
+            Deaths = 0;
+            Level = 0;
         }
 
         public void LoadContent(ContentManager content)
@@ -77,6 +83,21 @@ namespace SquadFighters
             CheckKeyboardMovement();
             CheckIsDead();
             IsSwimming = IsWaterIntersects(map.WaterObjects);
+        }
+
+        public void LevelUp()
+        {
+            Level++;
+        }
+
+        public void AddKill()
+        {
+            Kills++;
+        }
+
+        public void AddDeath()
+        {
+            Deaths++;
         }
 
         public void RevivePlayer()

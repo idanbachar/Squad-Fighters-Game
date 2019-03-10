@@ -19,6 +19,7 @@ namespace SquadFighters
         public SpriteFont DeadFont;
         public SpriteFont PlayerCoordinatesFont;
         public SpriteFont ChooseTeamFont;
+        public SpriteFont KDFONT;
 
         public List<PlayerCard> PlayersCards;
         public List<Popup> Popups;
@@ -40,6 +41,7 @@ namespace SquadFighters
             DeadFont = content.Load<SpriteFont>("fonts/dead_font");
             PlayerCoordinatesFont = content.Load<SpriteFont>("fonts/player_coordinates");
             ChooseTeamFont = content.Load<SpriteFont>("fonts/choose_team");
+            KDFONT = content.Load<SpriteFont>("fonts/kd");
         }
 
         public void UpdatePopups()
@@ -119,6 +121,12 @@ namespace SquadFighters
                     playerCard.Draw(spriteBatch);
         }
 
+        public void DrawKd(SpriteBatch spriteBatch, Player currentPlayer)
+        {
+            spriteBatch.DrawString(KDFONT, currentPlayer.Kills + " Kills" , new Vector2(30, SquadFighters.Graphics.PreferredBackBufferHeight - 60), Color.Black);
+            spriteBatch.DrawString(KDFONT, currentPlayer.Deaths + " Deaths", new Vector2(30, SquadFighters.Graphics.PreferredBackBufferHeight - 30), Color.Black);
+        }
+
         public void DrawDeadMessage(SpriteBatch spriteBatch)
         {
 
@@ -129,7 +137,7 @@ namespace SquadFighters
 
         public void DrawPlayerCoordinates(SpriteBatch spriteBatch, Player player)
         {
-            spriteBatch.DrawString(PlayerCoordinatesFont, "(x=" + (int)player.Position.X + ",Y=" + (int)player.Position.Y + ")", new Vector2(50, SquadFighters.Graphics.PreferredBackBufferHeight - 50), Color.Black);
+            spriteBatch.DrawString(PlayerCoordinatesFont, "(x=" + (int)player.Position.X + ",Y=" + (int)player.Position.Y + ")", new Vector2(PlayerCard.CardRectangle.Right + 10, PlayerCard.CardRectangle.Bottom - 10), Color.Black);
         }
 
         public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)
@@ -139,6 +147,8 @@ namespace SquadFighters
             DrawPlayerCoordinates(spriteBatch, player);
 
             DrawPlayersCards(spriteBatch);
+
+            DrawKd(spriteBatch, player);
 
             DrawDeadMessage(spriteBatch);
         }

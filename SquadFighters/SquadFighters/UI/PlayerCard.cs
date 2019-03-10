@@ -103,6 +103,12 @@ namespace SquadFighters
                 UpdateBubble();
             else
                 ResetBubbleUpdate();
+
+            if (ShieldBars[2].Armor <= 0)
+            {
+                currentPlayer.IsShield = false;
+                currentPlayer.ShieldType = ShieldType.None;
+            }
         }
 
         public void UpdateBubble()

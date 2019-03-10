@@ -566,7 +566,7 @@ namespace SquadFighters
                         }
                         else
                         {
-                            HUD.AddPopup("No Ammo!", new Vector2(Graphics.PreferredBackBufferWidth / 2 - 100, 100), false, PopupLabelType.Warning, PopupSizeType.Big);
+                            HUD.AddPopup("No Ammo!", new Vector2(Graphics.PreferredBackBufferWidth / 2 - 50, 100), false, PopupLabelType.Warning, PopupSizeType.Big);
                         }
                     }
                 }
@@ -772,6 +772,10 @@ namespace SquadFighters
                                                 {
                                                     if (HUD.PlayerCard.ShieldBars[2].Armor > 0)
                                                         HUD.PlayerCard.ShieldBars[2].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                                    else
+                                                    {
+                                                        Player.IsShield = false;
+                                                    }
                                                 }
                                             }
 
