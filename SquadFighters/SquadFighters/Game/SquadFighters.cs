@@ -81,6 +81,7 @@ namespace SquadFighters
             }
             catch (Exception e)
             {
+                GameState = GameState.MainMenu;
                 Console.WriteLine(e.Message);
             }
         }
@@ -144,7 +145,7 @@ namespace SquadFighters
         //שליחת נתוני השחקן הנוכחי לשרת
         public void SendPlayerDataToServer()
         {
-            while (true)
+            while (Client.Connected)
             {
                 string data = Player.ToString();
                 try
@@ -171,6 +172,10 @@ namespace SquadFighters
                 ReceiveThread.Abort();
                 SendPlayerDataThread.Abort();
                 Client.Close();
+                Players.Clear();
+                Map.Items.Clear();
+                Player = new Player(string.Empty);
+                Player.LoadContent(Content);
             }
             catch (Exception)
             {
@@ -183,7 +188,7 @@ namespace SquadFighters
         public void ReceiveDataFromServer()
         {
             //רוץ כל הזמן
-            while (true)
+            while (Client.Connected)
             {
 
                 //נסה לבצע
@@ -342,6 +347,11 @@ namespace SquadFighters
                         SendOneDataToServer(Player.Name + "," + ServerMethod.PlayerConnected);
 
                     }
+                    else if (ReceivedDataString == ServerMethod.PlayerDisconnected.ToString())
+                    {
+                        string playerName = ReceivedDataArray[1].Split('=')[1];
+
+                    }
                     //במידה והתקבל מידע על ירייה
                     if (ReceivedDataString.Contains(ServerMethod.ShootData.ToString()))
                     {
@@ -377,6 +387,9 @@ namespace SquadFighters
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
+
+                    DisconnectFromServer();
+                    GameState = GameState.MainMenu;
                 }
 
                 Thread.Sleep(20);
@@ -869,7 +882,7 @@ namespace SquadFighters
                     {
                         // תתחיל טעינת הפריטים במפה
                         GameState = GameState.Loading;
-                        JoinGame();
+                        new Thread(JoinGame).Start();
                     }
 
                     //ונהיה על Exit
