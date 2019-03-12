@@ -17,6 +17,8 @@ namespace SquadFighters
         public Dictionary<string, Item> Items;
         public List<Water> WaterObjects;
         private Random Random;
+        public int Width;
+        public int Height;
         
         public Map(Rectangle mapRectangle)
         {
@@ -28,6 +30,9 @@ namespace SquadFighters
                                       mapRectangle.Height);
 
             Random = new Random();
+
+            Width = Rectangle.Width;
+            Height = Rectangle.Height;
 
             Items = new Dictionary<string, Item>();
             WaterObjects = new List<Water>();

@@ -55,6 +55,20 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/items_capacity_font.spritefont
 
+#begin fonts/kd.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/kd.spritefont
+
+#begin fonts/kd_popup_font.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/kd_popup_font.spritefont
+
 #begin fonts/loading.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
@@ -82,6 +96,13 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
 /build:fonts/player_name_font.spritefont
+
+#begin fonts/small.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/small.spritefont
 
 #begin images/HUD/bubble.png
 /importer:TextureImporter

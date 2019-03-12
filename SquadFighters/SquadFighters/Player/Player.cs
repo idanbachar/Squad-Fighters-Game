@@ -39,6 +39,10 @@ namespace SquadFighters
         public string ReviveCountUpString;
         public Team Team;
         public bool Visible;
+        public int Kills;
+        public int Deaths;
+        public int Level;
+        public string KilledBy;
 
         public Player(string playerName)
         {
@@ -60,6 +64,10 @@ namespace SquadFighters
             ReviveCountUpString = "0/0";
             Team = Team.Alpha;
             Visible = false;
+            Kills = 0;
+            Deaths = 0;
+            Level = 0;
+            KilledBy = "None";
         }
 
         public void LoadContent(ContentManager content)
@@ -77,6 +85,22 @@ namespace SquadFighters
             CheckKeyboardMovement();
             CheckIsDead();
             IsSwimming = IsWaterIntersects(map.WaterObjects);
+            CheckOutSideMap(map);
+        }
+
+        public void LevelUp()
+        {
+            Level++;
+        }
+
+        public void AddKill()
+        {
+            Kills++;
+        }
+
+        public void AddDeath()
+        {
+            Deaths++;
         }
 
         public void RevivePlayer()
@@ -100,6 +124,21 @@ namespace SquadFighters
             ReviveTimer = 0;
             IsFinishedRevive = false;
             IsReviving = false;
+        }
+
+        public void CheckOutSideMap(Map map)
+        {
+            if (Position.X < 0)
+                Rotation = 0.04f;
+
+            if (Position.Y < 0)
+                Rotation = 1.5f;
+
+            if (Position.X > map.Width)
+                Rotation = -3.15f;
+
+            if (Position.Y > map.Height)
+                Rotation = -1.6f;
         }
 
         public void CheckIsDead()
@@ -151,11 +190,14 @@ namespace SquadFighters
                 }
 
                 if (Keyboard.GetState().IsKeyDown(Keys.D))
-                    Rotation += 0.05f;
+                    Rotation += 0.07f;
                 else if (Keyboard.GetState().IsKeyDown(Keys.A))
-                    Rotation -= 0.05f;
+                    Rotation -= 0.07f;
 
             }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.P))
+                Health = 100;
 
         }
 
@@ -163,7 +205,7 @@ namespace SquadFighters
         {
             IsShoot = true;
 
-            Bullet bullet = new Bullet(Position, Direction);
+            Bullet bullet = new Bullet(Position, Direction, Name);
             bullet.LoadContent(Content);
             Bullets.Add(bullet);
 

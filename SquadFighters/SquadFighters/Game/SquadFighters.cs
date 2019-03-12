@@ -32,7 +32,7 @@ namespace SquadFighters
 
         private SpriteFont GlobalFont; // פונט גלובלי
 
-        private List<Popup> Popups;
+        private List<Popup> Popups; //פופאפים
 
         //משתני רשת
         private Thread ReceiveThread; //קבלת נתונים מהשרת
@@ -81,6 +81,7 @@ namespace SquadFighters
             }
             catch (Exception e)
             {
+                GameState = GameState.MainMenu;
                 Console.WriteLine(e.Message);
             }
         }
@@ -144,7 +145,7 @@ namespace SquadFighters
         //שליחת נתוני השחקן הנוכחי לשרת
         public void SendPlayerDataToServer()
         {
-            while (true)
+            while (Client.Connected)
             {
                 string data = Player.ToString();
                 try
@@ -171,6 +172,10 @@ namespace SquadFighters
                 ReceiveThread.Abort();
                 SendPlayerDataThread.Abort();
                 Client.Close();
+                Players.Clear();
+                Map.Items.Clear();
+                Player = new Player(string.Empty);
+                Player.LoadContent(Content);
             }
             catch (Exception)
             {
@@ -183,7 +188,7 @@ namespace SquadFighters
         public void ReceiveDataFromServer()
         {
             //רוץ כל הזמן
-            while (true)
+            while (Client.Connected)
             {
 
                 //נסה לבצע
@@ -342,6 +347,11 @@ namespace SquadFighters
                         SendOneDataToServer(Player.Name + "," + ServerMethod.PlayerConnected);
 
                     }
+                    else if (ReceivedDataString == ServerMethod.PlayerDisconnected.ToString())
+                    {
+                        string playerName = ReceivedDataArray[1].Split('=')[1];
+
+                    }
                     //במידה והתקבל מידע על ירייה
                     if (ReceivedDataString.Contains(ServerMethod.ShootData.ToString()))
                     {
@@ -360,13 +370,26 @@ namespace SquadFighters
                     else if (ReceivedDataString.Contains(ServerMethod.JoinedMatch.ToString()))
                     {
                         string playerName = ReceivedDataArray[0];
-                        HUD.AddPopup(playerName + " Joined.", new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Medium);
+                        HUD.AddPopup(playerName + " Joined.", new Vector2(20, HUD.PlayerCard.CardRectangle.Bottom + 5), false, PopupLabelType.Regular, PopupSizeType.Medium);
+                    }
+                    else if (ReceivedDataString.Contains(ServerMethod.PlayerKilled.ToString()))
+                    {
+                        string playerKilledName = ReceivedDataArray[1].Split('=')[1];
+                        string playerKillerName = ReceivedDataArray[2].Split('=')[1];
+
+                        if (Player.Name == playerKillerName)
+                            Player.AddKill();
+
+                        HUD.AddKilledPopup(playerKilledName + " Killed by " + playerKillerName, new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Small);
                     }
 
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
+
+                    DisconnectFromServer();
+                    GameState = GameState.MainMenu;
                 }
 
                 Thread.Sleep(20);
@@ -566,7 +589,7 @@ namespace SquadFighters
                         }
                         else
                         {
-                            HUD.AddPopup("No Ammo!", new Vector2(Graphics.PreferredBackBufferWidth / 2 - 100, 100), false, PopupLabelType.Warning, PopupSizeType.Big);
+                            HUD.AddPopup("No Ammo!", new Vector2(Graphics.PreferredBackBufferWidth / 2 - 50, 100), false, PopupLabelType.Warning, PopupSizeType.Big);
                         }
                     }
                 }
@@ -752,6 +775,7 @@ namespace SquadFighters
                                     case ShieldType.None: // במידה ואין
                                         Player.Hit(otherPlayer.Value.Bullets[i].Damage); // תוריד לשחקן הנוכחי את הבריאות לפי עוצמת פגיעת היריה
                                         AddNoneHudPopup("-" + otherPlayer.Value.Bullets[i].Damage + "hp", Player.Position, true, PopupLabelType.Warning, PopupSizeType.Medium);
+
                                         break;
                                     case ShieldType.Shield_Level_1: // אם לשחקן יש הגנה בכללי
                                     case ShieldType.Shield_Level_2:
@@ -772,12 +796,25 @@ namespace SquadFighters
                                                 {
                                                     if (HUD.PlayerCard.ShieldBars[2].Armor > 0)
                                                         HUD.PlayerCard.ShieldBars[2].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                                    else
+                                                    {
+                                                        Player.IsShield = false;
+                                                    }
                                                 }
                                             }
 
                                         }
                                         break;
                                 }
+
+                                if (Player.Health <= 0)
+                                {
+                                    Player.KilledBy = otherPlayer.Value.Bullets[i].Owner;
+                                    Player.AddDeath();
+                                    HUD.AddKilledPopup(Player.Name + " killed by " + Player.KilledBy, new Vector2(100, 300), false, PopupLabelType.Regular, PopupSizeType.Small);
+                                    SendOneDataToServer(ServerMethod.PlayerKilled.ToString() + "=true,playerKilledName=" + Player.Name + ",playerKillerName=" + Player.KilledBy);
+                                }
+
                             }
 
                         }
@@ -845,7 +882,7 @@ namespace SquadFighters
                     {
                         // תתחיל טעינת הפריטים במפה
                         GameState = GameState.Loading;
-                        JoinGame();
+                        new Thread(JoinGame).Start();
                     }
 
                     //ונהיה על Exit
@@ -997,6 +1034,12 @@ namespace SquadFighters
                     foreach (ShieldBar shieldbar in HUD.PlayerCard.ShieldBars)
                         shieldbar.Draw(spriteBatch); // צייר ברי הגנה
                 }
+
+
+                //ציור פופאפ של הריגות
+                for (int i = 0; i < HUD.KD_Popups.Count; i++)
+                    HUD.DrawKDPopups(spriteBatch, HUD.KD_Popups[i].Text, Graphics.PreferredBackBufferWidth / 2 - 25, (Graphics.PreferredBackBufferHeight - 30) - (i * 35));
+
 
                 // סיום ציור רגיל
                 spriteBatch.End();

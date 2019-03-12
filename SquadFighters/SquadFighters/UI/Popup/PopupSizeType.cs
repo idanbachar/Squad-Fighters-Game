@@ -8,6 +8,7 @@ namespace SquadFighters
 {
     public enum PopupSizeType
     {
+        Small,
         Medium,
         Big
     }
