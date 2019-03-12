@@ -1028,8 +1028,6 @@ namespace SquadFighters
                     HUD.DrawKDPopups(spriteBatch, HUD.KD_Popups[i].Text, Graphics.PreferredBackBufferWidth / 2 - 25, (Graphics.PreferredBackBufferHeight - 30) - (i * 35));
 
 
-                spriteBatch.DrawString(GlobalFont, "Rotation: " + Player.Rotation, new Vector2(Graphics.PreferredBackBufferWidth / 2, Graphics.PreferredBackBufferHeight / 2), Color.White);
-
                 // סיום ציור רגיל
                 spriteBatch.End();
             }
