@@ -42,6 +42,7 @@ namespace SquadFighters
         public int Kills;
         public int Deaths;
         public int Level;
+        public string KilledBy;
 
         public Player(string playerName)
         {
@@ -66,6 +67,7 @@ namespace SquadFighters
             Kills = 0;
             Deaths = 0;
             Level = 0;
+            KilledBy = "None";
         }
 
         public void LoadContent(ContentManager content)
@@ -172,11 +174,14 @@ namespace SquadFighters
                 }
 
                 if (Keyboard.GetState().IsKeyDown(Keys.D))
-                    Rotation += 0.05f;
+                    Rotation += 0.07f;
                 else if (Keyboard.GetState().IsKeyDown(Keys.A))
-                    Rotation -= 0.05f;
+                    Rotation -= 0.07f;
 
             }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.P))
+                Health = 100;
 
         }
 
@@ -184,7 +189,7 @@ namespace SquadFighters
         {
             IsShoot = true;
 
-            Bullet bullet = new Bullet(Position, Direction);
+            Bullet bullet = new Bullet(Position, Direction, Name);
             bullet.LoadContent(Content);
             Bullets.Add(bullet);
 

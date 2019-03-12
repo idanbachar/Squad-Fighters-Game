@@ -20,17 +20,19 @@ namespace SquadFighters
         private int Timer;
         private int MaxTimer;
         public int Damage;
+        public string Owner;
 
-        public Bullet(Vector2 position, Vector2 direction)
+        public Bullet(Vector2 position, Vector2 direction, string owner)
         {
             Position = new Vector2(position.X, position.Y);
             Direction = new Vector2(direction.X, direction.Y);
             Rectangle = new Rectangle((int)position.X,(int)position.Y, 0, 0);
-            Speed = 3.3f;
+            Speed = 4.3f;
             IsFinished = false;
             Timer = 0;
             MaxTimer = 40;
             Damage = 20;
+            Owner = owner;
         }
 
         public void LoadContent(ContentManager content)

@@ -20,15 +20,18 @@ namespace SquadFighters
         public SpriteFont PlayerCoordinatesFont;
         public SpriteFont ChooseTeamFont;
         public SpriteFont KDFONT;
+        public SpriteFont KD_PopupFont;
 
         public List<PlayerCard> PlayersCards;
         public List<Popup> Popups;
+        public List<Popup> KD_Popups;
         public PlayerCard PlayerCard;
 
         public HUD()
         {
             PlayersCards = new List<PlayerCard>();
             Popups = new List<Popup>();
+            KD_Popups = new List<Popup>();
         }
  
         public void LoadContent(ContentManager content)
@@ -42,10 +45,12 @@ namespace SquadFighters
             PlayerCoordinatesFont = content.Load<SpriteFont>("fonts/player_coordinates");
             ChooseTeamFont = content.Load<SpriteFont>("fonts/choose_team");
             KDFONT = content.Load<SpriteFont>("fonts/kd");
+            KD_PopupFont = content.Load<SpriteFont>("fonts/kd_popup_font");
         }
 
         public void UpdatePopups()
         {
+            //פופאפים רגילים
             for(int i = 0; i < Popups.Count; i++)
             {
                 if (Popups[i].IsShowing)
@@ -53,11 +58,25 @@ namespace SquadFighters
                 else
                     Popups.RemoveAt(i);
             }
+
+            //פופאפים של הריגות
+            for (int i = 0; i < KD_Popups.Count; i++)
+            {
+                if (KD_Popups[i].IsShowing)
+                    KD_Popups[i].Update();
+                else
+                    KD_Popups.RemoveAt(i);
+            }
         }
 
         public void AddPopup(string text, Vector2 position, bool isMove, PopupLabelType popupLabelType, PopupSizeType popupSizeType)
         {
             Popups.Add(new Popup(text, position, isMove, popupLabelType, popupSizeType));
+        }
+
+        public void AddKilledPopup(string text, Vector2 position, bool isMove, PopupLabelType popupLabelType, PopupSizeType popupSizeType)
+        {
+            KD_Popups.Add(new Popup(text, position, isMove, popupLabelType, popupSizeType));
         }
 
         public void DrawPlayersInfo(SpriteBatch spriteBatch, Player player, Player currentPlayer)
@@ -138,6 +157,11 @@ namespace SquadFighters
         public void DrawPlayerCoordinates(SpriteBatch spriteBatch, Player player)
         {
             spriteBatch.DrawString(PlayerCoordinatesFont, "(x=" + (int)player.Position.X + ",Y=" + (int)player.Position.Y + ")", new Vector2(PlayerCard.CardRectangle.Right + 10, PlayerCard.CardRectangle.Bottom - 10), Color.Black);
+        }
+
+        public void DrawKDPopups(SpriteBatch spriteBatch, string text, int x, int y)
+        {
+            spriteBatch.DrawString(KD_PopupFont, text, new Vector2(x, y), Color.White);
         }
 
         public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)

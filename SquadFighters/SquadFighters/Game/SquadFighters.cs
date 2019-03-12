@@ -32,7 +32,7 @@ namespace SquadFighters
 
         private SpriteFont GlobalFont; // פונט גלובלי
 
-        private List<Popup> Popups;
+        private List<Popup> Popups; //פופאפים
 
         //משתני רשת
         private Thread ReceiveThread; //קבלת נתונים מהשרת
@@ -361,6 +361,16 @@ namespace SquadFighters
                     {
                         string playerName = ReceivedDataArray[0];
                         HUD.AddPopup(playerName + " Joined.", new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Medium);
+                    }
+                    else if (ReceivedDataString.Contains(ServerMethod.PlayerKilled.ToString()))
+                    {
+                        string playerKilledName = ReceivedDataArray[1].Split('=')[1];
+                        string playerKillerName = ReceivedDataArray[2].Split('=')[1];
+
+                        if (Player.Name == playerKillerName)
+                            Player.AddKill();
+
+                        HUD.AddKilledPopup(playerKilledName + " Killed by " + playerKillerName, new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Small);
                     }
 
                 }
@@ -752,6 +762,7 @@ namespace SquadFighters
                                     case ShieldType.None: // במידה ואין
                                         Player.Hit(otherPlayer.Value.Bullets[i].Damage); // תוריד לשחקן הנוכחי את הבריאות לפי עוצמת פגיעת היריה
                                         AddNoneHudPopup("-" + otherPlayer.Value.Bullets[i].Damage + "hp", Player.Position, true, PopupLabelType.Warning, PopupSizeType.Medium);
+
                                         break;
                                     case ShieldType.Shield_Level_1: // אם לשחקן יש הגנה בכללי
                                     case ShieldType.Shield_Level_2:
@@ -782,6 +793,15 @@ namespace SquadFighters
                                         }
                                         break;
                                 }
+
+                                if (Player.Health <= 0)
+                                {
+                                    Player.KilledBy = otherPlayer.Value.Bullets[i].Owner;
+                                    Player.AddDeath();
+                                    HUD.AddKilledPopup(Player.Name + " killed by " + Player.KilledBy, new Vector2(100, 300), false, PopupLabelType.Regular, PopupSizeType.Small);
+                                    SendOneDataToServer(ServerMethod.PlayerKilled.ToString() + "=true,playerKilledName=" + Player.Name + ",playerKillerName=" + Player.KilledBy);
+                                }
+
                             }
 
                         }
@@ -1000,6 +1020,12 @@ namespace SquadFighters
                     // רוץ על כל ברי ההגנה של השחקן
                     foreach (ShieldBar shieldbar in HUD.PlayerCard.ShieldBars)
                         shieldbar.Draw(spriteBatch); // צייר ברי הגנה
+                }
+
+
+                for(int i = 0; i < HUD.KD_Popups.Count; i++)
+                {
+                    HUD.DrawKDPopups(spriteBatch, HUD.KD_Popups[i].Text, Graphics.PreferredBackBufferWidth / 2 - 25, (Graphics.PreferredBackBufferHeight - 30) - (i * 35));
                 }
 
                 // סיום ציור רגיל
