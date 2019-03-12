@@ -360,7 +360,7 @@ namespace SquadFighters
                     else if (ReceivedDataString.Contains(ServerMethod.JoinedMatch.ToString()))
                     {
                         string playerName = ReceivedDataArray[0];
-                        HUD.AddPopup(playerName + " Joined.", new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Medium);
+                        HUD.AddPopup(playerName + " Joined.", new Vector2(20, HUD.PlayerCard.CardRectangle.Bottom + 5), false, PopupLabelType.Regular, PopupSizeType.Medium);
                     }
                     else if (ReceivedDataString.Contains(ServerMethod.PlayerKilled.ToString()))
                     {
@@ -1023,10 +1023,12 @@ namespace SquadFighters
                 }
 
 
-                for(int i = 0; i < HUD.KD_Popups.Count; i++)
-                {
+                //ציור פופאפ של הריגות
+                for (int i = 0; i < HUD.KD_Popups.Count; i++)
                     HUD.DrawKDPopups(spriteBatch, HUD.KD_Popups[i].Text, Graphics.PreferredBackBufferWidth / 2 - 25, (Graphics.PreferredBackBufferHeight - 30) - (i * 35));
-                }
+
+
+                spriteBatch.DrawString(GlobalFont, "Rotation: " + Player.Rotation, new Vector2(Graphics.PreferredBackBufferWidth / 2, Graphics.PreferredBackBufferHeight / 2), Color.White);
 
                 // סיום ציור רגיל
                 spriteBatch.End();

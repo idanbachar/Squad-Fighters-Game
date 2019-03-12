@@ -161,7 +161,7 @@ namespace SquadFighters
 
         public void DrawKDPopups(SpriteBatch spriteBatch, string text, int x, int y)
         {
-            spriteBatch.DrawString(KD_PopupFont, text, new Vector2(x, y), Color.White);
+            spriteBatch.DrawString(KD_PopupFont, text, new Vector2(x, y), Color.Red);
         }
 
         public void Draw(SpriteBatch spriteBatch, Player player, Dictionary<string, Player> players)

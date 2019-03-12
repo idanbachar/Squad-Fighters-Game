@@ -85,6 +85,7 @@ namespace SquadFighters
             CheckKeyboardMovement();
             CheckIsDead();
             IsSwimming = IsWaterIntersects(map.WaterObjects);
+            CheckOutSideMap(map);
         }
 
         public void LevelUp()
@@ -123,6 +124,21 @@ namespace SquadFighters
             ReviveTimer = 0;
             IsFinishedRevive = false;
             IsReviving = false;
+        }
+
+        public void CheckOutSideMap(Map map)
+        {
+            if (Position.X < 0)
+                Rotation = 0.04f;
+
+            if (Position.Y < 0)
+                Rotation = 1.5f;
+
+            if (Position.X > map.Width)
+                Rotation = -3.15f;
+
+            if (Position.Y > map.Height)
+                Rotation = -1.6f;
         }
 
         public void CheckIsDead()

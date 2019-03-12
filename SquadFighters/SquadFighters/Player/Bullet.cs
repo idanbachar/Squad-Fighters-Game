@@ -30,7 +30,7 @@ namespace SquadFighters
             Speed = 4.3f;
             IsFinished = false;
             Timer = 0;
-            MaxTimer = 40;
+            MaxTimer = 30;
             Damage = 20;
             Owner = owner;
         }
