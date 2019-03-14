@@ -81,7 +81,7 @@ namespace SquadFighters
             }
             catch (Exception e)
             {
-                GameState = GameState.MainMenu;
+                //GameState = GameState.MainMenu;
                 Console.WriteLine(e.Message);
             }
         }
@@ -571,36 +571,43 @@ namespace SquadFighters
 
         public void CheckKeyBoard()
         {
-            while (true)
+            try
             {
-                if (!Player.IsDead)
+                while (true)
                 {
-                    // אם השחקן הנוכחי הקיש רווח
-                    if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Player.IsShoot)
+                    if (!Player.IsDead)
                     {
-                        // אם לשחקן הנוכחי יש תחמושת
-                        if (Player.BulletsCapacity > 0)
+                        // אם השחקן הנוכחי הקיש רווח
+                        if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Player.IsShoot)
                         {
-                            // השחקן הנוכחי יבצע יריה
-                            Player.Shoot();
+                            // אם לשחקן הנוכחי יש תחמושת
+                            if (Player.BulletsCapacity > 0)
+                            {
+                                // השחקן הנוכחי יבצע יריה
+                                Player.Shoot();
 
-                            //וישלח עדכון לשרת שהוא ירה
-                            SendOneDataToServer(ServerMethod.ShootData.ToString() + "=true,PlayerShotName=" + Player.Name);
-                        }
-                        else
-                        {
-                            HUD.AddPopup("No Ammo!", new Vector2(Graphics.PreferredBackBufferWidth / 2 - 50, 100), false, PopupLabelType.Warning, PopupSizeType.Big);
+                                //וישלח עדכון לשרת שהוא ירה
+                                SendOneDataToServer(ServerMethod.ShootData.ToString() + "=true,PlayerShotName=" + Player.Name);
+                            }
+                            else
+                            {
+                                HUD.AddPopup("No Ammo!", new Vector2(Graphics.PreferredBackBufferWidth / 2 - 50, 100), false, PopupLabelType.Warning, PopupSizeType.Big);
+                            }
                         }
                     }
+
+                    if (Keyboard.GetState().IsKeyUp(Keys.Space))
+                    {
+                        Player.IsShoot = false;
+                    }
+
+                    Thread.Sleep(100);
+
                 }
-
-                if (Keyboard.GetState().IsKeyUp(Keys.Space))
-                {
-                    Player.IsShoot = false;
-                }
-
-                Thread.Sleep(100);
-
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
