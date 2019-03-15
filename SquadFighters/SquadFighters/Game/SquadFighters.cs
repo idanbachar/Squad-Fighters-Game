@@ -43,6 +43,9 @@ namespace SquadFighters
         private int ServerPort; //כתובת פורט של השרת
         public string[] ReceivedDataArray; // מערך נתונים שהתקבלו
         private int MaxItems; //כמות מקסימלית של פריטים שאמורים להטען
+        private int AlphaTeamCount;
+        private int BetaTeamCount;
+        private int OmegaTeamCount;
 
         public SquadFighters()
         {
@@ -58,6 +61,9 @@ namespace SquadFighters
             GameState = GameState.MainMenu;
             CameraPlayersIndex = -1;
             Popups = new List<Popup>();
+            AlphaTeamCount = 0;
+            BetaTeamCount = 0;
+            OmegaTeamCount = 0;
         }
 
         protected override void Initialize()
@@ -119,7 +125,7 @@ namespace SquadFighters
             GameState = GameState.Game;
             Player.Visible = true;
 
-            SendOneDataToServer(Player.Name + "," + ServerMethod.JoinedMatch);
+            SendOneDataToServer(Player.Name + "," + ServerMethod.JoinedMatch + "," + Player.Team);
 
             //והתחל לשלוח באופן חוזר מידע על השחקן הנוכחי
             SendPlayerDataThread = new Thread(() => SendPlayerDataToServer());
@@ -377,6 +383,13 @@ namespace SquadFighters
                             HUD.ResetPlayerDeathCountDown();
                         }
                     }
+                    else if (ReceivedDataString.Contains(ServerMethod.TeamsCounts.ToString()))
+                    {
+                        AlphaTeamCount = int.Parse(ReceivedDataArray[1].Split('=')[1]);
+                        BetaTeamCount = int.Parse(ReceivedDataArray[2].Split('=')[1]);
+                        OmegaTeamCount = int.Parse(ReceivedDataArray[3].Split('=')[1]);
+
+                    }
                     else if (ReceivedDataString.Contains(ServerMethod.JoinedMatch.ToString()))
                     {
                         string playerName = ReceivedDataArray[0];
@@ -510,7 +523,7 @@ namespace SquadFighters
                                     }
                                     Player.IsShield = true; //עדכן את השחקן למכיל הגנה
 
-                                    AddNoneHudPopup("+" + Player.ShieldType.ToString(), Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
+                                    AddNoneHudPopup("+" + GetShieldName(Player.ShieldType), Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
 
                                     string key = items.ElementAt(i).Key; //השגת מפתח המילון
                                     lock (Map.Items)
@@ -537,6 +550,24 @@ namespace SquadFighters
 
                 Thread.Sleep(100);
             }
+        }
+
+        //מחזיר תרגום של סוג המגן
+        public string GetShieldName(ShieldType shieldType)
+        {
+            switch (shieldType)
+            {
+                case ShieldType.Shield_Level_1:
+                    return "Shield Lv1";
+                case ShieldType.Shield_Level_2:
+                    return "Shield Lv2";
+                case ShieldType.Shield_Rare:
+                    return "Rare Shield";
+                case ShieldType.Shield_Legendery:
+                    return "Legendery Shield";
+            }
+
+            return string.Empty;
         }
 
         // טעינת המשחק
@@ -1169,11 +1200,19 @@ namespace SquadFighters
 
                 //HUD.DrawChooseTeam(spriteBatch);
 
-                foreach(Button button in MainMenu.Teams)
-                    if (button.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
-                        button.Draw(spriteBatch, true); // הפוך כפתור לבהיר
+                foreach (Button teamButton in MainMenu.Teams)
+                {
+                    spriteBatch.DrawString(GlobalFont,
+                        (teamButton.ButtonType == ButtonType.Alpha ? AlphaTeamCount.ToString() :
+                            teamButton.ButtonType == ButtonType.Beta ? BetaTeamCount.ToString() :
+                                teamButton.ButtonType == ButtonType.Omega ? OmegaTeamCount.ToString() :
+                                    "0") + "/2", new Vector2(teamButton.Rectangle.Right + 10, teamButton.Rectangle.Top + 5), Color.White);
+
+                    if (teamButton.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
+                        teamButton.Draw(spriteBatch, true); // הפוך כפתור לבהיר
                     else//אחרת
-                        button.Draw(spriteBatch, false);// הפוך כפתור לכהה
+                        teamButton.Draw(spriteBatch, false);// הפוך כפתור לכהה
+                }
 
                 spriteBatch.End();
             }

@@ -21,6 +21,7 @@ namespace SquadFighters
         JoinedMatch,
         PlayerKilled,
         PlayerDisconnected,
-        PlayerDrown
+        PlayerDrown,
+        TeamsCounts
     }
 }
