@@ -43,6 +43,7 @@ namespace SquadFighters
         private int ServerPort; //כתובת פורט של השרת
         public string[] ReceivedDataArray; // מערך נתונים שהתקבלו
         private int MaxItems; //כמות מקסימלית של פריטים שאמורים להטען
+        private int TeamsCountsMax;
         private int AlphaTeamCount;
         private int BetaTeamCount;
         private int OmegaTeamCount;
@@ -61,6 +62,7 @@ namespace SquadFighters
             GameState = GameState.MainMenu;
             CameraPlayersIndex = -1;
             Popups = new List<Popup>();
+            TeamsCountsMax = 2;
             AlphaTeamCount = 0;
             BetaTeamCount = 0;
             OmegaTeamCount = 0;
@@ -989,16 +991,25 @@ namespace SquadFighters
                             switch (team.ButtonType)
                             {
                                 case ButtonType.Alpha:
-                                    Player.Team = Team.Alpha;
-                                    JoinMatch();
+                                    if (AlphaTeamCount < TeamsCountsMax)
+                                    {
+                                        Player.Team = Team.Alpha;
+                                        JoinMatch();
+                                    }
                                     break;
                                 case ButtonType.Beta:
-                                    Player.Team = Team.Beta;
-                                    JoinMatch();
+                                    if (BetaTeamCount < TeamsCountsMax)
+                                    {
+                                        Player.Team = Team.Beta;
+                                        JoinMatch();
+                                    }
                                     break;
                                 case ButtonType.Omega:
-                                    Player.Team = Team.Omega;
-                                    JoinMatch();
+                                    if (OmegaTeamCount < TeamsCountsMax)
+                                    {
+                                        Player.Team = Team.Omega;
+                                        JoinMatch();
+                                    }
                                     break;
                             }
                         }
@@ -1206,7 +1217,13 @@ namespace SquadFighters
                         (teamButton.ButtonType == ButtonType.Alpha ? AlphaTeamCount.ToString() :
                             teamButton.ButtonType == ButtonType.Beta ? BetaTeamCount.ToString() :
                                 teamButton.ButtonType == ButtonType.Omega ? OmegaTeamCount.ToString() :
-                                    "0") + "/2", new Vector2(teamButton.Rectangle.Right + 10, teamButton.Rectangle.Top + 5), Color.White);
+                                    "0") + "/" + TeamsCountsMax, new Vector2(teamButton.Rectangle.Right + 10, teamButton.Rectangle.Top + 5),
+
+
+                         (teamButton.ButtonType == ButtonType.Alpha && AlphaTeamCount == TeamsCountsMax ? Color.Red :
+                            teamButton.ButtonType == ButtonType.Beta && BetaTeamCount == TeamsCountsMax ? Color.Red :
+                                teamButton.ButtonType == ButtonType.Omega && OmegaTeamCount == TeamsCountsMax ? Color.Red
+                                : Color.White));
 
                     if (teamButton.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
                         teamButton.Draw(spriteBatch, true); // הפוך כפתור לבהיר
