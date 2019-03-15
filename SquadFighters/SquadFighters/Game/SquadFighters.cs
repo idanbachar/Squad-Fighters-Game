@@ -34,6 +34,8 @@ namespace SquadFighters
 
         private List<Popup> Popups; //פופאפים
 
+        private Thread PlayerDeathCountDownThread; 
+
         //משתני רשת
         private Thread ReceiveThread; //קבלת נתונים מהשרת
         private Thread SendPlayerDataThread; //שליחת נתונים לשרת
@@ -145,7 +147,7 @@ namespace SquadFighters
         //שליחת נתוני השחקן הנוכחי לשרת
         public void SendPlayerDataToServer()
         {
-            while (Client.Connected)
+            while (true)
             {
                 string data = Player.ToString();
                 try
@@ -188,7 +190,7 @@ namespace SquadFighters
         public void ReceiveDataFromServer()
         {
             //רוץ כל הזמן
-            while (Client.Connected)
+            while (true)
             {
 
                 //נסה לבצע
@@ -238,6 +240,7 @@ namespace SquadFighters
                         string playerReviveCountUpString = ReceivedDataArray[16].Split('=')[1];
                         Team playerTeam = (Team)int.Parse(ReceivedDataArray[17].Split('=')[1]);
                         bool playerVisible = bool.Parse(ReceivedDataArray[18].Split('=')[1]);
+                        bool playerIsAbleToBeRevived = bool.Parse(ReceivedDataArray[19].Split('=')[1]);
 
                         //כל זה יקרה אך ורק אם השחקן אכן התחבר מקודם
                         if (Players.ContainsKey(playerName))
@@ -262,6 +265,7 @@ namespace SquadFighters
                                 Players[playerName].ReviveCountUpString = playerReviveCountUpString; // מלל שמופיע כשמחיים
                                 Players[playerName].Team = playerTeam; //קבוצה
                                 Players[playerName].Visible = playerVisible; // בלתי נראה
+                                Players[playerName].IsAbleToBeRevived = playerIsAbleToBeRevived; //האם שחקן יכול לעבור החייאה
 
                                 //עדכון הערכים עבור אותו שחקן בכרטיסייה שלו
                                 for (int i = 0; i < HUD.PlayersCards.Count; i++)
@@ -365,7 +369,11 @@ namespace SquadFighters
                         string playerName = ReceivedDataArray[1].Split('=')[1];
 
                         if (Player.Name == playerName)
+                        {
                             Player.Heal(100);
+                            PlayerDeathCountDownThread.Abort();
+                            HUD.ResetPlayerDeathCountDown();
+                        }
                     }
                     else if (ReceivedDataString.Contains(ServerMethod.JoinedMatch.ToString()))
                     {
@@ -388,7 +396,7 @@ namespace SquadFighters
                 {
                     Console.WriteLine(e.Message);
 
-                    DisconnectFromServer();
+                    //DisconnectFromServer();
                     GameState = GameState.MainMenu;
                 }
 
@@ -680,9 +688,8 @@ namespace SquadFighters
 
                 //עדכון תמידי של השחקן הנוכחי
                 Player.Update(Map);
-
+                Player.IsAbleToBeRevived = HUD.PlayerIsAbleToBeRevived; //עדכון האם שחקן יכול לקבל החייאה מה ui
                 
-
                 //בודק אם השחקן הנוכחי לחץ על R
                 if (Keyboard.GetState().IsKeyDown(Keys.R))
                 {
@@ -695,7 +702,7 @@ namespace SquadFighters
                             Player intersectedPlayer = GetOtherPlayerIntersects(Players); //במידה ונוגע באחד השחקנים, מקבל את השחקן שנוגע בך
 
                             //בודק אם השחקן הנוכחי מת
-                            if (intersectedPlayer.IsDead && intersectedPlayer.Team == Player.Team)
+                            if (intersectedPlayer.IsDead && intersectedPlayer.IsAbleToBeRevived && intersectedPlayer.Team == Player.Team)
                             {
                                 //מחייה את השחקן עד שנגמר זמן ההחייאה
                                 if (!Player.IsFinishedRevive)
@@ -794,15 +801,24 @@ namespace SquadFighters
                                         {
                                             // הורד הגנה בהתאם
                                             if (HUD.PlayerCard.ShieldBars[0].Armor > 0)
+                                            {
                                                 HUD.PlayerCard.ShieldBars[0].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                                AddNoneHudPopup("-" + otherPlayer.Value.Bullets[i].Damage + " Armor", Player.Position, true, PopupLabelType.Warning, PopupSizeType.Medium);
+                                            }
                                             else
                                             {
                                                 if (HUD.PlayerCard.ShieldBars[1].Armor > 0)
+                                                {
                                                     HUD.PlayerCard.ShieldBars[1].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                                    AddNoneHudPopup("-" + otherPlayer.Value.Bullets[i].Damage + " Armor", Player.Position, true, PopupLabelType.Warning, PopupSizeType.Medium);
+                                                }
                                                 else
                                                 {
                                                     if (HUD.PlayerCard.ShieldBars[2].Armor > 0)
+                                                    {
                                                         HUD.PlayerCard.ShieldBars[2].Hit(otherPlayer.Value.Bullets[i].Damage);
+                                                        AddNoneHudPopup("-" + otherPlayer.Value.Bullets[i].Damage + " Armor", Player.Position, true, PopupLabelType.Warning, PopupSizeType.Medium);
+                                                    }
                                                     else
                                                     {
                                                         Player.IsShield = false;
@@ -820,6 +836,11 @@ namespace SquadFighters
                                     Player.AddDeath();
                                     HUD.AddKilledPopup(Player.Name + " killed by " + Player.KilledBy, new Vector2(100, 300), false, PopupLabelType.Regular, PopupSizeType.Small);
                                     SendOneDataToServer(ServerMethod.PlayerKilled.ToString() + "=true,playerKilledName=" + Player.Name + ",playerKillerName=" + Player.KilledBy);
+
+                                    PlayerDeathCountDownThread = new Thread(HUD.PlayerDeathCountDown);
+                                    PlayerDeathCountDownThread.Start();
+
+                                    HUD.PlayerCanCountDown = true;
                                 }
 
                             }
