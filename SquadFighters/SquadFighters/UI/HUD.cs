@@ -23,13 +23,15 @@ namespace SquadFighters
         public SpriteFont KDFONT;
         public SpriteFont KD_PopupFont;
 
+        public PlayerCard PlayerCard;
         public List<PlayerCard> PlayersCards;
+
         public List<Popup> Popups;
         public List<Popup> KD_Popups;
-        public PlayerCard PlayerCard;
         public int PlayerDeathCountDownTimer;
         public bool PlayerIsAbleToBeRevived;
         public bool PlayerCanCountDown;
+        public bool PlayerIsDrown;
 
         public HUD()
         {
@@ -39,6 +41,7 @@ namespace SquadFighters
             PlayerDeathCountDownTimer = 30;
             PlayerIsAbleToBeRevived = true;
             PlayerCanCountDown = false;
+            PlayerIsDrown = false;
         }
  
         public void LoadContent(ContentManager content)
@@ -53,6 +56,13 @@ namespace SquadFighters
             ChooseTeamFont = content.Load<SpriteFont>("fonts/choose_team");
             KDFONT = content.Load<SpriteFont>("fonts/kd");
             KD_PopupFont = content.Load<SpriteFont>("fonts/kd_popup_font");
+        }
+
+        public void Update(Player player)
+        {
+            UpdatePopups();
+
+            PlayerCard.Update(player, new Vector2(0, 0));
         }
 
         public void UpdatePopups()
@@ -149,7 +159,10 @@ namespace SquadFighters
             {
                 percent = (double)((CurrentItemsLoaded / MaxItems) * 100);
             }
-            spriteBatch.DrawString(LoadingFont, "Downloading\nGame Data(" + (int)percent + "% ..)", new Vector2(70, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 75), Color.Black);
+
+            spriteBatch.DrawString(LoadingFont, "(" + (int)percent + "%)", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 50, SquadFighters.Graphics.PreferredBackBufferHeight / 2 + 50), Color.Black);
+
+            //spriteBatch.DrawString(LoadingFont, "Downloading\nGame Data(" + (int)percent + "% ..)", new Vector2(70, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 75), Color.Black);
         }
 
         public void DrawPopups(SpriteBatch spriteBatch)
@@ -182,7 +195,7 @@ namespace SquadFighters
         {
 
             if (PlayerCard.HealthBar.Health <= 0)
-                spriteBatch.DrawString(DeadFont, "You Are Dead :(" + (PlayerDeathCountDownTimer > 0 && PlayerIsAbleToBeRevived ? "\n" + PlayerDeathCountDownTimer + " sec till full DEATH." : "\nPERMANENTLY!"), new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 200), Color.Red);
+                spriteBatch.DrawString(DeadFont, "You Are Dead :(" + (!PlayerIsDrown ? (PlayerDeathCountDownTimer > 0 && PlayerIsAbleToBeRevived ? "\n" + PlayerDeathCountDownTimer + " sec till full DEATH." : "\nPERMANENTLY!")  : "\nPERMANENTLY!"), new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 200), Color.Red);
 
         }
 

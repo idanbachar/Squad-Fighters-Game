@@ -82,11 +82,12 @@ namespace SquadFighters
             playerNamePosition = new Vector2(CardPosition.X + 5, CardPosition.Y + 3);
             playerAmmoPosition = new Vector2(CardRectangle.Right - 60, newPosition.Y + 5);
 
-            HealthBar.Position = new Vector2(playerNamePosition.X, playerNamePosition.Y + 20);
-            HealthBar.Rectangle = new Rectangle((int)HealthBar.Position.X, (int)HealthBar.Position.Y, HealthBar.Rectangle.Width, HealthBar.Rectangle.Height);
+            HealthBar.Position = new Vector2(playerNamePosition.X + 3, playerNamePosition.Y + 20);
+            HealthBar.BackgroundRectangle = new Rectangle((int)HealthBar.Position.X, (int)HealthBar.Position.Y, HealthBar.BackgroundRectangle.Width, HealthBar.BackgroundRectangle.Height);
+            HealthBar.Rectangle = new Rectangle((int)HealthBar.BackgroundRectangle.X + 5, (int)HealthBar.BackgroundRectangle.Y + 5, HealthBar.Rectangle.Width - 10, HealthBar.Rectangle.Height);
 
             for (int i = 0; i < ShieldBars.Length; i++)
-                ShieldBars[i].Position = new Vector2(HealthBar.Position.X + i * 75, HealthBar.Rectangle.Bottom);
+                ShieldBars[i].Position = new Vector2(3 + HealthBar.Position.X + i * 75, HealthBar.BackgroundRectangle.Bottom + 5);
 
             for (int i = 0; i < Bubbles.Length; i++)
                 Bubbles[i].Position = new Vector2(CardRectangle.Right + 10 + i * 40, CardRectangle.Top);

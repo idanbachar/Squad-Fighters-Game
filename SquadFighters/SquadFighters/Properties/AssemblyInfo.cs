@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Battle Royale Project")]
-[assembly: AssemblyProduct("Battle Royale Project")]
+[assembly: AssemblyTitle("SquadFighters: Battle Royale")]
+[assembly: AssemblyProduct("SquadFighters: Battle Royale")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyCopyright("Copyright ©  2019")]
+[assembly: AssemblyDescription("A new Battle Royale game made by Idan Bachar")]
+[assembly: AssemblyCompany("Idan Bachar")]
+[assembly: AssemblyCopyright("Copyright ©  2019 Idan Bachar")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

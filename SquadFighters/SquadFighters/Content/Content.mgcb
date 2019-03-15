@@ -128,6 +128,18 @@
 /processorParam:TextureFormat=Color
 /build:images/HUD/health_bar.png
 
+#begin images/HUD/health_bar_background.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/HUD/health_bar_background.png
+
 #begin images/HUD/player_card.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -295,6 +307,42 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:images/items/shields/shield_rare.png
+
+#begin images/main menu/background/main_menu.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/main menu/background/main_menu.png;images/main menu/background/main_menu_background.png
+
+#begin images/main menu/background/main_menu_download.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/main menu/background/main_menu_download.png;images/main menu/background/main_menu_background_download.png
+
+#begin images/main menu/background/main_menu_team.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/main menu/background/main_menu_team.png;images/main menu/background/main_menu_background_team.png
 
 #begin images/main menu/buttons/alpha.png
 /importer:TextureImporter
