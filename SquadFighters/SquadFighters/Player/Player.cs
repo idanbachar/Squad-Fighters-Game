@@ -44,6 +44,7 @@ namespace SquadFighters
         public int Deaths;
         public int Level;
         public string KilledBy;
+        public bool IsDrown;
 
         public Player(string playerName)
         {
@@ -70,6 +71,7 @@ namespace SquadFighters
             Level = 0;
             KilledBy = "None";
             IsAbleToBeRevived = true;
+            IsDrown = false;
         }
 
         public void LoadContent(ContentManager content)
@@ -193,7 +195,7 @@ namespace SquadFighters
 
                 if (Keyboard.GetState().IsKeyDown(Keys.D))
                     Rotation += 0.07f;
-                else if (Keyboard.GetState().IsKeyDown(Keys.A))
+                if (Keyboard.GetState().IsKeyDown(Keys.A))
                     Rotation -= 0.07f;
 
             }
@@ -220,6 +222,12 @@ namespace SquadFighters
             Rectangle = new Rectangle((int)Position.X, (int)Position.Y, 0, 0);
         }
 
+        public void SetNewPosition(Vector2 newPosition)
+        {
+            Position = new Vector2(newPosition.X, newPosition.Y);
+            Rectangle = new Rectangle((int)Position.X, (int)Position.Y, 0, 0);
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
             if (Visible)
@@ -238,7 +246,7 @@ namespace SquadFighters
 
         public override string ToString()
         {
-            return ServerMethod.PlayerData.ToString() + "=true,PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",PlayerIsReviving=" + IsReviving + ",RevivingPlayerName="  + OtherPlayerRevivingName + ",PlayerReviveCountUpString=" + ReviveCountUpString + ",PlayerTeam=" + (int)Team + ",PlayerVisible=" + Visible + ",PlayerIsAbleToBeRevived=" + IsAbleToBeRevived + ",";
+            return ServerMethod.PlayerData.ToString() + "=true,PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",PlayerIsReviving=" + IsReviving + ",RevivingPlayerName="  + OtherPlayerRevivingName + ",PlayerReviveCountUpString=" + ReviveCountUpString + ",PlayerTeam=" + (int)Team + ",PlayerVisible=" + Visible + ",PlayerIsAbleToBeRevived=" + IsAbleToBeRevived + ",PlayerIsDrown=" + IsDrown + ",";
         }
     }
 }

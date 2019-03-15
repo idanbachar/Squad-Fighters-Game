@@ -31,7 +31,7 @@ namespace SquadFighters
 
         public void Draw(SpriteBatch spriteBatch, bool isMouseOver)
         {
-            spriteBatch.Draw(Texture, Position, isMouseOver ? Color.White : Color.LightGray);
+            spriteBatch.Draw(Texture, Position, !isMouseOver ? Color.White : Color.DarkGray);
         }
     }
 }

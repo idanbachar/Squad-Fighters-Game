@@ -43,6 +43,10 @@ namespace SquadFighters
         private int ServerPort; //כתובת פורט של השרת
         public string[] ReceivedDataArray; // מערך נתונים שהתקבלו
         private int MaxItems; //כמות מקסימלית של פריטים שאמורים להטען
+        private int TeamsCountsMax;
+        private int AlphaTeamCount;
+        private int BetaTeamCount;
+        private int OmegaTeamCount;
 
         public SquadFighters()
         {
@@ -58,6 +62,10 @@ namespace SquadFighters
             GameState = GameState.MainMenu;
             CameraPlayersIndex = -1;
             Popups = new List<Popup>();
+            TeamsCountsMax = 2;
+            AlphaTeamCount = 0;
+            BetaTeamCount = 0;
+            OmegaTeamCount = 0;
         }
 
         protected override void Initialize()
@@ -119,7 +127,7 @@ namespace SquadFighters
             GameState = GameState.Game;
             Player.Visible = true;
 
-            SendOneDataToServer(Player.Name + "," + ServerMethod.JoinedMatch);
+            SendOneDataToServer(Player.Name + "," + ServerMethod.JoinedMatch + "," + Player.Team);
 
             //והתחל לשלוח באופן חוזר מידע על השחקן הנוכחי
             SendPlayerDataThread = new Thread(() => SendPlayerDataToServer());
@@ -241,6 +249,7 @@ namespace SquadFighters
                         Team playerTeam = (Team)int.Parse(ReceivedDataArray[17].Split('=')[1]);
                         bool playerVisible = bool.Parse(ReceivedDataArray[18].Split('=')[1]);
                         bool playerIsAbleToBeRevived = bool.Parse(ReceivedDataArray[19].Split('=')[1]);
+                        bool playerIsDrown = bool.Parse(ReceivedDataArray[20].Split('=')[1]);
 
                         //כל זה יקרה אך ורק אם השחקן אכן התחבר מקודם
                         if (Players.ContainsKey(playerName))
@@ -266,6 +275,7 @@ namespace SquadFighters
                                 Players[playerName].Team = playerTeam; //קבוצה
                                 Players[playerName].Visible = playerVisible; // בלתי נראה
                                 Players[playerName].IsAbleToBeRevived = playerIsAbleToBeRevived; //האם שחקן יכול לעבור החייאה
+                                Players[playerName].IsDrown = playerIsDrown; //האם השחקן טבע במים
 
                                 //עדכון הערכים עבור אותו שחקן בכרטיסייה שלו
                                 for (int i = 0; i < HUD.PlayersCards.Count; i++)
@@ -375,6 +385,13 @@ namespace SquadFighters
                             HUD.ResetPlayerDeathCountDown();
                         }
                     }
+                    else if (ReceivedDataString.Contains(ServerMethod.TeamsCounts.ToString()))
+                    {
+                        AlphaTeamCount = int.Parse(ReceivedDataArray[1].Split('=')[1]);
+                        BetaTeamCount = int.Parse(ReceivedDataArray[2].Split('=')[1]);
+                        OmegaTeamCount = int.Parse(ReceivedDataArray[3].Split('=')[1]);
+
+                    }
                     else if (ReceivedDataString.Contains(ServerMethod.JoinedMatch.ToString()))
                     {
                         string playerName = ReceivedDataArray[0];
@@ -390,6 +407,13 @@ namespace SquadFighters
 
                         HUD.AddKilledPopup(playerKilledName + " Killed by " + playerKillerName, new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Small);
                     }
+                    else if (ReceivedDataString.Contains(ServerMethod.PlayerDrown.ToString()))
+                    {
+                        string playerDrownName = ReceivedDataArray[1].Split('=')[1];
+                        string drownMessage = ReceivedDataArray[2].Split('=')[1];
+
+                        HUD.AddKilledPopup(playerDrownName + " " + drownMessage, new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Small);
+                    }
 
                 }
                 catch (Exception e)
@@ -397,7 +421,7 @@ namespace SquadFighters
                     Console.WriteLine(e.Message);
 
                     //DisconnectFromServer();
-                    GameState = GameState.MainMenu;
+                    //GameState = GameState.MainMenu;
                 }
 
                 Thread.Sleep(20);
@@ -501,7 +525,7 @@ namespace SquadFighters
                                     }
                                     Player.IsShield = true; //עדכן את השחקן למכיל הגנה
 
-                                    AddNoneHudPopup("+" + Player.ShieldType.ToString(), Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
+                                    AddNoneHudPopup("+" + GetShieldName(Player.ShieldType), Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
 
                                     string key = items.ElementAt(i).Key; //השגת מפתח המילון
                                     lock (Map.Items)
@@ -521,13 +545,31 @@ namespace SquadFighters
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-
+                    Console.WriteLine(e.Message);
                 }
 
                 Thread.Sleep(100);
             }
+        }
+
+        //מחזיר תרגום של סוג המגן
+        public string GetShieldName(ShieldType shieldType)
+        {
+            switch (shieldType)
+            {
+                case ShieldType.Shield_Level_1:
+                    return "Shield Lv1";
+                case ShieldType.Shield_Level_2:
+                    return "Shield Lv2";
+                case ShieldType.Shield_Rare:
+                    return "Rare Shield";
+                case ShieldType.Shield_Legendery:
+                    return "Legendery Shield";
+            }
+
+            return string.Empty;
         }
 
         // טעינת המשחק
@@ -685,7 +727,6 @@ namespace SquadFighters
                         playerCard.Visible = false;
                 }
 
-
                 //עדכון תמידי של השחקן הנוכחי
                 Player.Update(Map);
                 Player.IsAbleToBeRevived = HUD.PlayerIsAbleToBeRevived; //עדכון האם שחקן יכול לקבל החייאה מה ui
@@ -702,7 +743,7 @@ namespace SquadFighters
                             Player intersectedPlayer = GetOtherPlayerIntersects(Players); //במידה ונוגע באחד השחקנים, מקבל את השחקן שנוגע בך
 
                             //בודק אם השחקן הנוכחי מת
-                            if (intersectedPlayer.IsDead && intersectedPlayer.IsAbleToBeRevived && intersectedPlayer.Team == Player.Team)
+                            if (intersectedPlayer.IsDead && intersectedPlayer.IsAbleToBeRevived && !intersectedPlayer.IsDrown && intersectedPlayer.Team == Player.Team)
                             {
                                 //מחייה את השחקן עד שנגמר זמן ההחייאה
                                 if (!Player.IsFinishedRevive)
@@ -729,11 +770,8 @@ namespace SquadFighters
                     Player.ResetRevive(); //איפוס
                 }
 
-                //עדכון תמידי של כרטיסיית השחקן הנוכחי
-                HUD.PlayerCard.Update(Player, new Vector2(0, 0));
-
                 //עדכון הפופאפים של ה ui
-                HUD.UpdatePopups();
+                HUD.Update(Player);
 
                 //רןץ על הפופאפים שלא קשורים ל ui
                 for (int i = 0; i < Popups.Count; i++)
@@ -749,6 +787,14 @@ namespace SquadFighters
                 {
                     //השחקן ייפגע
                     Player.Hit(1);
+
+                    if (Player.Health <= 0 && !Player.IsDead)
+                    {
+                        Player.IsDrown = true;
+                        HUD.PlayerIsDrown = Player.IsDrown;
+                        HUD.AddKilledPopup(Player.Name + " Drown like a retarded.", new Vector2(100, 300), false, PopupLabelType.Regular, PopupSizeType.Small);
+                        SendOneDataToServer(ServerMethod.PlayerDrown.ToString() + "=true,playerDrownName=" + Player.Name + ",DrownMessage=" + "Drown like a retarded.");
+                    }
                 }
 
                 // רוץ על כל כרטיסיות השחקנים שהתחברו
@@ -830,6 +876,7 @@ namespace SquadFighters
                                         break;
                                 }
 
+                                //בודק אם השחקן הנוכחי נהרג
                                 if (Player.Health <= 0)
                                 {
                                     Player.KilledBy = otherPlayer.Value.Bullets[i].Owner;
@@ -898,6 +945,8 @@ namespace SquadFighters
             } // במידה וסוג המשחק הוא תפריט ראשי
             else if (GameState == GameState.MainMenu)
             {
+                MainMenu.Update();
+
                 //במידה ונלחץ קליק שמאלי בעכבר
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed && !isPressed)
                 {
@@ -928,6 +977,8 @@ namespace SquadFighters
             }
             else if (GameState == GameState.ChooseTeam)
             {
+                MainMenu.Update();
+
                 //במידה ונלחץ קליק שמאלי בעכבר
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed && !isPressed)
                 {
@@ -940,16 +991,25 @@ namespace SquadFighters
                             switch (team.ButtonType)
                             {
                                 case ButtonType.Alpha:
-                                    Player.Team = Team.Alpha;
-                                    JoinMatch();
+                                    if (AlphaTeamCount < TeamsCountsMax)
+                                    {
+                                        Player.Team = Team.Alpha;
+                                        JoinMatch();
+                                    }
                                     break;
                                 case ButtonType.Beta:
-                                    Player.Team = Team.Beta;
-                                    JoinMatch();
+                                    if (BetaTeamCount < TeamsCountsMax)
+                                    {
+                                        Player.Team = Team.Beta;
+                                        JoinMatch();
+                                    }
                                     break;
                                 case ButtonType.Omega:
-                                    Player.Team = Team.Omega;
-                                    JoinMatch();
+                                    if (OmegaTeamCount < TeamsCountsMax)
+                                    {
+                                        Player.Team = Team.Omega;
+                                        JoinMatch();
+                                    }
                                     break;
                             }
                         }
@@ -960,6 +1020,32 @@ namespace SquadFighters
                 {
                     isPressed = false;
                 }
+
+
+                //שינוי צבע השחקן שבתפריט לצבע של הקבוצה שהעבר נמצא עליה
+                foreach (Button team in MainMenu.Teams)
+                {
+                    if (team.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
+                    {
+                        switch (team.ButtonType)
+                        {
+                            case ButtonType.Alpha:
+                                MainMenu.MenuPlayer.Team = Team.Alpha;
+                                break;
+                            case ButtonType.Beta:
+                                MainMenu.MenuPlayer.Team = Team.Beta;
+                                break;
+                            case ButtonType.Omega:
+                                MainMenu.MenuPlayer.Team = Team.Omega;
+                                break;
+                        }
+                    }
+                }
+
+            }
+            else if(GameState == GameState.Loading)
+            {
+                MainMenu.Update();
             }
 
             base.Update(gameTime);
@@ -969,7 +1055,7 @@ namespace SquadFighters
         protected override void Draw(GameTime gameTime)
         {
             // צבע רקע ירוק בהיר
-            GraphicsDevice.Clear(Color.LightGreen);
+            GraphicsDevice.Clear(new Color(158,231,126));
             
             //במידה וסוג המשחק הוא משחק
             if (GameState == GameState.Game)
@@ -1078,8 +1164,10 @@ namespace SquadFighters
                 //התחל ציור רגיל
                 spriteBatch.Begin();
 
+                MainMenu.DrawBackground(spriteBatch);
+
                 //צייר Ui את שם המשחק
-                HUD.DrawGameTitle(spriteBatch);
+                //HUD.DrawGameTitle(spriteBatch);
 
                 // רוץ על כל הכפתורים שבתפריט
                 foreach (Button button in MainMenu.Buttons)
@@ -1100,8 +1188,10 @@ namespace SquadFighters
                 // התחל ציור רגיל
                 spriteBatch.Begin();
 
+                MainMenu.DrawDownloadBackground(spriteBatch);
+
                 // צייר את שם המשחק UI
-                HUD.DrawGameTitle(spriteBatch);
+                //HUD.DrawGameTitle(spriteBatch);
 
                 //צייר את כמות אחוזי הטעינה
                 HUD.DrawLoading(spriteBatch, MaxItems, Map.Items.Count);
@@ -1115,15 +1205,31 @@ namespace SquadFighters
             {
                 spriteBatch.Begin();
 
-                HUD.DrawGameTitle(spriteBatch);
+                MainMenu.DrawTeamBackground(spriteBatch);
 
-                HUD.DrawChooseTeam(spriteBatch);
+                //HUD.DrawGameTitle(spriteBatch);
 
-                foreach(Button button in MainMenu.Teams)
-                    if (button.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
-                        button.Draw(spriteBatch, true); // הפוך כפתור לבהיר
+                //HUD.DrawChooseTeam(spriteBatch);
+
+                foreach (Button teamButton in MainMenu.Teams)
+                {
+                    spriteBatch.DrawString(GlobalFont,
+                        (teamButton.ButtonType == ButtonType.Alpha ? AlphaTeamCount.ToString() :
+                            teamButton.ButtonType == ButtonType.Beta ? BetaTeamCount.ToString() :
+                                teamButton.ButtonType == ButtonType.Omega ? OmegaTeamCount.ToString() :
+                                    "0") + "/" + TeamsCountsMax, new Vector2(teamButton.Rectangle.Right + 10, teamButton.Rectangle.Top + 5),
+
+
+                         (teamButton.ButtonType == ButtonType.Alpha && AlphaTeamCount == TeamsCountsMax ? Color.Red :
+                            teamButton.ButtonType == ButtonType.Beta && BetaTeamCount == TeamsCountsMax ? Color.Red :
+                                teamButton.ButtonType == ButtonType.Omega && OmegaTeamCount == TeamsCountsMax ? Color.Red
+                                : Color.White));
+
+                    if (teamButton.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
+                        teamButton.Draw(spriteBatch, true); // הפוך כפתור לבהיר
                     else//אחרת
-                        button.Draw(spriteBatch, false);// הפוך כפתור לכהה
+                        teamButton.Draw(spriteBatch, false);// הפוך כפתור לכהה
+                }
 
                 spriteBatch.End();
             }
