@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SquadFighters
@@ -26,12 +27,18 @@ namespace SquadFighters
         public List<Popup> Popups;
         public List<Popup> KD_Popups;
         public PlayerCard PlayerCard;
+        public int PlayerDeathCountDownTimer;
+        public bool PlayerIsAbleToBeRevived;
+        public bool PlayerCanCountDown;
 
         public HUD()
         {
             PlayersCards = new List<PlayerCard>();
             Popups = new List<Popup>();
             KD_Popups = new List<Popup>();
+            PlayerDeathCountDownTimer = 30;
+            PlayerIsAbleToBeRevived = true;
+            PlayerCanCountDown = false;
         }
  
         public void LoadContent(ContentManager content)
@@ -67,6 +74,26 @@ namespace SquadFighters
                 else
                     KD_Popups.RemoveAt(i);
             }
+        }
+
+        public void PlayerDeathCountDown()
+        {
+            while (PlayerCanCountDown && PlayerDeathCountDownTimer > 0)
+            {
+                PlayerDeathCountDownTimer--;
+                Thread.Sleep(1000);
+            }
+
+            PlayerDeathCountDownTimer = 30;
+            PlayerCanCountDown = false;
+            PlayerIsAbleToBeRevived = false;
+        }
+
+        public void ResetPlayerDeathCountDown()
+        {
+            PlayerDeathCountDownTimer = 30;
+            PlayerCanCountDown = false;
+            PlayerIsAbleToBeRevived = true;
         }
 
         public void AddPopup(string text, Vector2 position, bool isMove, PopupLabelType popupLabelType, PopupSizeType popupSizeType)
@@ -131,6 +158,11 @@ namespace SquadFighters
                 popup.Draw(spriteBatch);
         }
 
+        public void DrawPlayerAbleToBeRevivedCountDown(SpriteBatch spriteBatch)
+        {
+            spriteBatch.DrawString(DeadFont , PlayerDeathCountDownTimer.ToString() + " seconds to death.", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 50, 200), Color.Red);
+        }
+
         public void DrawPlayersCards(SpriteBatch spriteBatch)
         {
             PlayerCard.Draw(spriteBatch);
@@ -150,7 +182,7 @@ namespace SquadFighters
         {
 
             if (PlayerCard.HealthBar.Health <= 0)
-                spriteBatch.DrawString(DeadFont, "You Are Dead :(", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 200), Color.Red);
+                spriteBatch.DrawString(DeadFont, "You Are Dead :(" + (PlayerDeathCountDownTimer > 0 && PlayerIsAbleToBeRevived ? "\n" + PlayerDeathCountDownTimer + " sec till full DEATH." : "\nPERMANENTLY!"), new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 100, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 200), Color.Red);
 
         }
 
