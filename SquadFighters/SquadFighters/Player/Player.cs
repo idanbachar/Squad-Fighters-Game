@@ -195,7 +195,7 @@ namespace SquadFighters
 
                 if (Keyboard.GetState().IsKeyDown(Keys.D))
                     Rotation += 0.07f;
-                else if (Keyboard.GetState().IsKeyDown(Keys.A))
+                if (Keyboard.GetState().IsKeyDown(Keys.A))
                     Rotation -= 0.07f;
 
             }
@@ -219,6 +219,12 @@ namespace SquadFighters
         private void SetDefaultPosition()
         {
             Position = new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - Texture.Width / 2, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - Texture.Height / 2);
+            Rectangle = new Rectangle((int)Position.X, (int)Position.Y, 0, 0);
+        }
+
+        public void SetNewPosition(Vector2 newPosition)
+        {
+            Position = new Vector2(newPosition.X, newPosition.Y);
             Rectangle = new Rectangle((int)Position.X, (int)Position.Y, 0, 0);
         }
 

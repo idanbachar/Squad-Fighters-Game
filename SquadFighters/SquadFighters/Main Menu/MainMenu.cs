@@ -18,12 +18,29 @@ namespace SquadFighters
         public Texture2D BackgroundTeamTexture;
         public Texture2D BackgroundDownloadTexture;
         public Vector2 BackgroundPosition;
+        public Player MenuPlayer;
 
         public MainMenu(int buttonsLength)
         {
             Buttons = new Button[buttonsLength];
             Teams = new Button[3];
             BackgroundPosition = new Vector2(0, 0);
+            MenuPlayer = new Player("Menu-Player");
+        }
+
+        public void Update()
+        {
+            MouseState mouse = Mouse.GetState();
+            Vector2 mousePosition = new Vector2(mouse.X, mouse.Y);
+
+            Vector2 direction = mousePosition - MenuPlayer.Position;
+            direction.Normalize();
+
+            MenuPlayer.Rotation = (float)Math.Atan2(
+                          (double)direction.Y,
+                          (double)direction.X);
+
+
         }
 
         public void LoadContent(ContentManager content)
@@ -31,6 +48,10 @@ namespace SquadFighters
             BackgroundTexture = content.Load<Texture2D>("images/main menu/background/main_menu_background");
             BackgroundTeamTexture = content.Load<Texture2D>("images/main menu/background/main_menu_background_team");
             BackgroundDownloadTexture = content.Load<Texture2D>("images/main menu/background/main_menu_background_download");
+
+            MenuPlayer.LoadContent(content);
+            MenuPlayer.SetNewPosition(new Vector2(365, 190));
+            MenuPlayer.Visible = true;
 
             for (int i = 0; i < Buttons.Length; i++)
             {
@@ -45,19 +66,27 @@ namespace SquadFighters
             }
         }
 
+        public void DrawMenuPlayer(SpriteBatch spriteBatch)
+        {
+            MenuPlayer.Draw(spriteBatch);
+        }
+
         public void DrawDownloadBackground(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(BackgroundDownloadTexture, BackgroundPosition, Color.White);
+            DrawMenuPlayer(spriteBatch);
         }
 
         public void DrawTeamBackground(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(BackgroundTeamTexture, BackgroundPosition, Color.White);
+            DrawMenuPlayer(spriteBatch);
         }
 
         public void DrawBackground(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(BackgroundTexture, BackgroundPosition, Color.White);
+            DrawMenuPlayer(spriteBatch);
         }
     }
 }

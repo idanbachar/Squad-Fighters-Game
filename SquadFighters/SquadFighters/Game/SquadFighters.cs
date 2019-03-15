@@ -912,6 +912,8 @@ namespace SquadFighters
             } // במידה וסוג המשחק הוא תפריט ראשי
             else if (GameState == GameState.MainMenu)
             {
+                MainMenu.Update();
+
                 //במידה ונלחץ קליק שמאלי בעכבר
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed && !isPressed)
                 {
@@ -942,6 +944,8 @@ namespace SquadFighters
             }
             else if (GameState == GameState.ChooseTeam)
             {
+                MainMenu.Update();
+
                 //במידה ונלחץ קליק שמאלי בעכבר
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed && !isPressed)
                 {
@@ -974,6 +978,32 @@ namespace SquadFighters
                 {
                     isPressed = false;
                 }
+
+
+                //שינוי צבע השחקן שבתפריט לצבע של הקבוצה שהעבר נמצא עליה
+                foreach (Button team in MainMenu.Teams)
+                {
+                    if (team.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
+                    {
+                        switch (team.ButtonType)
+                        {
+                            case ButtonType.Alpha:
+                                MainMenu.MenuPlayer.Team = Team.Alpha;
+                                break;
+                            case ButtonType.Beta:
+                                MainMenu.MenuPlayer.Team = Team.Beta;
+                                break;
+                            case ButtonType.Omega:
+                                MainMenu.MenuPlayer.Team = Team.Omega;
+                                break;
+                        }
+                    }
+                }
+
+            }
+            else if(GameState == GameState.Loading)
+            {
+                MainMenu.Update();
             }
 
             base.Update(gameTime);
