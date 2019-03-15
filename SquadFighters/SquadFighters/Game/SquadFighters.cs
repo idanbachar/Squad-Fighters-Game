@@ -966,7 +966,7 @@ namespace SquadFighters
         protected override void Draw(GameTime gameTime)
         {
             // צבע רקע ירוק בהיר
-            GraphicsDevice.Clear(Color.LightGreen);
+            GraphicsDevice.Clear(new Color(158,231,126));
             
             //במידה וסוג המשחק הוא משחק
             if (GameState == GameState.Game)
@@ -1075,8 +1075,10 @@ namespace SquadFighters
                 //התחל ציור רגיל
                 spriteBatch.Begin();
 
+                MainMenu.DrawBackground(spriteBatch);
+
                 //צייר Ui את שם המשחק
-                HUD.DrawGameTitle(spriteBatch);
+                //HUD.DrawGameTitle(spriteBatch);
 
                 // רוץ על כל הכפתורים שבתפריט
                 foreach (Button button in MainMenu.Buttons)
@@ -1097,8 +1099,10 @@ namespace SquadFighters
                 // התחל ציור רגיל
                 spriteBatch.Begin();
 
+                MainMenu.DrawDownloadBackground(spriteBatch);
+
                 // צייר את שם המשחק UI
-                HUD.DrawGameTitle(spriteBatch);
+                //HUD.DrawGameTitle(spriteBatch);
 
                 //צייר את כמות אחוזי הטעינה
                 HUD.DrawLoading(spriteBatch, MaxItems, Map.Items.Count);
@@ -1112,9 +1116,11 @@ namespace SquadFighters
             {
                 spriteBatch.Begin();
 
-                HUD.DrawGameTitle(spriteBatch);
+                MainMenu.DrawTeamBackground(spriteBatch);
 
-                HUD.DrawChooseTeam(spriteBatch);
+                //HUD.DrawGameTitle(spriteBatch);
+
+                //HUD.DrawChooseTeam(spriteBatch);
 
                 foreach(Button button in MainMenu.Teams)
                     if (button.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))

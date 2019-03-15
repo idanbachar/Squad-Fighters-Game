@@ -157,7 +157,10 @@ namespace SquadFighters
             {
                 percent = (double)((CurrentItemsLoaded / MaxItems) * 100);
             }
-            spriteBatch.DrawString(LoadingFont, "Downloading\nGame Data(" + (int)percent + "% ..)", new Vector2(70, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 75), Color.Black);
+
+            spriteBatch.DrawString(LoadingFont, "(" + (int)percent + "%)", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - 50, SquadFighters.Graphics.PreferredBackBufferHeight / 2 + 50), Color.Black);
+
+            //spriteBatch.DrawString(LoadingFont, "Downloading\nGame Data(" + (int)percent + "% ..)", new Vector2(70, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 75), Color.Black);
         }
 
         public void DrawPopups(SpriteBatch spriteBatch)
