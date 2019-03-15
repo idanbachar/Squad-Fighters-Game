@@ -397,7 +397,7 @@ namespace SquadFighters
                     Console.WriteLine(e.Message);
 
                     //DisconnectFromServer();
-                    GameState = GameState.MainMenu;
+                    //GameState = GameState.MainMenu;
                 }
 
                 Thread.Sleep(20);
@@ -521,9 +521,9 @@ namespace SquadFighters
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-
+                    Console.WriteLine(e.Message);
                 }
 
                 Thread.Sleep(100);
@@ -685,7 +685,6 @@ namespace SquadFighters
                         playerCard.Visible = false;
                 }
 
-
                 //עדכון תמידי של השחקן הנוכחי
                 Player.Update(Map);
                 Player.IsAbleToBeRevived = HUD.PlayerIsAbleToBeRevived; //עדכון האם שחקן יכול לקבל החייאה מה ui
@@ -729,11 +728,8 @@ namespace SquadFighters
                     Player.ResetRevive(); //איפוס
                 }
 
-                //עדכון תמידי של כרטיסיית השחקן הנוכחי
-                HUD.PlayerCard.Update(Player, new Vector2(0, 0));
-
                 //עדכון הפופאפים של ה ui
-                HUD.UpdatePopups();
+                HUD.Update(Player);
 
                 //רןץ על הפופאפים שלא קשורים ל ui
                 for (int i = 0; i < Popups.Count; i++)
@@ -830,6 +826,7 @@ namespace SquadFighters
                                         break;
                                 }
 
+                                //בודק אם השחקן הנוכחי נהרג
                                 if (Player.Health <= 0)
                                 {
                                     Player.KilledBy = otherPlayer.Value.Bullets[i].Owner;

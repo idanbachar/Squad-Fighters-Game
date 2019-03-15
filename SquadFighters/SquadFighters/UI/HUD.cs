@@ -23,10 +23,11 @@ namespace SquadFighters
         public SpriteFont KDFONT;
         public SpriteFont KD_PopupFont;
 
+        public PlayerCard PlayerCard;
         public List<PlayerCard> PlayersCards;
+
         public List<Popup> Popups;
         public List<Popup> KD_Popups;
-        public PlayerCard PlayerCard;
         public int PlayerDeathCountDownTimer;
         public bool PlayerIsAbleToBeRevived;
         public bool PlayerCanCountDown;
@@ -53,6 +54,13 @@ namespace SquadFighters
             ChooseTeamFont = content.Load<SpriteFont>("fonts/choose_team");
             KDFONT = content.Load<SpriteFont>("fonts/kd");
             KD_PopupFont = content.Load<SpriteFont>("fonts/kd_popup_font");
+        }
+
+        public void Update(Player player)
+        {
+            UpdatePopups();
+
+            PlayerCard.Update(player, new Vector2(0, 0));
         }
 
         public void UpdatePopups()
