@@ -241,6 +241,7 @@ namespace SquadFighters
                         Team playerTeam = (Team)int.Parse(ReceivedDataArray[17].Split('=')[1]);
                         bool playerVisible = bool.Parse(ReceivedDataArray[18].Split('=')[1]);
                         bool playerIsAbleToBeRevived = bool.Parse(ReceivedDataArray[19].Split('=')[1]);
+                        bool playerIsDrown = bool.Parse(ReceivedDataArray[20].Split('=')[1]);
 
                         //כל זה יקרה אך ורק אם השחקן אכן התחבר מקודם
                         if (Players.ContainsKey(playerName))
@@ -266,6 +267,7 @@ namespace SquadFighters
                                 Players[playerName].Team = playerTeam; //קבוצה
                                 Players[playerName].Visible = playerVisible; // בלתי נראה
                                 Players[playerName].IsAbleToBeRevived = playerIsAbleToBeRevived; //האם שחקן יכול לעבור החייאה
+                                Players[playerName].IsDrown = playerIsDrown; //האם השחקן טבע במים
 
                                 //עדכון הערכים עבור אותו שחקן בכרטיסייה שלו
                                 for (int i = 0; i < HUD.PlayersCards.Count; i++)
@@ -389,6 +391,13 @@ namespace SquadFighters
                             Player.AddKill();
 
                         HUD.AddKilledPopup(playerKilledName + " Killed by " + playerKillerName, new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Small);
+                    }
+                    else if (ReceivedDataString.Contains(ServerMethod.PlayerDrown.ToString()))
+                    {
+                        string playerDrownName = ReceivedDataArray[1].Split('=')[1];
+                        string drownMessage = ReceivedDataArray[2].Split('=')[1];
+
+                        HUD.AddKilledPopup(playerDrownName + " " + drownMessage, new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Small);
                     }
 
                 }
@@ -701,7 +710,7 @@ namespace SquadFighters
                             Player intersectedPlayer = GetOtherPlayerIntersects(Players); //במידה ונוגע באחד השחקנים, מקבל את השחקן שנוגע בך
 
                             //בודק אם השחקן הנוכחי מת
-                            if (intersectedPlayer.IsDead && intersectedPlayer.IsAbleToBeRevived && intersectedPlayer.Team == Player.Team)
+                            if (intersectedPlayer.IsDead && intersectedPlayer.IsAbleToBeRevived && !intersectedPlayer.IsDrown && intersectedPlayer.Team == Player.Team)
                             {
                                 //מחייה את השחקן עד שנגמר זמן ההחייאה
                                 if (!Player.IsFinishedRevive)
@@ -745,6 +754,14 @@ namespace SquadFighters
                 {
                     //השחקן ייפגע
                     Player.Hit(1);
+
+                    if (Player.Health <= 0 && !Player.IsDead)
+                    {
+                        Player.IsDrown = true;
+                        HUD.PlayerIsDrown = Player.IsDrown;
+                        HUD.AddKilledPopup(Player.Name + " Drown like a retarded.", new Vector2(100, 300), false, PopupLabelType.Regular, PopupSizeType.Small);
+                        SendOneDataToServer(ServerMethod.PlayerDrown.ToString() + "=true,playerDrownName=" + Player.Name + ",DrownMessage=" + "Drown like a retarded.");
+                    }
                 }
 
                 // רוץ על כל כרטיסיות השחקנים שהתחברו
