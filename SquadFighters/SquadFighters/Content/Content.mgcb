@@ -584,3 +584,27 @@
 /processorParam:TextureFormat=Color
 /build:images/player/player_dead_sign.png
 
+#begin sounds/join_alpha_sound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:sounds/join_alpha_sound.wav
+
+#begin sounds/join_beta_sound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:sounds/join_beta_sound.wav
+
+#begin sounds/join_omega_sound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:sounds/join_omega_sound.wav
+
+#begin sounds/shoot_sound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:sounds/shoot_sound.wav
+
