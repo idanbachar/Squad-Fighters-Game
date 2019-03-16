@@ -16,6 +16,11 @@ namespace SquadFighters
         public Background Background;
         public Dictionary<string, Item> Items;
         public List<Water> WaterObjects;
+
+        public TeamSpawner AlphaTeamSpawner;
+        public TeamSpawner BetaTeamSpawner;
+        public TeamSpawner OmegaTeamSpawner;
+
         private Random Random;
         public int Width;
         public int Height;
@@ -37,12 +42,20 @@ namespace SquadFighters
             Items = new Dictionary<string, Item>();
             WaterObjects = new List<Water>();
 
+            AlphaTeamSpawner = new TeamSpawner(new Vector2(100, 100), Team.Alpha);
+            BetaTeamSpawner = new TeamSpawner(new Vector2(4000, 950), Team.Beta);
+            OmegaTeamSpawner = new TeamSpawner(new Vector2(1800, 3900), Team.Omega);
+
         }
 
         public void LoadContent(ContentManager content)
         {
             Background.LoadContent(content);
             GenerateWaterObjects(content);
+
+            AlphaTeamSpawner.LoadContent(content);
+            BetaTeamSpawner.LoadContent(content);
+            OmegaTeamSpawner.LoadContent(content);
         }
 
         public void AddItem(ItemCategory itemCategory, int itemType, float itemX, float itemY, int itemCapacity, string itemKey)
@@ -103,6 +116,10 @@ namespace SquadFighters
 
             foreach (Water water in WaterObjects)
                 water.Draw(spriteBatch);
+
+            AlphaTeamSpawner.Draw(spriteBatch);
+            BetaTeamSpawner.Draw(spriteBatch);
+            OmegaTeamSpawner.Draw(spriteBatch);
         }
 
         public Vector2 GeneratePosition()

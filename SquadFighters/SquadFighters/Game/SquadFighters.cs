@@ -53,6 +53,7 @@ namespace SquadFighters
             Graphics = new GraphicsDeviceManager(this);
             Graphics.PreferredBackBufferWidth = 450;
             Graphics.PreferredBackBufferHeight = 650;
+            Graphics.GraphicsProfile = GraphicsProfile.HiDef;
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             Players = new Dictionary<string, Player>();
@@ -125,6 +126,7 @@ namespace SquadFighters
         public void JoinMatch()
         {
             GameState = GameState.Game;
+            Player.SpawnOnTeamSpawner(Map.AlphaTeamSpawner, Map.BetaTeamSpawner, Map.OmegaTeamSpawner);
             Player.Visible = true;
 
             SendOneDataToServer(Player.Name + "," + ServerMethod.JoinedMatch + "," + Player.Team);
@@ -395,7 +397,7 @@ namespace SquadFighters
                     else if (ReceivedDataString.Contains(ServerMethod.JoinedMatch.ToString()))
                     {
                         string playerName = ReceivedDataArray[0];
-                        HUD.AddPopup(playerName + " Joined.", new Vector2(20, HUD.PlayerCard.CardRectangle.Bottom + 5), false, PopupLabelType.Regular, PopupSizeType.Medium);
+                        HUD.AddPopup(playerName + " Joined.", new Vector2(Graphics.PreferredBackBufferWidth - 200, Graphics.PreferredBackBufferHeight - 100), false, PopupLabelType.Regular, PopupSizeType.Medium);
                     }
                     else if (ReceivedDataString.Contains(ServerMethod.PlayerKilled.ToString()))
                     {
@@ -405,14 +407,14 @@ namespace SquadFighters
                         if (Player.Name == playerKillerName)
                             Player.AddKill();
 
-                        HUD.AddKilledPopup(playerKilledName + " Killed by " + playerKillerName, new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Small);
+                        HUD.AddKilledPopup(playerKilledName + " Killed by " + playerKillerName, new Vector2(20, Graphics.PreferredBackBufferHeight - 100), false, PopupLabelType.Regular, PopupSizeType.Small);
                     }
                     else if (ReceivedDataString.Contains(ServerMethod.PlayerDrown.ToString()))
                     {
                         string playerDrownName = ReceivedDataArray[1].Split('=')[1];
                         string drownMessage = ReceivedDataArray[2].Split('=')[1];
 
-                        HUD.AddKilledPopup(playerDrownName + " " + drownMessage, new Vector2(20, Graphics.PreferredBackBufferHeight - 35), false, PopupLabelType.Regular, PopupSizeType.Small);
+                        HUD.AddKilledPopup(playerDrownName + " " + drownMessage, new Vector2(20, Graphics.PreferredBackBufferHeight - 100), false, PopupLabelType.Regular, PopupSizeType.Small);
                     }
 
                 }
@@ -664,9 +666,15 @@ namespace SquadFighters
         //עדכון משחק
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            try
             {
-                Environment.Exit(Environment.ExitCode);
+                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                {
+                    Environment.Exit(Environment.ExitCode);
+                }
+            }catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
 
             // אם סוג המשחק הוא משחק
@@ -1152,7 +1160,7 @@ namespace SquadFighters
 
                 //ציור פופאפ של הריגות
                 for (int i = 0; i < HUD.KD_Popups.Count; i++)
-                    HUD.DrawKDPopups(spriteBatch, HUD.KD_Popups[i].Text, Graphics.PreferredBackBufferWidth / 2 - 25, (Graphics.PreferredBackBufferHeight - 30) - (i * 35));
+                    HUD.DrawKDPopups(spriteBatch, HUD.KD_Popups[i].Text, Graphics.PreferredBackBufferWidth / 2 - 35, (Graphics.PreferredBackBufferHeight - 60) - (i * 35));
 
 
                 // סיום ציור רגיל

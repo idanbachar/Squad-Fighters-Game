@@ -187,8 +187,8 @@ namespace SquadFighters
 
         public void DrawKd(SpriteBatch spriteBatch, Player currentPlayer)
         {
-            spriteBatch.DrawString(KDFONT, currentPlayer.Kills + " Kills" , new Vector2(30, SquadFighters.Graphics.PreferredBackBufferHeight - 60), Color.Black);
-            spriteBatch.DrawString(KDFONT, currentPlayer.Deaths + " Deaths", new Vector2(30, SquadFighters.Graphics.PreferredBackBufferHeight - 30), Color.Black);
+            spriteBatch.DrawString(KDFONT, currentPlayer.Kills + " Kills" , new Vector2(30, SquadFighters.Graphics.PreferredBackBufferHeight - 70), Color.Black);
+            spriteBatch.DrawString(KDFONT, currentPlayer.Deaths + " Deaths", new Vector2(30, SquadFighters.Graphics.PreferredBackBufferHeight - 40), Color.Black);
         }
 
         public void DrawDeadMessage(SpriteBatch spriteBatch)
@@ -201,7 +201,7 @@ namespace SquadFighters
 
         public void DrawPlayerCoordinates(SpriteBatch spriteBatch, Player player)
         {
-            spriteBatch.DrawString(PlayerCoordinatesFont, "(x=" + (int)player.Position.X + ",Y=" + (int)player.Position.Y + ")", new Vector2(PlayerCard.CardRectangle.Right + 10, PlayerCard.CardRectangle.Bottom - 10), Color.Black);
+            spriteBatch.DrawString(PlayerCoordinatesFont, "(x=" + (int)player.Position.X + ",Y=" + (int)player.Position.Y + ")", new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth - 130, SquadFighters.Graphics.PreferredBackBufferHeight - 25), Color.Black);
         }
 
         public void DrawKDPopups(SpriteBatch spriteBatch, string text, int x, int y)
