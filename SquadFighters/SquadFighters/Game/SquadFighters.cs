@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Text;
 using System.Linq;
+using Microsoft.Xna.Framework.Audio;
 
 namespace SquadFighters
 {
@@ -34,7 +35,14 @@ namespace SquadFighters
 
         private List<Popup> Popups; //פופאפים
 
-        private Thread PlayerDeathCountDownThread; 
+        private Thread PlayerDeathCountDownThread;
+
+        //סאונדים
+        private SoundEffect JoinAlphaSound;
+        private SoundEffect JoinBetaSound;
+        private SoundEffect JoinOmegaSound;
+
+        private SoundEffect ShootSound;
 
         //משתני רשת
         private Thread ReceiveThread; //קבלת נתונים מהשרת
@@ -375,6 +383,12 @@ namespace SquadFighters
 
                         //בצע ירייה עבור השחקן שירה
                         Players[playerName].Shoot();
+
+                        double distance = Math.Sqrt(Math.Pow(Player.Position.X - Players[playerName].Position.X, 2) + Math.Pow(Player.Position.Y - Players[playerName].Position.Y, 2));
+                        if(distance < 500)
+                        {
+                            ShootSound.Play();
+                        }
                     }
                     else if (ReceivedDataString.Contains(ServerMethod.Revive.ToString()))
                     {
@@ -600,6 +614,12 @@ namespace SquadFighters
             //יצירת המפה
             Map = new Map(new Rectangle(0, 0, 5000, 5000));
             Map.LoadContent(Content);
+
+            JoinAlphaSound = Content.Load<SoundEffect>("sounds/join_alpha_sound");
+            JoinBetaSound = Content.Load<SoundEffect>("sounds/join_beta_sound");
+            JoinOmegaSound = Content.Load<SoundEffect>("sounds/join_omega_sound");
+
+            ShootSound = Content.Load<SoundEffect>("sounds/shoot_sound");
         }
 
         protected override void UnloadContent()
@@ -637,6 +657,7 @@ namespace SquadFighters
                             {
                                 // השחקן הנוכחי יבצע יריה
                                 Player.Shoot();
+                                ShootSound.Play();
 
                                 //וישלח עדכון לשרת שהוא ירה
                                 SendOneDataToServer(ServerMethod.ShootData.ToString() + "=true,PlayerShotName=" + Player.Name);
@@ -1003,6 +1024,7 @@ namespace SquadFighters
                                     {
                                         Player.Team = Team.Alpha;
                                         JoinMatch();
+                                        JoinAlphaSound.Play();
                                     }
                                     break;
                                 case ButtonType.Beta:
@@ -1010,6 +1032,7 @@ namespace SquadFighters
                                     {
                                         Player.Team = Team.Beta;
                                         JoinMatch();
+                                        JoinBetaSound.Play();
                                     }
                                     break;
                                 case ButtonType.Omega:
@@ -1017,6 +1040,7 @@ namespace SquadFighters
                                     {
                                         Player.Team = Team.Omega;
                                         JoinMatch();
+                                        JoinOmegaSound.Play();
                                     }
                                     break;
                             }
