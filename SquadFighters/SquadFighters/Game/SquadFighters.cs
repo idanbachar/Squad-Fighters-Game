@@ -800,8 +800,8 @@ namespace SquadFighters
                     {
                         Player.IsDrown = true;
                         HUD.PlayerIsDrown = Player.IsDrown;
-                        HUD.AddKilledPopup(Player.Name + " Drown like a retarded.", new Vector2(100, 300), false, PopupLabelType.Regular, PopupSizeType.Small);
-                        SendOneDataToServer(ServerMethod.PlayerDrown.ToString() + "=true,playerDrownName=" + Player.Name + ",DrownMessage=" + "Drown like a retarded.");
+                        HUD.AddKilledPopup(Player.Name + " Drown XD.", new Vector2(100, 300), false, PopupLabelType.Regular, PopupSizeType.Small);
+                        SendOneDataToServer(ServerMethod.PlayerDrown.ToString() + "=true,playerDrownName=" + Player.Name + ",DrownMessage=" + "Drown XD.");
                     }
                 }
 
@@ -1160,7 +1160,7 @@ namespace SquadFighters
 
                 //ציור פופאפ של הריגות
                 for (int i = 0; i < HUD.KD_Popups.Count; i++)
-                    HUD.DrawKDPopups(spriteBatch, HUD.KD_Popups[i].Text, Graphics.PreferredBackBufferWidth / 2 - 35, (Graphics.PreferredBackBufferHeight - 60) - (i * 35));
+                    HUD.DrawKDPopups(spriteBatch, HUD.KD_Popups[i].Text, Graphics.PreferredBackBufferWidth / 2 - 25, (Graphics.PreferredBackBufferHeight - 60) - (i * 35));
 
 
                 // סיום ציור רגיל
