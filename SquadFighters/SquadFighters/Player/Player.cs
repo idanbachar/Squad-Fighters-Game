@@ -216,6 +216,22 @@ namespace SquadFighters
             BulletsCapacity--;
         }
 
+        public void SpawnOnTeamSpawner(TeamSpawner alphaSpawner, TeamSpawner betaSpawner, TeamSpawner omegaSpawner)
+        {
+            switch (Team)
+            {
+                case Team.Alpha:
+                    SetNewPosition(new Vector2(alphaSpawner.Position.X + 100, alphaSpawner.Position.Y + 100));
+                    break;
+                case Team.Beta:
+                    SetNewPosition(new Vector2(betaSpawner.Position.X + 100, betaSpawner.Position.Y + 100));
+                    break;
+                case Team.Omega:
+                    SetNewPosition(new Vector2(omegaSpawner.Position.X + 100, omegaSpawner.Position.Y + 100));
+                    break;
+            }
+        }
+
         private void SetDefaultPosition()
         {
             Position = new Vector2(SquadFighters.Graphics.PreferredBackBufferWidth / 2 - Texture.Width / 2, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - Texture.Height / 2);
