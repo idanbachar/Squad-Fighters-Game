@@ -48,6 +48,7 @@
     <Compile Include="Main Menu\Buttons\Button.cs" />
     <Compile Include="Main Menu\Buttons\ButtonType.cs" />
     <Compile Include="Main Menu\MainMenu.cs" />
+    <Compile Include="Map\Spawners\TeamSpawner.cs" />
     <Compile Include="Map\World\Background.cs" />
     <Compile Include="Map\World\Water\Water.cs" />
     <Compile Include="Map\World\Water\WaterShape.cs" />

@@ -116,7 +116,7 @@ namespace SquadFighters
         {
             if (BubbleIndex > -1)
             {
-                if(BubbleDelayTimer < 100)
+                if(BubbleDelayTimer < 50)
                     BubbleDelayTimer++;
                 else
                 {
