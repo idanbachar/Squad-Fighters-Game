@@ -80,6 +80,10 @@ namespace SquadFighters
                     item = new Helmet(new Vector2(itemX, itemY), (HelmetType) itemType, itemCapacity);
                     item.LoadContent(SquadFighters.ContentManager);
                     break;
+                case ItemCategory.Coin:
+                    item = new Coin(new Vector2(itemX, itemY), (CoinType)itemType, itemCapacity);
+                    item.LoadContent(SquadFighters.ContentManager);
+                    break;
             }
 
             Items.Add(itemKey,item);
@@ -116,10 +120,6 @@ namespace SquadFighters
 
             foreach (Water water in WaterObjects)
                 water.Draw(spriteBatch);
-
-            AlphaTeamSpawner.Draw(spriteBatch);
-            BetaTeamSpawner.Draw(spriteBatch);
-            OmegaTeamSpawner.Draw(spriteBatch);
         }
 
         public Vector2 GeneratePosition()

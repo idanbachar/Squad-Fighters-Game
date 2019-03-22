@@ -141,6 +141,11 @@ namespace SquadFighters
             spriteBatch.DrawString(PlayerNameFont, "You", new Vector2(player.Position.X - 30, player.Position.Y - 70), Color.Blue);
         }
 
+        public void DrawCoinsCount(SpriteBatch spriteBatch, Player player)
+        {
+            spriteBatch.DrawString(KDFONT, "coins: " + player.CoinsCarrying, new Vector2(20, SquadFighters.Graphics.PreferredBackBufferHeight - 200), Color.White);
+        }
+
         public void DrawGameTitle(SpriteBatch spriteBatch)
         {
             spriteBatch.DrawString(GameTitleFont, "Squad Fighters", new Vector2(90, 80), Color.Black);
@@ -218,6 +223,8 @@ namespace SquadFighters
             DrawPlayersCards(spriteBatch);
 
             DrawKd(spriteBatch, player);
+
+            DrawCoinsCount(spriteBatch, player);
 
             DrawDeadMessage(spriteBatch);
         }
