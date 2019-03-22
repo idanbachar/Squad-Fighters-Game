@@ -52,9 +52,13 @@ namespace SquadFighters
         public string[] ReceivedDataArray; // מערך נתונים שהתקבלו
         private int MaxItems; //כמות מקסימלית של פריטים שאמורים להטען
         private int TeamsCountsMax;
-        private int AlphaTeamCount;
-        private int BetaTeamCount;
-        private int OmegaTeamCount;
+        private int AlphaTeamPlayersCount;
+        private int BetaTeamPlayersCount;
+        private int OmegaTeamPlayersCount;
+
+        private int AlphaTeamCoinsCount;
+        private int BetaTeamCoinsCount;
+        private int OmegaTeamCoinsCount;
 
         public SquadFighters()
         {
@@ -72,9 +76,9 @@ namespace SquadFighters
             CameraPlayersIndex = -1;
             Popups = new List<Popup>();
             TeamsCountsMax = 2;
-            AlphaTeamCount = 0;
-            BetaTeamCount = 0;
-            OmegaTeamCount = 0;
+            AlphaTeamPlayersCount = 0;
+            BetaTeamPlayersCount = 0;
+            OmegaTeamPlayersCount = 0;
         }
 
         protected override void Initialize()
@@ -127,7 +131,7 @@ namespace SquadFighters
             HUD.PlayerCard = new PlayerCard(Player.Name, Player.Health, Player.BulletsCapacity + "/" + Player.MaxBulletsCapacity);
             HUD.PlayerCard.Visible = true;
             HUD.PlayerCard.LoadContent(Content);
- 
+
             ConnectToServer(ServerIp, ServerPort);
         }
 
@@ -183,7 +187,7 @@ namespace SquadFighters
                 Thread.Sleep(80);
             }
         }
-        
+
         //התנתקות מהשרת
         public void DisconnectFromServer()
         {
@@ -260,6 +264,7 @@ namespace SquadFighters
                         bool playerVisible = bool.Parse(ReceivedDataArray[18].Split('=')[1]);
                         bool playerIsAbleToBeRevived = bool.Parse(ReceivedDataArray[19].Split('=')[1]);
                         bool playerIsDrown = bool.Parse(ReceivedDataArray[20].Split('=')[1]);
+                        bool playerIsCarryingCoins = bool.Parse(ReceivedDataArray[21].Split('=')[1]);
 
                         //כל זה יקרה אך ורק אם השחקן אכן התחבר מקודם
                         if (Players.ContainsKey(playerName))
@@ -286,6 +291,7 @@ namespace SquadFighters
                                 Players[playerName].Visible = playerVisible; // בלתי נראה
                                 Players[playerName].IsAbleToBeRevived = playerIsAbleToBeRevived; //האם שחקן יכול לעבור החייאה
                                 Players[playerName].IsDrown = playerIsDrown; //האם השחקן טבע במים
+                                Players[playerName].IsCarryingCoins = playerIsCarryingCoins; // האם השחקן מחזיק במטבעות
 
                                 //עדכון הערכים עבור אותו שחקן בכרטיסייה שלו
                                 for (int i = 0; i < HUD.PlayersCards.Count; i++)
@@ -401,12 +407,30 @@ namespace SquadFighters
                             HUD.ResetPlayerDeathCountDown();
                         }
                     }
-                    else if (ReceivedDataString.Contains(ServerMethod.TeamsCounts.ToString()))
+                    else if (ReceivedDataString.Contains(ServerMethod.TeamsPlayersCounts.ToString()))
                     {
-                        AlphaTeamCount = int.Parse(ReceivedDataArray[1].Split('=')[1]);
-                        BetaTeamCount = int.Parse(ReceivedDataArray[2].Split('=')[1]);
-                        OmegaTeamCount = int.Parse(ReceivedDataArray[3].Split('=')[1]);
+                        AlphaTeamPlayersCount = int.Parse(ReceivedDataArray[1].Split('=')[1]);
+                        BetaTeamPlayersCount = int.Parse(ReceivedDataArray[2].Split('=')[1]);
+                        OmegaTeamPlayersCount = int.Parse(ReceivedDataArray[3].Split('=')[1]);
+                    }
+                    else if (ReceivedDataString.Contains(ServerMethod.TeamsCoinsCount.ToString()))
+                    {
+                        AlphaTeamCoinsCount = int.Parse(ReceivedDataArray[1].Split('=')[1]);
+                        Map.AlphaTeamSpawner.Coins = AlphaTeamCoinsCount;
 
+                        BetaTeamCoinsCount = int.Parse(ReceivedDataArray[2].Split('=')[1]);
+                        Map.BetaTeamSpawner.Coins = BetaTeamCoinsCount;
+
+                        OmegaTeamCoinsCount = int.Parse(ReceivedDataArray[3].Split('=')[1]);
+                        Map.OmegaTeamSpawner.Coins = OmegaTeamCoinsCount;
+                    }
+                    else if (ReceivedDataString.Contains(ServerMethod.ClientCreateItem.ToString()))
+                    {
+                        int itemX = int.Parse(ReceivedDataArray[1].Split('=')[1]);
+                        int itemY = int.Parse(ReceivedDataArray[2].Split('=')[1]);
+                        string itemKey = ReceivedDataArray[3].Split('=')[1];
+
+                        Map.AddItem(ItemCategory.Coin, 0, itemX, itemY, 25, itemKey);
                     }
                     else if (ReceivedDataString.Contains(ServerMethod.JoinedMatch.ToString()))
                     {
@@ -515,7 +539,7 @@ namespace SquadFighters
                                     if (Player.BulletsCapacity + capacity > Player.MaxBulletsCapacity && Player.BulletsCapacity != Player.MaxBulletsCapacity)
                                     {
                                         int finalCapacity = Player.MaxBulletsCapacity - Player.BulletsCapacity;
-                                       ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= finalCapacity; //עדכן בפריט את עודף התחמושת שנשאר
+                                        ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= finalCapacity; //עדכן בפריט את עודף התחמושת שנשאר
 
                                         Player.BulletsCapacity = Player.MaxBulletsCapacity; //מלא את כמות התחמושת של השחקן עד הכמות המקסימלית
                                         AddNoneHudPopup("+" + finalCapacity + " Ammo", Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
@@ -557,6 +581,23 @@ namespace SquadFighters
                                 string key = items.ElementAt(i).Key;
                                 items.Remove(key);
                                 SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "=true," + key);
+                            }
+                            else if (items.ElementAt(i).Value is Coin)
+                            {
+
+                                //רוץ על כל ברי ההגנה שבכרטיסיית השחקן הנוכחי
+
+                                Player.AddCoin();
+                                AddNoneHudPopup("+1 Coin", Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
+
+                                string key = items.ElementAt(i).Key; //השגת מפתח המילון
+                                lock (Map.Items)
+                                {
+                                    items.Remove(key); //מחיקת הפריט
+                                }
+                                SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "=true," + key); //שלח עדכון לשרת על הפריט שנמחק על מנת שיימחק גם בשרת
+
+
                             }
                         }
                     }
@@ -682,6 +723,11 @@ namespace SquadFighters
             {
                 Console.WriteLine(e.Message);
             }
+        }
+
+        public string GenerateItemKey(CoinType coinType, ItemCategory itemCategory)
+        {
+            return itemCategory.ToString() + "/" + coinType.ToString() + "/" + Map.Items.Count;
         }
 
         //עדכון משחק
@@ -851,7 +897,7 @@ namespace SquadFighters
                         if (otherPlayer.Value.Bullets[i].Rectangle.Intersects(Player.Rectangle) && otherPlayer.Value.Team != Player.Team && Player.Visible)
                         {
 
-                            if (!Player.IsDead) //אם השחקן הנוכחי בחיים
+                            if (!Player.IsDead || Player.Health > 0) //אם השחקן הנוכחי בחיים
                             {
                                 //הפסק את היריה
                                 otherPlayer.Value.Bullets[i].IsFinished = true;
@@ -917,6 +963,28 @@ namespace SquadFighters
                                     PlayerDeathCountDownThread.Start();
 
                                     HUD.PlayerCanCountDown = true;
+
+                                    //אם השחקן המת סוחב איתו מטבעות
+                                    if (Player.CoinsCarrying > 0)
+                                    {
+                                        Thread.Sleep(150);
+                                        for (int itemI = 0; itemI < Player.CoinsCarrying; itemI++)
+                                        {
+                                            float coinX = Player.Position.X + 30 * itemI;
+                                            float coinY = Player.Position.Y + 100;
+
+                                            string coinKey = GenerateItemKey(CoinType.IB, ItemCategory.Coin);
+
+                                            Map.AddItem(ItemCategory.Coin, 0, coinX, coinY, 25, coinKey);
+                                            SendOneDataToServer(ServerMethod.ClientCreateItem.ToString() + "=true,itemX=" + (int)coinX + ",itemY=" + (int)coinY + ",itemKey=" + coinKey);
+
+                                        }
+
+                                        Player.CoinsCarrying = 0;
+
+                                    }
+
+
                                 }
 
                             }
@@ -960,6 +1028,29 @@ namespace SquadFighters
                         Player.Bullets.RemoveAt(i); //מחק את הירייה
                 }
 
+
+                if(Player.CoinsCarrying > 0)
+                {
+                    if (Player.Rectangle.Intersects(Map.AlphaTeamSpawner.Rectangle) && Player.Team == Team.Alpha)
+                    {
+                        Map.AlphaTeamSpawner.Coins += Player.CoinsCarrying;
+                        Player.CoinsCarrying = 0;
+                        SendOneDataToServer(ServerMethod.UpdateSpawnerCoins.ToString() + "=true,AlphaTeamCoinsCount=" + Map.AlphaTeamSpawner.Coins);
+                    }
+                    if (Player.Rectangle.Intersects(Map.BetaTeamSpawner.Rectangle) && Player.Team == Team.Beta)
+                    {
+                        Map.BetaTeamSpawner.Coins += Player.CoinsCarrying;
+                        Player.CoinsCarrying = 0;
+                        SendOneDataToServer(ServerMethod.UpdateSpawnerCoins.ToString() + "=true,BetaTeamCoinsCount=" + Map.BetaTeamSpawner.Coins);
+                    }
+                    if (Player.Rectangle.Intersects(Map.OmegaTeamSpawner.Rectangle) && Player.Team == Team.Omega)
+                    {
+                        Map.OmegaTeamSpawner.Coins += Player.CoinsCarrying;
+                        Player.CoinsCarrying = 0;
+                        SendOneDataToServer(ServerMethod.UpdateSpawnerCoins.ToString() + "=true,OmegaTeamCoinsCount=" + Map.OmegaTeamSpawner.Coins);
+                    }
+                }
+                
                 // נסה
                 try
                 {
@@ -1020,7 +1111,7 @@ namespace SquadFighters
                             switch (team.ButtonType)
                             {
                                 case ButtonType.Alpha:
-                                    if (AlphaTeamCount < TeamsCountsMax)
+                                    if (AlphaTeamPlayersCount < TeamsCountsMax)
                                     {
                                         Player.Team = Team.Alpha;
                                         JoinMatch();
@@ -1028,7 +1119,7 @@ namespace SquadFighters
                                     }
                                     break;
                                 case ButtonType.Beta:
-                                    if (BetaTeamCount < TeamsCountsMax)
+                                    if (BetaTeamPlayersCount < TeamsCountsMax)
                                     {
                                         Player.Team = Team.Beta;
                                         JoinMatch();
@@ -1036,7 +1127,7 @@ namespace SquadFighters
                                     }
                                     break;
                                 case ButtonType.Omega:
-                                    if (OmegaTeamCount < TeamsCountsMax)
+                                    if (OmegaTeamPlayersCount < TeamsCountsMax)
                                     {
                                         Player.Team = Team.Omega;
                                         JoinMatch();
@@ -1097,6 +1188,25 @@ namespace SquadFighters
 
                 //צייר את המפה
                 Map.Draw(spriteBatch);
+
+                Map.AlphaTeamSpawner.Draw(spriteBatch);
+
+                spriteBatch.DrawString(HUD.GameTitleFont, Map.AlphaTeamSpawner.Coins + "/5",
+                    new Vector2(Map.AlphaTeamSpawner.Position.X + Map.AlphaTeamSpawner.Texture.Width / 2 - 30, 
+                                Map.AlphaTeamSpawner.Position.Y + Map.AlphaTeamSpawner.Texture.Height - 50), Color.White);
+
+                Map.BetaTeamSpawner.Draw(spriteBatch);
+
+                spriteBatch.DrawString(HUD.GameTitleFont, Map.BetaTeamSpawner.Coins + "/5",
+                    new Vector2(Map.BetaTeamSpawner.Position.X + Map.BetaTeamSpawner.Texture.Width / 2 - 30,
+                                Map.BetaTeamSpawner.Position.Y + Map.BetaTeamSpawner.Texture.Height - 50), Color.White);
+
+                Map.OmegaTeamSpawner.Draw(spriteBatch);
+
+                spriteBatch.DrawString(HUD.GameTitleFont, Map.OmegaTeamSpawner.Coins + "/5",
+                    new Vector2(Map.OmegaTeamSpawner.Position.X + Map.OmegaTeamSpawner.Texture.Width / 2 - 30,
+                                Map.OmegaTeamSpawner.Position.Y + Map.OmegaTeamSpawner.Texture.Height - 50), Color.White);
+
 
                 //נסה
                 try
@@ -1246,15 +1356,15 @@ namespace SquadFighters
                 foreach (Button teamButton in MainMenu.Teams)
                 {
                     spriteBatch.DrawString(GlobalFont,
-                        (teamButton.ButtonType == ButtonType.Alpha ? AlphaTeamCount.ToString() :
-                            teamButton.ButtonType == ButtonType.Beta ? BetaTeamCount.ToString() :
-                                teamButton.ButtonType == ButtonType.Omega ? OmegaTeamCount.ToString() :
+                        (teamButton.ButtonType == ButtonType.Alpha ? AlphaTeamPlayersCount.ToString() :
+                            teamButton.ButtonType == ButtonType.Beta ? BetaTeamPlayersCount.ToString() :
+                                teamButton.ButtonType == ButtonType.Omega ? OmegaTeamPlayersCount.ToString() :
                                     "0") + "/" + TeamsCountsMax, new Vector2(teamButton.Rectangle.Right + 10, teamButton.Rectangle.Top + 5),
 
 
-                         (teamButton.ButtonType == ButtonType.Alpha && AlphaTeamCount == TeamsCountsMax ? Color.Red :
-                            teamButton.ButtonType == ButtonType.Beta && BetaTeamCount == TeamsCountsMax ? Color.Red :
-                                teamButton.ButtonType == ButtonType.Omega && OmegaTeamCount == TeamsCountsMax ? Color.Red
+                         (teamButton.ButtonType == ButtonType.Alpha && AlphaTeamPlayersCount == TeamsCountsMax ? Color.Red :
+                            teamButton.ButtonType == ButtonType.Beta && BetaTeamPlayersCount == TeamsCountsMax ? Color.Red :
+                                teamButton.ButtonType == ButtonType.Omega && OmegaTeamPlayersCount == TeamsCountsMax ? Color.Red
                                 : Color.White));
 
                     if (teamButton.Rectangle.Intersects(new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 16, 16)))
