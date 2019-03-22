@@ -21,6 +21,7 @@ namespace SquadFighters
         public float Rotation;
         public bool IsShoot;
         public Texture2D Texture;
+        public Texture2D CoinTexture;
         public Texture2D DeadSignTexture;
         public Vector2 Position;
         public Vector2 Direction;
@@ -46,6 +47,7 @@ namespace SquadFighters
         public string KilledBy;
         public bool IsDrown;
         public int CoinsCarrying;
+        public bool IsCarryingCoins;
 
         public Player(string playerName)
         {
@@ -74,12 +76,14 @@ namespace SquadFighters
             IsAbleToBeRevived = true;
             IsDrown = false;
             CoinsCarrying = 0;
+            IsCarryingCoins = false;
         }
 
         public void LoadContent(ContentManager content)
         {
             Content = content;
             Texture = content.Load<Texture2D>("images/player/player");
+            CoinTexture = content.Load<Texture2D>("images/player/player_coin");
             DeadSignTexture = content.Load<Texture2D>("images/player/player_dead_sign");
             ShieldType = ShieldType.None;
             SetDefaultPosition();
@@ -102,6 +106,7 @@ namespace SquadFighters
             CheckKeyboardMovement();
             CheckIsDead();
             IsSwimming = IsWaterIntersects(map.WaterObjects);
+            IsCarryingCoins = CoinsCarrying > 0;
 
             if (IsSwimming)
             {
@@ -275,7 +280,7 @@ namespace SquadFighters
         {
             if (Visible)
             {
-                spriteBatch.Draw(Texture, Position, null,
+                spriteBatch.Draw(!IsCarryingCoins ? Texture : CoinTexture, Position, null,
                                                          IsSwimming ? Color.LightSkyBlue :
                                                          Team == Team.Alpha ? new Color(71, 252, 234) :
                                                          Team == Team.Beta ? Color.Yellow :
@@ -289,7 +294,7 @@ namespace SquadFighters
 
         public override string ToString()
         {
-            return ServerMethod.PlayerData.ToString() + "=true,PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",PlayerIsReviving=" + IsReviving + ",RevivingPlayerName="  + OtherPlayerRevivingName + ",PlayerReviveCountUpString=" + ReviveCountUpString + ",PlayerTeam=" + (int)Team + ",PlayerVisible=" + Visible + ",PlayerIsAbleToBeRevived=" + IsAbleToBeRevived + ",PlayerIsDrown=" + IsDrown + ",";
+            return ServerMethod.PlayerData.ToString() + "=true,PlayerName=" + Name + ",PlayerX=" + Position.X + ",PlayerY=" + Position.Y + ",PlayerRotation=" + Rotation + ",PlayerHealth=" + Health + ",PlayerIsShoot=" + IsShoot + ",PlayerDirectionX=" + Direction.X + ",PlayerDirectionY=" + Direction.Y + ",PlayerIsSwimming=" + IsSwimming + ",IsShield=" + IsShield + ",ShieldType=" + (int)ShieldType + ",PlayerBulletsCapacity=" + BulletsCapacity + ",PlayerIsDead=" + IsDead + ",PlayerIsReviving=" + IsReviving + ",RevivingPlayerName=" + OtherPlayerRevivingName + ",PlayerReviveCountUpString=" + ReviveCountUpString + ",PlayerTeam=" + (int)Team + ",PlayerVisible=" + Visible + ",PlayerIsAbleToBeRevived=" + IsAbleToBeRevived + ",PlayerIsDrown=" + IsDrown + ",PlayerIsCarryingCoins=" + IsCarryingCoins + ",";
         }
     }
 }

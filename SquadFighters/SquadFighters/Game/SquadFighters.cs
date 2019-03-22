@@ -264,6 +264,7 @@ namespace SquadFighters
                         bool playerVisible = bool.Parse(ReceivedDataArray[18].Split('=')[1]);
                         bool playerIsAbleToBeRevived = bool.Parse(ReceivedDataArray[19].Split('=')[1]);
                         bool playerIsDrown = bool.Parse(ReceivedDataArray[20].Split('=')[1]);
+                        bool playerIsCarryingCoins = bool.Parse(ReceivedDataArray[21].Split('=')[1]);
 
                         //כל זה יקרה אך ורק אם השחקן אכן התחבר מקודם
                         if (Players.ContainsKey(playerName))
@@ -290,6 +291,7 @@ namespace SquadFighters
                                 Players[playerName].Visible = playerVisible; // בלתי נראה
                                 Players[playerName].IsAbleToBeRevived = playerIsAbleToBeRevived; //האם שחקן יכול לעבור החייאה
                                 Players[playerName].IsDrown = playerIsDrown; //האם השחקן טבע במים
+                                Players[playerName].IsCarryingCoins = playerIsCarryingCoins; // האם השחקן מחזיק במטבעות
 
                                 //עדכון הערכים עבור אותו שחקן בכרטיסייה שלו
                                 for (int i = 0; i < HUD.PlayersCards.Count; i++)
