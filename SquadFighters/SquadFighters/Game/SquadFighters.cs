@@ -408,6 +408,14 @@ namespace SquadFighters
                         OmegaTeamCount = int.Parse(ReceivedDataArray[3].Split('=')[1]);
 
                     }
+                    else if (ReceivedDataString.Contains(ServerMethod.ClientCreateItem.ToString()))
+                    {
+                        int itemX = int.Parse(ReceivedDataArray[1].Split('=')[1]);
+                        int itemY = int.Parse(ReceivedDataArray[2].Split('=')[1]);
+                        string itemKey = ReceivedDataArray[3].Split('=')[1];
+
+                        Map.AddItem(ItemCategory.Coin, 0, itemX, itemY, 25, itemKey);
+                    }
                     else if (ReceivedDataString.Contains(ServerMethod.JoinedMatch.ToString()))
                     {
                         string playerName = ReceivedDataArray[0];
@@ -952,7 +960,7 @@ namespace SquadFighters
                                             string coinKey = GenerateItemKey(CoinType.IB, ItemCategory.Coin);
 
                                             Map.AddItem(ItemCategory.Coin, 0, coinX, coinY, 25, coinKey);
-                                            SendOneDataToServer(ServerMethod.ClientCreateItem.ToString() + "=true,itemKey=" + coinKey);
+                                            SendOneDataToServer(ServerMethod.ClientCreateItem.ToString() + "=true,itemX=" + (int)coinX + ",itemY=" + (int)coinY + ",itemKey=" + coinKey);
 
                                         }
 
