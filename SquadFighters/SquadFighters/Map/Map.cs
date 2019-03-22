@@ -120,10 +120,6 @@ namespace SquadFighters
 
             foreach (Water water in WaterObjects)
                 water.Draw(spriteBatch);
-
-            AlphaTeamSpawner.Draw(spriteBatch);
-            BetaTeamSpawner.Draw(spriteBatch);
-            OmegaTeamSpawner.Draw(spriteBatch);
         }
 
         public Vector2 GeneratePosition()
