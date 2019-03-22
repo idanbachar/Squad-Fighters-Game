@@ -15,6 +15,7 @@ namespace SquadFighters
         Ammo, //תחמושת
         Food, //אוכל
         Shield, //מגן
-        Helmet //קסדה
+        Helmet, //קסדה
+        Coin // מטבע
     }
 }

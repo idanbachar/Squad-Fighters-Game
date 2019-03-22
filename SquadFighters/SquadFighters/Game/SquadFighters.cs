@@ -127,7 +127,7 @@ namespace SquadFighters
             HUD.PlayerCard = new PlayerCard(Player.Name, Player.Health, Player.BulletsCapacity + "/" + Player.MaxBulletsCapacity);
             HUD.PlayerCard.Visible = true;
             HUD.PlayerCard.LoadContent(Content);
- 
+
             ConnectToServer(ServerIp, ServerPort);
         }
 
@@ -183,7 +183,7 @@ namespace SquadFighters
                 Thread.Sleep(80);
             }
         }
-        
+
         //התנתקות מהשרת
         public void DisconnectFromServer()
         {
@@ -515,7 +515,7 @@ namespace SquadFighters
                                     if (Player.BulletsCapacity + capacity > Player.MaxBulletsCapacity && Player.BulletsCapacity != Player.MaxBulletsCapacity)
                                     {
                                         int finalCapacity = Player.MaxBulletsCapacity - Player.BulletsCapacity;
-                                       ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= finalCapacity; //עדכן בפריט את עודף התחמושת שנשאר
+                                        ((GunAmmo)(items.ElementAt(i).Value)).Capacity -= finalCapacity; //עדכן בפריט את עודף התחמושת שנשאר
 
                                         Player.BulletsCapacity = Player.MaxBulletsCapacity; //מלא את כמות התחמושת של השחקן עד הכמות המקסימלית
                                         AddNoneHudPopup("+" + finalCapacity + " Ammo", Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
@@ -557,6 +557,23 @@ namespace SquadFighters
                                 string key = items.ElementAt(i).Key;
                                 items.Remove(key);
                                 SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "=true," + key);
+                            }
+                            else if (items.ElementAt(i).Value is Coin)
+                            {
+
+                                //רוץ על כל ברי ההגנה שבכרטיסיית השחקן הנוכחי
+
+                                Player.AddCoin();
+                                AddNoneHudPopup("+1 Coin", Player.Position, true, PopupLabelType.Nice, PopupSizeType.Medium);
+
+                                string key = items.ElementAt(i).Key; //השגת מפתח המילון
+                                lock (Map.Items)
+                                {
+                                    items.Remove(key); //מחיקת הפריט
+                                }
+                                SendOneDataToServer(ServerMethod.RemoveItem.ToString() + "=true," + key); //שלח עדכון לשרת על הפריט שנמחק על מנת שיימחק גם בשרת
+
+
                             }
                         }
                     }
@@ -682,6 +699,11 @@ namespace SquadFighters
             {
                 Console.WriteLine(e.Message);
             }
+        }
+
+        public string GenerateItemKey(CoinType coinType, ItemCategory itemCategory)
+        {
+            return itemCategory.ToString() + "/" + coinType.ToString() + "/" + Map.Items.Count;
         }
 
         //עדכון משחק
@@ -851,7 +873,7 @@ namespace SquadFighters
                         if (otherPlayer.Value.Bullets[i].Rectangle.Intersects(Player.Rectangle) && otherPlayer.Value.Team != Player.Team && Player.Visible)
                         {
 
-                            if (!Player.IsDead) //אם השחקן הנוכחי בחיים
+                            if (!Player.IsDead || Player.Health > 0) //אם השחקן הנוכחי בחיים
                             {
                                 //הפסק את היריה
                                 otherPlayer.Value.Bullets[i].IsFinished = true;
@@ -917,6 +939,28 @@ namespace SquadFighters
                                     PlayerDeathCountDownThread.Start();
 
                                     HUD.PlayerCanCountDown = true;
+
+                                    //אם השחקן המת סוחב איתו מטבעות
+                                    if (Player.CoinsCarrying > 0)
+                                    {
+                                        Thread.Sleep(150);
+                                        for (int itemI = 0; itemI < Player.CoinsCarrying; itemI++)
+                                        {
+                                            float coinX = Player.Position.X + 30 * itemI;
+                                            float coinY = Player.Position.Y + 100;
+
+                                            string coinKey = GenerateItemKey(CoinType.IB, ItemCategory.Coin);
+
+                                            Map.AddItem(ItemCategory.Coin, 0, coinX, coinY, 25, coinKey);
+                                            SendOneDataToServer(ServerMethod.ClientCreateItem.ToString() + "=true,itemKey=" + coinKey);
+
+                                        }
+
+                                        Player.CoinsCarrying = 0;
+
+                                    }
+
+
                                 }
 
                             }

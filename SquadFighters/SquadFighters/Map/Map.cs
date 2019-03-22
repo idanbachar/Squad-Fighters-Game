@@ -80,6 +80,10 @@ namespace SquadFighters
                     item = new Helmet(new Vector2(itemX, itemY), (HelmetType) itemType, itemCapacity);
                     item.LoadContent(SquadFighters.ContentManager);
                     break;
+                case ItemCategory.Coin:
+                    item = new Coin(new Vector2(itemX, itemY), (CoinType)itemType, itemCapacity);
+                    item.LoadContent(SquadFighters.ContentManager);
+                    break;
             }
 
             Items.Add(itemKey,item);
