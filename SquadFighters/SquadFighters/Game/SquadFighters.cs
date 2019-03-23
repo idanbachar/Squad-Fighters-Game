@@ -382,6 +382,13 @@ namespace SquadFighters
                         string playerName = ReceivedDataArray[1].Split('=')[1];
 
                     }
+                    else if (ReceivedDataString.Contains(ServerMethod.DownloadDroppedCoins.ToString()))
+                    {
+                        int playerX = int.Parse(ReceivedDataArray[3].Split('=')[1]);
+                        int playerY = int.Parse(ReceivedDataArray[4].Split('=')[1]);
+                        string itemKey = ReceivedDataArray[6].Split('=')[1];
+                        Map.AddItem(ItemCategory.Coin, 0, playerX, playerY, 25, itemKey);
+                    }
                     //במידה והתקבל מידע על ירייה
                     if (ReceivedDataString.Contains(ServerMethod.ShootData.ToString()))
                     {
@@ -967,21 +974,11 @@ namespace SquadFighters
                                     //אם השחקן המת סוחב איתו מטבעות
                                     if (Player.CoinsCarrying > 0)
                                     {
+
                                         Thread.Sleep(150);
-                                        for (int itemI = 0; itemI < Player.CoinsCarrying; itemI++)
-                                        {
-                                            float coinX = Player.Position.X + 30 * itemI;
-                                            float coinY = Player.Position.Y + 100;
-
-                                            string coinKey = GenerateItemKey(CoinType.IB, ItemCategory.Coin);
-
-                                            Map.AddItem(ItemCategory.Coin, 0, coinX, coinY, 25, coinKey);
-                                            SendOneDataToServer(ServerMethod.ClientCreateItem.ToString() + "=true,itemX=" + (int)coinX + ",itemY=" + (int)coinY + ",itemKey=" + coinKey);
-
-                                        }
+                                        SendOneDataToServer(ServerMethod.ClientCreateItem.ToString() + "=true,playerX=" + (int)Player.Position.X + ",playerY=" + (int)Player.Position.Y + ",count=" + Player.CoinsCarrying);
 
                                         Player.CoinsCarrying = 0;
-
                                     }
 
 

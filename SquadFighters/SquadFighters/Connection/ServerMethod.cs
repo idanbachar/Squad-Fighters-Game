@@ -25,6 +25,7 @@ namespace SquadFighters
         TeamsPlayersCounts,
         ClientCreateItem,
         UpdateSpawnerCoins,
-        TeamsCoinsCount
+        TeamsCoinsCount,
+        DownloadDroppedCoins
     }
 }
