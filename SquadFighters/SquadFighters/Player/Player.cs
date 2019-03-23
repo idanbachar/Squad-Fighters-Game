@@ -48,14 +48,16 @@ namespace SquadFighters
         public bool IsDrown;
         public int CoinsCarrying;
         public bool IsCarryingCoins;
+        public bool Cheats;
 
         public Player(string playerName)
         {
+            Cheats = false;
             Name = playerName;
             SetDefaultHealth();
             Rotation = 0;
-            MaxBulletsCapacity = 999;
-            BulletsCapacity = 999;
+            MaxBulletsCapacity = Cheats ? 999 : 30;
+            BulletsCapacity = Cheats ? 999 : 0;
             Bullets = new List<Bullet>();
             IsShoot = false;
             IsShield = false;
@@ -83,7 +85,7 @@ namespace SquadFighters
         {
             Content = content;
             Texture = content.Load<Texture2D>("images/player/player");
-            CoinTexture = content.Load<Texture2D>("images/player/player_coin");
+            CoinTexture = content.Load<Texture2D>("images/items/coins/ib");
             DeadSignTexture = content.Load<Texture2D>("images/player/player_dead_sign");
             ShieldType = ShieldType.None;
             SetDefaultPosition();
@@ -232,9 +234,19 @@ namespace SquadFighters
 
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.P))
-                Health = 100;
+            if (Cheats)
+            {
 
+                if (Keyboard.GetState().IsKeyDown(Keys.P))
+                    Health = 100;
+
+                if (Keyboard.GetState().IsKeyDown(Keys.D1))
+                    Team = Team.Alpha;
+                if (Keyboard.GetState().IsKeyDown(Keys.D2))
+                    Team = Team.Beta;
+                if (Keyboard.GetState().IsKeyDown(Keys.D3))
+                    Team = Team.Omega;
+            }
         }
 
         public void Shoot()
@@ -280,12 +292,16 @@ namespace SquadFighters
         {
             if (Visible)
             {
-                spriteBatch.Draw(!IsCarryingCoins ? Texture : CoinTexture, Position, null,
+                spriteBatch.Draw(Texture, Position, null,
                                                          IsSwimming ? Color.LightSkyBlue :
                                                          Team == Team.Alpha ? new Color(71, 252, 234) :
                                                          Team == Team.Beta ? Color.Yellow :
                                                          Team == Team.Omega ? Color.Pink : new Color(71, 252, 234),
                                                          Rotation, new Vector2(Texture.Width / 2, Texture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
+
+                if (IsCarryingCoins)
+                    spriteBatch.Draw(CoinTexture, Position, null, Color.White, Rotation, new Vector2(CoinTexture.Width / 2, CoinTexture.Height / 2), 1.0f, SpriteEffects.None, 1);
+
 
                 if (IsDead)
                     spriteBatch.Draw(DeadSignTexture, Position, null, Color.White, Rotation, new Vector2(DeadSignTexture.Width / 2, DeadSignTexture.Height / 2), 1.0f, SpriteEffects.None, 1.0f);
