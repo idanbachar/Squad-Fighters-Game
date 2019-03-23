@@ -414,6 +414,11 @@ namespace SquadFighters
                             HUD.ResetPlayerDeathCountDown();
                         }
                     }
+                    else if (ReceivedDataString.Contains(ServerMethod.PlayerPopupMessage.ToString()))
+                    {
+                        string popup = ReceivedDataArray[1].Split('=')[1];
+                        HUD.AddPopup(popup, new Vector2(Graphics.PreferredBackBufferWidth - 200, Graphics.PreferredBackBufferHeight - 100), false, PopupLabelType.Regular, PopupSizeType.Medium);
+                    }
                     else if (ReceivedDataString.Contains(ServerMethod.TeamsPlayersCounts.ToString()))
                     {
                         AlphaTeamPlayersCount = int.Parse(ReceivedDataArray[1].Split('=')[1]);
@@ -1031,20 +1036,27 @@ namespace SquadFighters
                     if (Player.Rectangle.Intersects(Map.AlphaTeamSpawner.Rectangle) && Player.Team == Team.Alpha)
                     {
                         Map.AlphaTeamSpawner.Coins += Player.CoinsCarrying;
-                        Player.CoinsCarrying = 0;
                         SendOneDataToServer(ServerMethod.UpdateSpawnerCoins.ToString() + "=true,AlphaTeamCoinsCount=" + Map.AlphaTeamSpawner.Coins);
+                        Thread.Sleep(30);
+                        SendOneDataToServer(ServerMethod.PlayerPopupMessage.ToString() + "=true,Message=" + Player.Name + "(Alpha)\nadded " + Player.CoinsCarrying + " Coins!");
+
+                        Player.CoinsCarrying = 0;
                     }
                     if (Player.Rectangle.Intersects(Map.BetaTeamSpawner.Rectangle) && Player.Team == Team.Beta)
                     {
                         Map.BetaTeamSpawner.Coins += Player.CoinsCarrying;
-                        Player.CoinsCarrying = 0;
                         SendOneDataToServer(ServerMethod.UpdateSpawnerCoins.ToString() + "=true,BetaTeamCoinsCount=" + Map.BetaTeamSpawner.Coins);
+                        Thread.Sleep(30);
+                        SendOneDataToServer(ServerMethod.PlayerPopupMessage.ToString() + "=true,Message=" + Player.Name + "(Beta)\nadded " + Player.CoinsCarrying + " Coins!");
+                        Player.CoinsCarrying = 0;
                     }
                     if (Player.Rectangle.Intersects(Map.OmegaTeamSpawner.Rectangle) && Player.Team == Team.Omega)
                     {
                         Map.OmegaTeamSpawner.Coins += Player.CoinsCarrying;
-                        Player.CoinsCarrying = 0;
                         SendOneDataToServer(ServerMethod.UpdateSpawnerCoins.ToString() + "=true,OmegaTeamCoinsCount=" + Map.OmegaTeamSpawner.Coins);
+                        Thread.Sleep(30);
+                        SendOneDataToServer(ServerMethod.PlayerPopupMessage.ToString() + "=true,Message=" + Player.Name + "(Omega)\nadded " + Player.CoinsCarrying + " Coins!");
+                        Player.CoinsCarrying = 0;
                     }
                 }
                 
@@ -1188,19 +1200,19 @@ namespace SquadFighters
 
                 Map.AlphaTeamSpawner.Draw(spriteBatch);
 
-                spriteBatch.DrawString(HUD.GameTitleFont, Map.AlphaTeamSpawner.Coins + "/5",
+                spriteBatch.DrawString(HUD.GameTitleFont, Map.AlphaTeamSpawner.Coins + "/20",
                     new Vector2(Map.AlphaTeamSpawner.Position.X + Map.AlphaTeamSpawner.Texture.Width / 2 - 30, 
                                 Map.AlphaTeamSpawner.Position.Y + Map.AlphaTeamSpawner.Texture.Height - 50), Color.White);
 
                 Map.BetaTeamSpawner.Draw(spriteBatch);
 
-                spriteBatch.DrawString(HUD.GameTitleFont, Map.BetaTeamSpawner.Coins + "/5",
+                spriteBatch.DrawString(HUD.GameTitleFont, Map.BetaTeamSpawner.Coins + "/20",
                     new Vector2(Map.BetaTeamSpawner.Position.X + Map.BetaTeamSpawner.Texture.Width / 2 - 30,
                                 Map.BetaTeamSpawner.Position.Y + Map.BetaTeamSpawner.Texture.Height - 50), Color.White);
 
                 Map.OmegaTeamSpawner.Draw(spriteBatch);
 
-                spriteBatch.DrawString(HUD.GameTitleFont, Map.OmegaTeamSpawner.Coins + "/5",
+                spriteBatch.DrawString(HUD.GameTitleFont, Map.OmegaTeamSpawner.Coins + "/20",
                     new Vector2(Map.OmegaTeamSpawner.Position.X + Map.OmegaTeamSpawner.Texture.Width / 2 - 30,
                                 Map.OmegaTeamSpawner.Position.Y + Map.OmegaTeamSpawner.Texture.Height - 50), Color.White);
 
