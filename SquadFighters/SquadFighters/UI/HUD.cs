@@ -143,7 +143,8 @@ namespace SquadFighters
 
         public void DrawCoinsCount(SpriteBatch spriteBatch, Player player)
         {
-            spriteBatch.DrawString(KDFONT, "coins: " + player.CoinsCarrying, new Vector2(20, SquadFighters.Graphics.PreferredBackBufferHeight - 200), Color.White);
+            if (player.IsCarryingCoins)
+                spriteBatch.DrawString(KDFONT, "You are carrying " + player.CoinsCarrying + " Coins!\nTake them to your base!", new Vector2(50, PlayerCard.CardRectangle.Bottom + 20), Color.Black);
         }
 
         public void DrawGameTitle(SpriteBatch spriteBatch)
