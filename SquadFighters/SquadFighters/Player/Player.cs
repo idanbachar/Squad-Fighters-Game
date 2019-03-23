@@ -48,14 +48,16 @@ namespace SquadFighters
         public bool IsDrown;
         public int CoinsCarrying;
         public bool IsCarryingCoins;
+        public bool Cheats;
 
         public Player(string playerName)
         {
+            Cheats = false;
             Name = playerName;
             SetDefaultHealth();
             Rotation = 0;
-            MaxBulletsCapacity = 999;
-            BulletsCapacity = 999;
+            MaxBulletsCapacity = Cheats ? 999 : 30;
+            BulletsCapacity = Cheats ? 999 : 0;
             Bullets = new List<Bullet>();
             IsShoot = false;
             IsShield = false;
@@ -232,14 +234,19 @@ namespace SquadFighters
 
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.P))
-                Health = 100;
+            if (Cheats)
+            {
 
-            if (Keyboard.GetState().IsKeyDown(Keys.D1))
-                Team = Team.Alpha;
-            if (Keyboard.GetState().IsKeyDown(Keys.D2))
-                Team = Team.Beta;
+                if (Keyboard.GetState().IsKeyDown(Keys.P))
+                    Health = 100;
 
+                if (Keyboard.GetState().IsKeyDown(Keys.D1))
+                    Team = Team.Alpha;
+                if (Keyboard.GetState().IsKeyDown(Keys.D2))
+                    Team = Team.Beta;
+                if (Keyboard.GetState().IsKeyDown(Keys.D3))
+                    Team = Team.Omega;
+            }
         }
 
         public void Shoot()
