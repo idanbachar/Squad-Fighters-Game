@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SquadFighters.Client {
+    public enum GameState {
+        MainMenu, //תפריט ראשי
+        Loading, // טעינה
+        Game, //משחק
+        ChooseTeam, //בחירת קבוצה
+        SelectColor // בחירת צבע
+    }
+}
