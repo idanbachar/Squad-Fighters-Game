@@ -56,7 +56,7 @@ namespace SquadFighters.Client {
 
         public SquadFighters() {
             Graphics = new GraphicsDeviceManager(this);
-            Graphics.PreferredBackBufferWidth = 450;
+            Graphics.PreferredBackBufferWidth = 1000;
             Graphics.PreferredBackBufferHeight = 650;
             Graphics.GraphicsProfile = GraphicsProfile.HiDef;
             Content.RootDirectory = "Content";

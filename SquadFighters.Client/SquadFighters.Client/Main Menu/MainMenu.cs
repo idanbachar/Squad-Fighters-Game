@@ -60,16 +60,16 @@ namespace SquadFighters.Client {
             Font = content.Load<SpriteFont>("fonts/big");
 
             MenuPlayer.LoadContent(content);
-            MenuPlayer.SetNewPosition(new Vector2(365, 190));
+            MenuPlayer.SetNewPosition(new Vector2(635, 240));
             MenuPlayer.Visible = true;
 
             for (int i = 0; i < Buttons.Length; i++) {
-                Buttons[i] = new Button(new Vector2(50, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 50 + i * 50), ((ButtonType)i));
+                Buttons[i] = new Button(new Vector2(350, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 50 + i * 50), ((ButtonType)i));
                 Buttons[i].LoadContent(content);
             }
 
             for (int i = 0; i < Teams.Length; i++) {
-                Teams[i] = new Button(new Vector2(50, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 50 + (i * 65)), (ButtonType)(2 + i));
+                Teams[i] = new Button(new Vector2(350, SquadFighters.Graphics.PreferredBackBufferHeight / 2 - 50 + (i * 65)), (ButtonType)(2 + i));
                 Teams[i].LoadContent(content);
             }
         }
