@@ -11,6 +11,12 @@ in a big map that fight for their territories, and conquest lands.
 <br/>
 Only the strongest skilled team stand a chance to survive.
 
+-Click image below to watch the gameplay video:
+
+<a href="https://www.youtube.com/watch?v=1EekCYJ7qz0">
+    <img src="http://i3.ytimg.com/vi/1EekCYJ7qz0/hqdefault.jpg">
+</a>
+
 ## Rules/How to play
 
 -**Three teams** in the game:
