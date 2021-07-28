@@ -2,7 +2,6 @@
 
 ## What is Squad Fighters?
 
-
 **Squad Fighters** is a battle royale multiplayer game that includes 3 teams
 <br/>
 in a big map that fight for their territories, and conquest lands.
