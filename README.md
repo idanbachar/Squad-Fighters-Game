@@ -1,48 +1,111 @@
 # Squad Fighters
 
-## What is Squad Fighters?
+**Squad Fighters** is a multiplayer game in an open world divided into three groups of players fighting each other for a quantity of special coins hidden in the big map, the first group to find and bring all the coins to their base wins.
 
-**Squad Fighters** is a battle royale multiplayer game that includes 3 teams
-<br/>
-in a big map that fight for their territories, and conquest lands.
-<br/>
-Only the strongest skilled team stand a chance to survive.
+---
 
--Click image below to watch the gameplay video:
+## How to play?
 
-<a href="https://www.youtube.com/watch?v=1EekCYJ7qz0">
-    <img src="http://i3.ytimg.com/vi/1EekCYJ7qz0/hqdefault.jpg">
-</a>
+### Teams
 
-## Rules/How to play
+The game is divided into three groups - **Alpha**, **Beta** and **Omega**.
+The goal of each team is to find all the hidden coins around the map and bring them to your team base before the opposing teams.
 
--**Three teams** in the game:
+<table border="1" cellspacing="0">
+ <tr>
+  <th>Alpha</th>
+  <th>Beta</th>
+   <th>Omega</th>
+ </tr>
+ <tr>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/teams/alpha_team.png" width="250" />
+  </td>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/teams/beta_team.png" width="250" />
+  </td>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/teams/omega_team.png" width="250" />
+  </td>
+ </tr>
+</table>
 
+### Characters
 
-| Alpha team | Beta team | Omega team |
-| ------ | ------ | ------ |
-| <img width="150" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/teams/alpha_team.png"> | <img width="150" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/teams/beta_team.png"> | <img width="150" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/teams/omega_team.png"> |
+Each team has unique color:
+
+<table border="1" cellspacing="0">
+ <tr>
+  <th>Alpha</th>
+  <th>Beta</th>
+   <th>Omega</th>
+ </tr>
+ <tr>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/characters/alpha_character.png" width="100" />
+  </td>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/characters/beta_character.png" width="100" />
+  </td>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/characters/omega_character.png" width="100" />
+  </td>
+ </tr>
+</table>
+
+### World random items
+
+Every time you enter the server, the world is created randomly, and contains items in different places such as: shields of different levels, foods and fruits and weapons.
+
+<table border="1" cellspacing="0">
+ <tr>
+  <th>Food</th>
+  <th>Armors</th>
+   <th>Weapons</th>
+ </tr>
+ <tr>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/items/banana.png" width="50" />
+  </td>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/items/shield_lv1.png" width="50" />
+  </td>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/items/bullets.png" width="50" />
+  </td>
+ </tr>
+  <tr>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/items/orange.png" width="50" />
+  </td>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/items/shield_lv2.png" width="50" />
+  </td>
+  <td>
+	No Item
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/items/pear.png" width="45" height="50" />
+  </td>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/items/shield_rare.png" width="50" />
+  </td>
+  <td>
+	No Item
+  </td>
+ </tr>
+  <tr>
+  <td>
+No Item
+  </td>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/items/shield_legendery.png" width="50" />
+  </td>
+  <td>
+	No Item
+  </td>
+ </tr>
+</table>
  
-
--**Two characters** on each team with different colors:
-
-| Alpha team | Beta team | Omega team |
-| ------ | ------ | ------ |
-| <img width="100" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/characters/alpha_character.png"> | <img width="100" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/characters/beta_character.png"> | <img width="100" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/characters/omega_character.png"> |
-
-There are also collectables, which increase your health, give you armor.
-
-| Items |
-| ------ |
-| <img width="50" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/items/banana.png"> |
-| <img width="50" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/items/bullets.png"> |
-| <img width="50" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/items/orange.png"> |
-| <img width="50" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/items/pear.png"> |
-| <img width="50" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/items/shield_lv1.png"> |
-| <img width="50" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/items/shield_lv2.png"> |
-| <img width="50" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/items/shield_rare.png"> |
-| <img width="50" src="https://raw.githubusercontent.com/idanbachar/squad-fighters-client/master/images/items/shield_legendery.png"> |
-
-Each team's target is to find required amount of coins, and bring them to their team base.
-<br/>
-The first team that succeed, wins.
