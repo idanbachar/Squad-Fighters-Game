@@ -2,7 +2,7 @@
 
 **Squad Fighters** is a multiplayer game in an open world divided into three groups of players fighting each other for a quantity of special coins hidden in the big map, the first group to find and bring all the coins to their base wins.
 
----
+   <img src="https://github.com/idanbachar/squad-fighters-game/raw/master/images/cover/cover.png?raw=true" width="450" />
 
 ## How to play?
 
