@@ -109,3 +109,26 @@ No Item
  </tr>
 </table>
  
+
+### Gallery
+<table border="1" cellspacing="0">
+ <tr>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/gameplay/gameplay_1.png" width="350" />
+  </td>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/gameplay/gameplay_2.png" width="350" />
+  </td>
+   <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/gameplay/gameplay_3.png" width="350" />
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/gameplay/gameplay_4.png" width="350" />
+  </td>
+  <td>
+   <img src="https://raw.githubusercontent.com/idanbachar/squad-fighters-game/master/images/gameplay/gameplay_5.png" width="350" />
+  </td>
+ </tr>
+</table>
